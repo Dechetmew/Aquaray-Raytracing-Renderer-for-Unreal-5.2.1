@@ -1,4 +1,4 @@
-// Aquaray Raytracer 
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "RendererPrivate.h"
 #include "GlobalShader.h"
@@ -64,7 +64,7 @@ class FRayTracingLightGridShaderRGS : public FGlobalShader
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FRaytracingLightDataPacked, LightDataPacked)
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FReflectionUniformParameters, ReflectionStruct)
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FFogUniformParameters, FogUniformParameters)
-		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, RWProbeTexture)
+		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture3D<float4>, RWProbeTexture)
 		END_SHADER_PARAMETER_STRUCT()
 
 	//this must stay here unchanged
@@ -79,7 +79,7 @@ class FRayTracingLightGridShaderRGS : public FGlobalShader
 	}
 };
 
-IMPLEMENT_GLOBAL_SHADER(FRayTracingLightGridShaderRGS, "/Engine/Private/RayTracing/RayTracingGIgrid.usf", "FRayTracingLightGridShaderRGS", SF_RayGen);
+IMPLEMENT_GLOBAL_SHADER(FRayTracingLightGridShaderRGS, "/Engine/Private/RayTracing/AquaRayGlobalIllumination.usf", "FRayTracingLightGridShaderRGS", SF_RayGen);
 
 class FRayTracingPrimaryRaysRGS : public FGlobalShader
 {
@@ -130,7 +130,7 @@ class FRayTracingPrimaryRaysRGS : public FGlobalShader
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, ColorOutput)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float>, RayHitDistanceOutput)
 
-		SHADER_PARAMETER_RDG_TEXTURE(Texture2D<float4>, ProbeTexture)
+		SHADER_PARAMETER_RDG_TEXTURE(Texture3D<float4>, ProbeTexture)
 
 		END_SHADER_PARAMETER_STRUCT()
 
@@ -146,7 +146,7 @@ class FRayTracingPrimaryRaysRGS : public FGlobalShader
 	}
 };
 
-IMPLEMENT_GLOBAL_SHADER(FRayTracingPrimaryRaysRGS, "/Engine/Private/RayTracing/RayTracingPrimaryRays.usf", "RayTracingPrimaryRaysRGS", SF_RayGen);
+IMPLEMENT_GLOBAL_SHADER(FRayTracingPrimaryRaysRGS, "/Engine/Private/RayTracing/AquaRayMain.usf", "RayTracingPrimaryRaysRGS", SF_RayGen);
 
 void FDeferredShadingSceneRenderer::PrepareRayTracingTranslucency(const FViewInfo& View, TArray<FRHIRayTracingShader*>& OutRayGenShaders)
 {
@@ -305,27 +305,26 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 		}
 	}
 
-	//set GIgrid data texture size here. X= Max Amount of Probes, Y= Amount of Float4s data per probe
-	FIntPoint RayTracingResolution(1024, 4);
+	// Set GI grid size
+	FIntVector RayTracingVolumeSize(64, 64, 64);
 
-	// probe texture
-	{
-		FRDGTextureDesc ProbeDesc = FRDGTextureDesc::Create2D(
-			RayTracingResolution,
-			PF_FloatRGBA,
-			FClearValueBinding::None,
-			TexCreate_ShaderResource | TexCreate_UAV
-		);
+	// We need to flatten it as AddPass() only supports XY input
+	int32 FlatRayCount = RayTracingVolumeSize.X * RayTracingVolumeSize.Y * RayTracingVolumeSize.Z;
 
-		if (*GIProbeDataTexture == nullptr)
-		{
-			*GIProbeDataTexture = GraphBuilder.CreateTexture(ProbeDesc, TEXT("FRayTracingLightGridShaderRGS"));
-		}
-	}
+	// Create the 3D probe data texture (RW + ShaderResource, black-initialized)
+	FRDGTextureDesc ProbeDesc = FRDGTextureDesc::Create3D(
+		RayTracingVolumeSize,
+		PF_FloatRGBA,
+		FClearValueBinding::Black,
+		TexCreate_ShaderResource | TexCreate_UAV
+	);
+
+	// Always (re)create the RDG texture — they're transient!
+	*GIProbeDataTexture = GraphBuilder.CreateTexture(ProbeDesc, TEXT("GIProbeTexture3D"));
 
 	FRayTracingLightGridShaderRGS::FParameters* PassParameters = GraphBuilder.AllocParameters < FRayTracingLightGridShaderRGS::FParameters>();
 
-	FRayTracingPrimaryRaysOptions TranslucencyOptions = GetRayTracingTranslucencyOptions(View); //GIgrid uses the same options as primary rays
+	FRayTracingPrimaryRaysOptions TranslucencyOptions = GetRayTracingTranslucencyOptions(View); //GI shader uses the same options as primary rays
 
 	for (int32 i = 0; i < ColorInputValues.Num(); ++i)
 	{
@@ -339,7 +338,7 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 		case 5: PassParameters->ColorInput6 = ColorInputValues[i]; break;
 		case 6: PassParameters->ColorInput7 = ColorInputValues[i]; break;
 		case 7: PassParameters->ColorInput8 = ColorInputValues[i]; break;
-		case 8: PassParameters->ColorInput9 = ColorInputValues[i]; break;
+		case 8: PassParameters->ColorInput9 = FLinearColor(View.ViewMatrices.GetViewOrigin()); break;
 		}
 	}
 
@@ -401,10 +400,10 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 	ClearUnusedGraphResources(RayGenShader, PassParameters);
 
 	GraphBuilder.AddPass(
-		RDG_EVENT_NAME("RayTracingLightGridShader %dx%d", RayTracingResolution.X, RayTracingResolution.Y),
+		RDG_EVENT_NAME("RayTracingLightGridShader %d probes", FlatRayCount),
 		PassParameters,
 		ERDGPassFlags::Compute,
-		[PassParameters, this, &View, RayGenShader, RayTracingResolution](FRHIRayTracingCommandList& RHICmdList)
+		[PassParameters, this, &View, RayGenShader, FlatRayCount](FRHIRayTracingCommandList& RHICmdList)
 		{
 			FRayTracingPipelineState* Pipeline = View.RayTracingMaterialPipeline;
 
@@ -412,7 +411,7 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 			SetShaderParameters(GlobalResources, RayGenShader, *PassParameters);
 
 			FRHIRayTracingScene* RayTracingSceneRHI = View.GetRayTracingSceneChecked();
-			RHICmdList.RayTraceDispatch(Pipeline, RayGenShader.GetRayTracingShader(), RayTracingSceneRHI, GlobalResources, RayTracingResolution.X, RayTracingResolution.Y);
+			RHICmdList.RayTraceDispatch(Pipeline, RayGenShader.GetRayTracingShader(), RayTracingSceneRHI, GlobalResources, FlatRayCount, 1);
 		});
 
 }
@@ -573,7 +572,7 @@ void FDeferredShadingSceneRenderer::RenderRayTracingPrimaryRaysView(
 		case 5: PassParameters->ColorInput6 = ColorInputValues[i]; break;
 		case 6: PassParameters->ColorInput7 = ColorInputValues[i]; break;
 		case 7: PassParameters->ColorInput8 = ColorInputValues[i]; break;
-		case 8: PassParameters->ColorInput9 = ColorInputValues[i]; break;
+		case 8: PassParameters->ColorInput9 = FLinearColor(View.ViewMatrices.GetViewOrigin()); break;
 		}
 	}
 

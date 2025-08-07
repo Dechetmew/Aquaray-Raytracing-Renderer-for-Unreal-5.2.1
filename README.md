@@ -54,7 +54,7 @@ In the Details Panel, Click "Apply Settings", and "Enable Aquaray"
 
 After Clicking the button of Doom, you will be either Greeted by a "D3D Crashed" window, or a Fantastic Fully Raytraced Scene in your Viewport
 
-## __Footnotes__
+## __Credits__
 
 The Sample project uses:
 

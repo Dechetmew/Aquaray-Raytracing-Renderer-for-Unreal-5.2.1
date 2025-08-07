@@ -1,0 +1,192 @@
+// AQUARAY RAYTRACER GLOBAL ILLUMINATION - v0.4.20
+// 3D Global Illumination Grid
+
+// INCLUDES
+#include "../DeferredLightingCommon.ush"
+#include "RayTracingCommon.ush"
+#include "RayTracingDeferredShadingCommon.ush"
+#include "RayTracingLightingCommon.ush"
+#include "AquarayStructs.ush"
+#include "AquarayFunctions.ush"
+
+// SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
+float4 ColorInput1;
+float4 ColorInput2;
+float4 ColorInput3;
+float4 ColorInput4;
+float4 ColorInput5;
+float4 ColorInput6;
+float4 ColorInput7;
+float4 ColorInput8;
+float4 ColorInput9; //CameraPositionWS
+float FloatInput1;
+float FloatInput2;
+float FloatInput3;
+float FloatInput4;
+float FloatInput5;
+float FloatInput6;
+float FloatInput7;
+float FloatInput8;
+float FloatInput9;
+int IntInput1; //Amount of Samples (5min 50max)
+int IntInput2;
+int IntInput3;
+int IntInput4; //Enable Lighting Grid (experimental)
+int IntInput5;
+int IntInput6;
+int IntInput7;
+int IntInput8;
+int IntInput9;
+float4 PriorityInput1;
+float4 PriorityInput2;
+float4 PriorityInput3;
+float4 PriorityInput4;
+float4 PriorityInput5;
+
+RaytracingAccelerationStructure TLAS;
+RWTexture3D<float4> RWProbeTexture;
+
+/////////////////////////////////////////////////// RAYGEN SHADER
+RAY_TRACING_ENTRY_RAYGEN(FRayTracingLightGridShaderRGS)
+{
+	//Struct Setup
+	FMaterialClosestHitPayload Payload;
+	FMinimalPayload MinimalPayload;
+
+	uint flatIndex = DispatchRaysIndex().x;
+	uint3 TexPosition;
+	uint3 VolumeSize = uint3(64,64,64);
+
+    TexPosition.x = flatIndex % VolumeSize.x;
+    TexPosition.y = (flatIndex / VolumeSize.x) % VolumeSize.y;
+    TexPosition.z = flatIndex / (VolumeSize.x * VolumeSize.y);
+	
+	float3 Final = float3(0.0f, 0.0f, 0.0f);
+	float3 Accumulator = float3(0.0f, 0.0f, 0.0f);
+	float3 SunLightColor = View.DirectionalLightColor.rgb;
+	float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
+
+	//Translate Input data
+	//int GISamples = IntInput1;
+	int GISamples = 20; //temp
+	float3 CameraPositionWS = ColorInput9;
+	bool Enabled = true;
+	if (IntInput4 < 1)
+	{
+		Enabled = false;
+	}
+	
+	// INITIAL RAY SETUP
+	// RayTMax accepts values in centimeters
+	FRayDesc Ray = CreatePrimaryRay(float2(0.0f,0.0f)); //The whole scene is always centered on the camera... doh
+	FRayCone RayCone = (FRayCone)0;
+	const uint RayFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;
+	const uint InstanceInclusionMask = RAY_TRACING_MASK_ALL;
+	const bool bEnableSkyLightContribution = false;
+	const bool bIgnoreTranslucentMaterials = false;
+	Ray.Direction = float3(0.0f, 0.0f, 0.0f);
+	Ray.TMin = MetersToCenti(0.5f);
+	Ray.TMax = MetersToCenti(100.0f);
+
+	float voxelSize = 100.0f;
+	float3 VolumeOriginWS = float3(-3200.0f,-3200.0f,-3200.0f); // world center = voxel (32,32,32)
+
+	float3 WorldPos = VolumeOriginWS + (float3(TexPosition) + 0.5f) * voxelSize;
+
+	if (Enabled)
+	{
+		// transform WS into relative scene-local space
+		Ray.Origin = WorldPos - CameraPositionWS;
+		Ray.Direction = SunDirection;
+
+		MinimalPayload = TraceVisibilityRay(
+			TLAS,
+			RayFlags,
+			RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+			InstanceInclusionMask,
+			Ray);
+		
+		if (MinimalPayload.IsHit())
+		{
+			for (int i = 0; i < GISamples; i++)
+			{
+				float3 RandOffset = float3(12.9898f, 78.233f, 45.164f) * (i + 1);
+				float2 RandInput = GeometryRand(RandOffset, 733.5f);
+				Ray.Direction = UniformSampleSphereInVolume(RandInput);
+				
+				float3 BounceColor = float3(1,1,1);
+				float3 SampleContribution = float3(0,0,0);
+				bool HitSomething = true;
+
+				for (int Bounce = 0; Bounce < 3; Bounce++)
+				{
+					Payload = TraceMaterialRay(
+						TLAS,
+						RayFlags,
+						InstanceInclusionMask,
+						Ray,
+						RayCone,
+						bEnableSkyLightContribution,
+						bIgnoreTranslucentMaterials);
+
+					if (Payload.IsHit())
+					{
+						if (CanBeLit(Payload.WorldNormal, SunDirection))
+						{
+							FRayDesc ShadowRay;
+							ShadowRay.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Payload.WorldNormal * 0.001f;
+							ShadowRay.Direction = SunDirection;
+							
+							MinimalPayload = TraceVisibilityRay(
+								TLAS,
+								RayFlags,
+								RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+								InstanceInclusionMask,
+								ShadowRay);
+								
+							if (!MinimalPayload.IsHit())
+							{
+								// Sun Found, early exit
+								SampleContribution += BounceColor * Lambert(SunDirection, Payload.WorldNormal) * Payload.BaseColor;
+								HitSomething = false;
+								break;
+							}
+						}
+
+						// Prepare next bounce
+						BounceColor *= Lambert(Ray.Direction, Payload.WorldNormal) * Payload.BaseColor;
+						Ray.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Payload.WorldNormal * 0.001f;
+
+						// Resample a new direction
+						float3 NewRandOffset = float3(89.123f, 23.456f, 19.876f) * (Bounce + 1) * (i + 1);
+						float2 NewRandInput = GeometryRand(NewRandOffset, 921.1337f);
+						Ray.Direction = UniformSampleSphereInVolume(NewRandInput);
+					}
+					else
+					{
+						// Found sky
+						SampleContribution += BounceColor * GetSkyRadiance(Ray.Direction, 10.0f) * 0.175;
+						HitSomething = false;
+						break;
+					}
+				}
+
+				// No light found anyways
+				Accumulator += SampleContribution;
+			}
+
+			Final = Accumulator / GISamples;
+		
+		}
+		else
+		{
+			Final = SunLightColor * 0.1;
+		}
+		//write
+		RWProbeTexture[TexPosition] = float4(Final, 1.0f);
+	}
+	else
+	{
+		RWProbeTexture[TexPosition] = float4(0.5,0.5,0.5,1.0);
+	}
+}

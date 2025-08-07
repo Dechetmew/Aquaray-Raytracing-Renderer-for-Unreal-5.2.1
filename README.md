@@ -1,5 +1,5 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
-## V0.4.15
+## V0.4.20
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project "BryceIB"
 ![alt text](yay/img1.png)
 
@@ -11,8 +11,9 @@ It should work in Unreal 5.2.1, but im not sure about other versions. But you ca
 
 Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs around 120fps on Geforce RTX 3050 
 
-## __Current Progress__
-Currently im Trying to solve Indirect Lighting in any way Possible. Its a mess right now and I hope I figure this out within my lifetime
+## Update V0.4.20
+- Groundwork for a Light Grid based Global Illumination system is implemented, just absolutely not working. I give up.<br/>
+- Some Code Improvements
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already

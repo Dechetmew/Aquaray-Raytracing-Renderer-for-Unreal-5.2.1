@@ -193,15 +193,15 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 
 			RayHitDistanceOutput[DispatchThreadId] = Payload.HitT;
 			
-			// DIFFUSE KERNEL SAMPLER
+			// INDIRECT LIGHTING (per pixel method)
 			//It Traces Rays in a 5-way Kernel Pattern on Every Valid Surface Pixel
-			//for Detail lighting like Indirect Irradiance (TODO) and Ambient Occlusion
+			//for Indirect Irradiance and Ambient Occlusion
 			
 			//Jitter Up Vectors a little
 			float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
 			for (int i = 0; i < 5; ++i)
 			{
-				DiffuseKernel[i].Offset = normalize(lerp(DiffuseKernel[i].Offset, randVec, 0.1f));
+				DiffuseKernel[i].Offset = normalize(lerp(DiffuseKernel[i].Offset, randVec, 0.5f));
 			}
 			
 			float RandomAngle = GeometryRand(SurfaceHit.HitPos, Payload.HitT) * 2.0f * 3.14159f;
@@ -227,10 +227,17 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 			//Is calling this a Kernel Correct? Maybe not?, but whatever
 			
-			Ray.TMax = MetersToCenti(4.0f);
+			if (!LGenabled)
+			{
+				Ray.TMax = MetersToCenti(100.0f);
+			}
+			else
+			{
+				Ray.TMax = MetersToCenti(5.0f);
+			}
 			Ray.Origin = SurfaceHit.HitPos;
 			
-			//Detail Sampling TraceRay Loop
+			//Start Loop
 			for (int i = 0; i < 5; i++)
 			{			
 				Ray.Direction = normalize(Payload.WorldNormal + DiffuseKernel[i].Offset);
@@ -249,31 +256,59 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 				if(DiffusePayload.IsHit())
 				{
 					//We hit Another Surface
-					
 					DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-CentiToMeter(DiffusePayload.HitT) + 1.0f);
 					DiffuseKernel[i].Color  = DiffusePayload.BaseColor * (-CentiToMeter(DiffusePayload.HitT) + 4.0f);
 					
 					DiffuseKernel[i].Position = Ray.Origin + Ray.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
 					DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
 					
-					DiffuseKernel[i].Distance = clamp(CentiToMeter(DiffusePayload.HitT), 0.0f , 1.0f);
+					DiffuseKernel[i].Distance = CentiToMeter(DiffusePayload.HitT);
 				}
 				else
 				{
-					//We hit nothing
+					//We hit sky
 					DiffuseKernel[i].Radiance  = float3(0.0f,0.0f,0.0f);
-					DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+					DiffuseKernel[i].Color  = float3(0.9f,0.9f,1.0f); // TODO parametrize
 					
 					DiffuseKernel[i].Position = float3(0.0f,0.0f,0.0f);
 					DiffuseKernel[i].Normal = float3(0.0f,0.0f,0.0f);
-					DiffuseKernel[i].Distance = 1.0f;
+					DiffuseKernel[i].Distance = 10000.0f;
 				}
 
 			}
-			//End Detail loop
-			if (!LGenabled)
+			//End loop
+			if (LGenabled)
 			{
-				Raysample.IndirectLightColor = float3(0.4f, 0.4f, 0.4f);
+				accumulatedFloat = 0.0f;
+				for (int i = 0; i < 5; ++i)
+				{
+					accumulatedFloat += DiffuseKernel[i].Distance;
+				}
+				Raysample.RTAO = accumulatedFloat / 5.0f;
+			}
+			else
+			{
+				accumulatedFloat = 0.0f;
+				for (int i = 0; i < 5; ++i)
+				{
+					accumulatedFloat += DiffuseKernel[i].Distance;
+				}
+				float detailAO = accumulatedFloat / 5.0f;
+			
+				float maxRange = 100.0f;
+				float openness = 0.0f;
+
+				[unroll]
+				for (int i = 0; i < 5; i++)
+				{
+					openness += saturate(DiffuseKernel[i].Distance / maxRange);
+				}
+				openness /= 5.0f;
+				
+				Raysample.RTAO = 1.0f - openness;
+				Raysample.RTAO = -Raysample.RTAO + 1.0f;
+				Raysample.RTAO = (Raysample.RTAO * 0.5f) + 0.25;
+				Raysample.RTAO = Raysample.RTAO * clamp(detailAO, 0.0, 1.0);
 			}
 			
 			accumulatedColor = float3(0.0f, 0.0f, 0.0f);
@@ -281,8 +316,9 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				accumulatedColor += DiffuseKernel[i].Color;
 			}
-			Raysample.IndirectRadianceColor = accumulatedColor / 5.0f;
-			Raysample.IndirectRadianceColor = Raysample.IndirectRadianceColor * 0.02f; //TODO: Parametrize
+			Raysample.IndirectLightColor = accumulatedColor / 5.0f;
+			//Raysample.IndirectLightColor = Raysample.IndirectLightColor  * 0.4f; //TODO: Parametrize
+			Raysample.IndirectLightColor = float3(0.4f, 0.4f, 0.4f);
 			
 			accumulatedColor = float3(0.0f, 0.0f, 0.0f);
 			for (int i = 0; i < 5; ++i)
@@ -291,19 +327,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			}
 			Raysample.IndirectEmissive = accumulatedColor / 5.0f;
 			Raysample.IndirectEmissive = Raysample.IndirectEmissive * 0.15f; //TODO: Parametrize
-			
-			accumulatedFloat = 0.0f;
-			for (int i = 0; i < 5; ++i)
-			{
-				accumulatedFloat += DiffuseKernel[i].Distance;
-			}
-			Raysample.RTAO = accumulatedFloat / 5.0f;
-
 			//END
 			
 			if (LGenabled)
 			{
-				// INDIRECT LIGHTING
+				// INDIRECT LIGHTING (via Light Grid)
 				//My little graveyard of my Global Illumination attempts
 
 				float3 VoxelGridOriginWS = float3(-3200.0f,-3200.0f,-3200.0f); // voxel 16,16,16 = world (0,0,0)

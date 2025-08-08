@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER STRUCTS - v0.4.20
+// AQUARAY RAYTRACER STRUCTS - v0.4.21
 
 struct Raysample
 {

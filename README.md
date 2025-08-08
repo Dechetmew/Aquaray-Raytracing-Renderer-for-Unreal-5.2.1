@@ -1,6 +1,6 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
 ## V0.4.20
-A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project "BryceIB"
+A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project
 ![alt text](yay/img1.png)
 
 I was always fascinated by Raytracing for a long time, wanting to make a Game where the Environment is built on 2000s Digital Art Styles, Fully Raytraced. After finding out that Lumen and NVRTX ~~suck~~ are not satisfactory for my project, I decided to make my own Raytracer that would suit the what i need.

@@ -17,3 +17,12 @@ v0.3
 
 v0.4 <-- Github Release
 -Emissive & Bloom
+
+v0.5.0
+-Added Support for Transparent Unlit Materials, Added Groundwork for Transparent Shading Paths
+-Shadows when enabled have Opacity from Transparent Surfaces
+-Shader File Reorganization
+-Added Fake Lighting for Shadowed Areas
+-Code Cleanup
+
+v0.5.1

@@ -15,6 +15,7 @@ Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs ar
 - Added Support for Transparent Unlit Materials, Added Groundwork for Transparent Shading Paths<br/>
 - Shadows when enabled have Opacity from Transparent Surfaces<br/>
 - Shader File Reorganization<br/>
+- Added Fake Lighting for Shadowed Areas<br/>
 - Code Cleanup<br/>
 
 ## __How to Install__

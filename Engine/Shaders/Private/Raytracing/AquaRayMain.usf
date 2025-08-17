@@ -183,20 +183,22 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		switch(DebugMode)
 		{
 			case 1: ColorOutput[DispatchThreadId] = float4(Stats.Steps, 1.0f); break;
-			case 2: ColorOutput[DispatchThreadId] = float4(Raysample.Color.rgb, 1.0f); break;
-			case 3: ColorOutput[DispatchThreadId] = float4(Raysample.Metallic.xxx, 1.0f); break;
-			case 4: ColorOutput[DispatchThreadId] = float4(Raysample.Specular.xxx, 1.0f); break;
-			case 5: ColorOutput[DispatchThreadId] = float4(Raysample.Emissive.rgb, 1.0f); break;
-			case 6: ColorOutput[DispatchThreadId] = float4(Raysample.Roughness.xxx, 1.0f); break;
-			case 7: ColorOutput[DispatchThreadId] = float4(Raysample.LightColor.rgb, 1.0f); break;
-			case 8: ColorOutput[DispatchThreadId] = float4(Raysample.LightingContribution.xxx, 1.0f); break;
-			case 9: ColorOutput[DispatchThreadId] = float4(Raysample.RTAO.xxx, 1.0f); break;
-			case 10: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectLightColor.rgb, 1.0f); break;
-			case 11: ColorOutput[DispatchThreadId] = float4(Raysample.Opacity.xxx, 1.0f); break;
-			case 12: ColorOutput[DispatchThreadId] = float4(Translucent, 1.0f); break;
-			case 13: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break; //Unused
-			case 14: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectEmissive.rgb, 1.0f); break;
-			case 15: ColorOutput[DispatchThreadId] = float4(Raysample.DirectionalLightMask.xxx, 1.0f); break;
+			case 2: ColorOutput[DispatchThreadId] = float4(Stats.RaysPerPixel, 1.0f); break;
+			case 3: ColorOutput[DispatchThreadId] = float4(Raysample.Color.rgb, 1.0f); break;
+			case 4: ColorOutput[DispatchThreadId] = float4(Raysample.Metallic.xxx, 1.0f); break;
+			case 5: ColorOutput[DispatchThreadId] = float4(Raysample.Specular.xxx, 1.0f); break;
+			case 6: ColorOutput[DispatchThreadId] = float4(Raysample.Emissive.rgb, 1.0f); break;
+			case 7: ColorOutput[DispatchThreadId] = float4(Raysample.Roughness.xxx, 1.0f); break;
+			case 8: ColorOutput[DispatchThreadId] = float4(Raysample.Opacity.xxx, 1.0f); break;
+			case 9: ColorOutput[DispatchThreadId] = float4(Raysample.LightColor.rgb, 1.0f); break;
+			case 10: ColorOutput[DispatchThreadId] = float4(Raysample.LightingContribution.xxx, 1.0f); break;
+			case 11: ColorOutput[DispatchThreadId] = float4(Raysample.RTAO.xxx, 1.0f); break;
+			case 12: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectLightColor.rgb, 1.0f); break;
+			case 13: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectEmissive.rgb, 1.0f); break;
+			case 14: ColorOutput[DispatchThreadId] = float4(Raysample.DirectionalLightMask.xxx, 1.0f); break;
+			case 15: ColorOutput[DispatchThreadId] = float4(Direct, 1.0f); break;
+			case 16: ColorOutput[DispatchThreadId] = float4(Indirect, 1.0f); break;	
+			case 17: ColorOutput[DispatchThreadId] = float4(Translucent, 1.0f); break;
 			default: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break;
 		}
 	}

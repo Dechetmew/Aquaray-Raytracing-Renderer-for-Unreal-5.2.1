@@ -1,5 +1,5 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
-## V0.4.21
+## V0.5.0
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project
 ![alt text](yay/img1.png)
 
@@ -11,8 +11,11 @@ It should work in Unreal 5.2.1, but im not sure about other versions. But you ca
 
 Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs around 120fps on Geforce RTX 3050 
 
-## Update V0.4.21
-- Added Support for Opaque Unlit Materials, Added Groundwork for Multiple Shading Model Code Paths<br/>
+## Update V0.5.0
+- Added Support for Transparent Unlit Materials, Added Groundwork for Transparent Shading Paths<br/>
+- Shadows when enabled have Opacity from Transparent Surfaces<br/>
+- Shader File Reorganization<br/>
+- Code Cleanup<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already

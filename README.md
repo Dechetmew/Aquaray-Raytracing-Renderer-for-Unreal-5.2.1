@@ -21,7 +21,7 @@ Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs ar
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already
 
-Should be 108GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile
+Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile
 
 https://www.unrealengine.com/en-US/ue-on-github
 

@@ -9,7 +9,7 @@ v0.2
 -Specular
 -Shader File Cleanups
 -Lighting System Improvements
--Initial Parametrization Setup - Set Shader Settings via Blueprint~~
+-Initial Parametrization Setup - Set Shader Settings via Blueprint
 
 v0.3
 -RTAO
@@ -26,3 +26,4 @@ v0.5.0
 -Code Cleanup
 
 v0.5.1
+-Improved Debug Modes

@@ -1,0 +1,35 @@
+//Shading Model: Unlit Transparent
+//Here Emissive Works Differently as its also the main color
+if (Payload.Opacity > 0.99f || Raysample.Opacity > 0.99f)
+{
+	//Opaque
+	Raysample.Color = lerp(clamp(Payload.Radiance, 0.0f, 1.0f), Raysample.Color, Raysample.Opacity);
+	Raysample.Emissive = Payload.Radiance - Raysample.Color;
+	Raysample.Opacity = Raysample.Opacity + Payload.Opacity;
+	Raysample.LightColor = float3(1,1,1);
+	Raysample.LightingContribution = 1;
+	Raysample.RTAO = 1;
+	Raysample.IndirectLightColor = float3(1,1,1);
+	break;
+}
+else if (Payload.Opacity < 0.01f)
+{
+	//Fully Invisible
+	//No Action, Loop Again
+	Ray.Direction = SurfaceHit.IncidentVector;
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
+}
+else
+{
+	//Transparent
+	//Loop Again
+	Raysample.TransparencyColor = lerp(Raysample.TransparencyColor, Raysample.TransparencyColor * clamp(Payload.Radiance, 0, 1), Payload.Opacity);
+	Raysample.TransparencyOpacity = Raysample.TransparencyOpacity + Payload.Opacity;
+	Raysample.Opacity = Raysample.Opacity + Payload.Opacity;
+	Raysample.TransparencyEmissive = Raysample.TransparencyEmissive + ((Payload.Radiance - Raysample.TransparencyColor) * Payload.Opacity);
+	//Promise not to tell anybody about the bug that low opacity surfaces are tinted white ok?
+	
+	//Prep next Main Loop
+	Ray.Direction = SurfaceHit.IncidentVector;
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
+}

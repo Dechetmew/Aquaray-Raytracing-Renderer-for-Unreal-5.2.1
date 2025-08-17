@@ -1,0 +1,99 @@
+// SHADOW CHECK
+if (!CanBeLit(Payload.WorldNormal, SunDirection))
+{
+    // The Surface Must be in shadow, so we give up early
+    break;
+}
+
+VisbilityRay.Origin = SurfaceHit.HitPos;
+VisbilityRay.TMax = MetersToCenti(100.0f);
+VisbilityRay.Direction = SunDirection;
+
+if (EnableShadowOpacity == 1)
+{
+    float3 TransmissionColor = float3(1.0f, 1.0f, 1.0f); // Start with full light
+    float Transmission = 1.0f;
+    const int MaxShadowSteps = 4;
+
+    for (int i = 0; i < MaxShadowSteps; ++i)
+    {
+        ShadowPayload = TraceMaterialRay(
+            TLAS,
+            RayFlags,
+            InstanceInclusionMask,
+            VisbilityRay,
+            RayCone,
+            bEnableSkyLightContribution,
+            bIgnoreTranslucentMaterials);
+
+        Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+        if (!ShadowPayload.IsHit())
+        {
+            // No more hits, sun is visible
+            break;
+        }
+
+        if (ShadowPayload.ShadingModelID == 0 && ShadowPayload.BlendingMode == 2)
+        {
+            // Unlit Transparent
+            float opacity = clamp(ShadowPayload.Opacity, 0.0f, 1.0f);
+            float3 baseColor = clamp(ShadowPayload.BaseColor, 0.0f, 1.0f);
+
+            TransmissionColor *= lerp(float3(1.0f, 1.0f, 1.0f), baseColor, opacity);
+            Transmission *= (1.0f - opacity);
+
+            // Advance the ray
+            VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
+
+            // If fully blocked, stop
+            if (Transmission <= 0.01f)
+            {
+                Transmission = 0.0f;
+                TransmissionColor = float3(0.0f, 0.0f, 0.0f);
+                break;
+            }
+        }
+        else
+        {
+            // Opaque or other: fully block
+            Transmission = 0.0f;
+            TransmissionColor = float3(0.0f, 0.0f, 0.0f);
+            break;
+        }
+    }
+
+    Transmission = clamp(Transmission, 0.0f, 1.0f);
+    TransmissionColor = clamp(TransmissionColor, 0.0f, 1.0f);
+
+	//I tried making colored shadows but Its clear I will have to implement that as part of Glass Caustics Later
+    Raysample.LightColor = SunLightColor;
+    Raysample.LightingContribution = Lambert(SunDirection, Payload.WorldNormal) * Transmission;
+	break;
+}
+else
+{
+    ShadowMinimalPayload = TraceVisibilityRay(
+        TLAS,
+        RayFlags,
+        RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+        InstanceInclusionMask,
+        VisbilityRay);
+
+    Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+    if (ShadowMinimalPayload.IsHit())
+    {
+        // The Surface is in shadow
+        Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
+        Raysample.LightingContribution = 0.0f;
+		break;
+    }
+    else
+    {
+        // The Sun is Shining :)
+        Raysample.LightColor = SunLightColor;
+        Raysample.LightingContribution = Lambert(SunDirection, Payload.WorldNormal);
+		break;
+    }
+}

@@ -1,0 +1,124 @@
+//Shading Model: Default Lit Opaque
+Raysample.Color = lerp(Payload.BaseColor, Raysample.Color, Raysample.Opacity); //weight by opacity of previous surface
+Raysample.Metallic = Payload.Metallic;
+Raysample.Specular = Raysample.Specular + PerformSpecular(Payload.WorldNormal, SunDirection, Ray.Direction, Payload.Specular, Payload.Metallic, SunLightColor); //in the future, this will have to run for every light source in a loop
+Raysample.Specular = Raysample.Specular * 0.5f;
+Raysample.Emissive = Payload.Radiance;
+Raysample.DirectionalLightMask = Lambert(SunDirection, Payload.WorldNormal);
+Raysample.Opacity = 1.0f;
+
+RayHitDistanceOutput[DispatchThreadId] = Payload.HitT;
+
+// DETAIL LIGHTING START
+//It Traces Rays in a 5-way Kernel Pattern on Every Valid Surface Pixel
+//for Detail lighting like Indirect Irradiance (TODO) and Ambient Occlusion
+
+//Jitter Up Vectors a little
+float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
+for (int i = 0; i < 5; ++i)
+{
+	DiffuseKernel[i].Offset = normalize(lerp(DiffuseKernel[i].Offset, randVec, 0.1f));
+}
+
+float RandomAngle = GeometryRand(SurfaceHit.HitPos, Payload.HitT) * 2.0f * 3.14159f;
+float cosA = cos(RandomAngle);
+float sinA = sin(RandomAngle);
+
+// Spin in local tangent space (XY plane)
+float3x3 spinMatrix = float3x3(
+	float3(cosA, -sinA, 0.0f),
+	float3(sinA,  cosA, 0.0f),
+	float3(0.0f,   0.0f, 1.0f)
+);
+
+// Build the tangent basis from surface normal
+float3x3 tangentBasis = BuildTangentBasis(Payload.WorldNormal);
+
+// Rotate and project each local vector onto the world-space surface
+for (int i = 0; i < 5; ++i)
+{
+	float3 spun = mul(DiffuseKernel[i].Offset, spinMatrix);  // Spin in tangent space
+	DiffuseKernel[i].Offset = mul(spun, tangentBasis);       // Project to world space
+}
+
+//Is calling this a Kernel Correct? Maybe not?, but whatever
+
+Ray.TMax = MetersToCenti(4.0f);
+Ray.Origin = SurfaceHit.HitPos;
+
+//Detail Sampling TraceRay Loop
+for (int i = 0; i < 5; i++)
+{			
+	Ray.Direction = normalize(Payload.WorldNormal + DiffuseKernel[i].Offset);
+
+	DiffusePayload = TraceMaterialRay(
+		TLAS,
+		RayFlags,
+		InstanceInclusionMask,
+		Ray,
+		RayCone,
+		bEnableSkyLightContribution,
+		bIgnoreTranslucentMaterials);
+	
+	Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
+	
+	if(DiffusePayload.IsHit())
+	{
+		//We hit Another Surface
+		
+		DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-CentiToMeter(DiffusePayload.HitT) + 1.0f);
+		DiffuseKernel[i].Color  = DiffusePayload.BaseColor * (-CentiToMeter(DiffusePayload.HitT) + 4.0f);
+		
+		DiffuseKernel[i].Position = Ray.Origin + Ray.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
+		DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
+		
+		DiffuseKernel[i].Distance = clamp(CentiToMeter(DiffusePayload.HitT), 0.0f , 1.0f);
+	}
+	else
+	{
+		//We hit nothing
+		DiffuseKernel[i].Radiance  = float3(0.0f,0.0f,0.0f);
+		DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+		
+		DiffuseKernel[i].Position = float3(0.0f,0.0f,0.0f);
+		DiffuseKernel[i].Normal = float3(0.0f,0.0f,0.0f);
+		DiffuseKernel[i].Distance = 1.0f;
+	}
+
+}
+//End Detail loop
+
+float3 accumulatedColor = float3(0.0f, 0.0f, 0.0f);
+float accumulatedFloat = 0.0f; //used for averaging
+
+for (int i = 0; i < 5; ++i)
+{
+	accumulatedColor += DiffuseKernel[i].Color;
+}
+Raysample.IndirectRadianceColor = accumulatedColor / 5.0f;
+Raysample.IndirectRadianceColor = Raysample.IndirectRadianceColor * 0.02f; //TODO: Parametrize
+
+accumulatedColor = float3(0.0f, 0.0f, 0.0f);
+for (int i = 0; i < 5; ++i)
+{
+	accumulatedColor += DiffuseKernel[i].Radiance;
+}
+Raysample.IndirectEmissive = accumulatedColor / 5.0f;
+Raysample.IndirectEmissive = Raysample.IndirectEmissive * 0.15f; //TODO: Parametrize
+
+for (int i = 0; i < 5; ++i)
+{
+	accumulatedFloat += DiffuseKernel[i].Distance;
+}
+Raysample.RTAO = accumulatedFloat / 5.0f;
+
+// DETAIL LIGHTING END
+
+// This Is Where I'd Put My Global Illumination.... If I had one!
+float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;
+FakeIndirectLighting = FakeIndirectLighting * 0.5f + 0.5f;
+Raysample.IndirectLightColor = float3(0.317f, 0.376f, 0.443f) * FakeIndirectLighting; //TODO: Parametrize
+// RESERVED FOR GI
+
+//SHADOW CHECK
+#include "AQ_ShadowCheck.ush"

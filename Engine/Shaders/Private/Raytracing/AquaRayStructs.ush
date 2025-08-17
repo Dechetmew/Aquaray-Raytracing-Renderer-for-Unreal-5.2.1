@@ -1,29 +1,34 @@
-// AQUARAY RAYTRACER STRUCTS - v0.4.21
+// AQUARAY RAYTRACER STRUCTS - v0.5.0
 
 struct Raysample
 {
-	float3 Color;                         //BaseColor of the last hit matte Surface or sky
+	float3 Color;                         //BaseColor of the last hit matte Surface or sky. Alpha is for Opacity Blending
 	float  Metallic;                      //Used for Specular Calculation
 	float  Specular;                      //Amount of Specular to apply
-	float3  Emissive;                     //Emissive for Bloom
+	float3 Emissive;                      //Emissive for Bloom
 	float  Roughness;                     //Will be used later
+	float  Opacity;						  //Opacity of Pixel relative to sky
+	
+	float  TransparencyOpacity;           //Opacity of Transparency
+	float3 TransparencyColor;             //Color of Transparency
+	float  TransparencyMetallic;          //Used for Specular Calculation
+	float  TransparencySpecular;		  //Amount of Specular to apply
+	float3 TransparencyEmissive;	      //Emissive for Bloom
+	float  TransparencyRoughness;		  //Will be used later
 	
 	float3 LightColor;                    //Color of the light that is directly shining on the Surface
 	float  LightingContribution;          //How much power the Direct Lights have after absorption
 	
 	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
-	float  IndirectLightingContribution;  //Deprecated
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
-	
 	float3 IndirectRadianceColor;         //Unused Currently
-	float3 IndirectRadianceContribution;  //Deprecated
-	
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
 	
-	float DirectionalLightMask;           //a 0 to 1 mask for smoothly mixing indirect and direct light
+	float  DirectionalLightMask;          //a 0 to 1 mask for smoothly mixing indirect and direct light
 
 	//More stuff will be added later
 	//Currently, Indirect Radiance will be disabled as Implementation is wrong. I cant know how much color I should add without knowing how much surrounding surfaces are lit
+	//In the future, we will probably need a bool if to apply Reflections or Translucency first. Not realistic, but good enough
 };
 
 struct DiffuseKernel
@@ -47,7 +52,8 @@ struct Stats
 struct SurfaceHit
 {
 	float3 HitPos;
-	float Distance;
+	float3 HitPosTranslucency; //Pushes the Hit Pos Through the mesh so the any next rays can continue without Self Intersection
+	float  Distance;
 	float3 IncidentVector;
 	float3 ReflectionVector;
 	float3 RefractionVector;

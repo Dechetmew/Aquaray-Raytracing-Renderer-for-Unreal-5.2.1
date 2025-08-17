@@ -1,5 +1,5 @@
 // AQUARAY RAYTRACER GLOBAL ILLUMINATION - v0.4.20
-// 3D Global Illumination Grid
+//Currently Fully Unused, I will continue development here after Denoising gets Implemented
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"

@@ -1,0 +1,19 @@
+v0.1
+-Initial RT Attempt
+-Base Color sampling
+-Single Bounce Reflection Test
+
+v0.2
+-Lambert Direct Lighting + Hard shadows
+-Simplified Indirect Lighting
+-Specular
+-Shader File Cleanups
+-Lighting System Improvements
+-Initial Parametrization Setup - Set Shader Settings via Blueprint~~
+
+v0.3
+-RTAO
+-Randomized Sampling
+
+v0.4 <-- Github Release
+-Emissive & Bloom

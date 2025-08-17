@@ -18,7 +18,7 @@ Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs ar
 - Added Fake Lighting for Shadowed Areas<br/>
 - Code Cleanup<br/>
 
-# V0.5.1
+### V0.5.1
 - Improved Debug Modes<br/>
 
 ## __How to Install__

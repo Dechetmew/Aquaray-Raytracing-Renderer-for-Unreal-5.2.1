@@ -1,0 +1,2 @@
+*.usf linguist-language=HLSL
+*.ush linguist-language=HLSL

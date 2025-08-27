@@ -6,7 +6,6 @@
 		FRDGTextureRef OutputColor = nullptr;
 		FRDGTextureRef HitDistanceTexture = nullptr;
 		FRDGTextureRef GIProbeDataTexture = nullptr;
-		FRDGTextureRef DataTexture = nullptr;
 
 		// Pass 1: Global Illumination
 		RenderRayTracingGIgrid(
@@ -23,21 +22,12 @@
 			View,
 			&OutputColor,
 			&HitDistanceTexture,
-			&DataTexture,
 			1, 1, 1,
 			ERayTracingPrimaryRaysFlag::PrimaryView,
 			GIProbeDataTexture
 		);
 
-		// Pass 3: Denoise
-		RenderDenoiseImage(
-			GraphBuilder,
-			View,
-			&OutputColor,
-			&HitDistanceTexture,
-			&DataTexture
-		);
-
 		AddDrawTexturePass(GraphBuilder, View, OutputColor, SceneColorTexture, View.ViewRect.Min, View.ViewRect.Min, View.ViewRect.Size());
 		return;
 	}
+

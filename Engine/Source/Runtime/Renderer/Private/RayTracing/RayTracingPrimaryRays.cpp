@@ -319,8 +319,10 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 		TexCreate_ShaderResource | TexCreate_UAV
 	);
 
-	// Always (re)create the RDG texture — they're transient!
-	*GIProbeDataTexture = GraphBuilder.CreateTexture(ProbeDesc, TEXT("GIProbeTexture3D"));
+	if (*GIProbeDataTexture == nullptr)
+	{
+		*GIProbeDataTexture = GraphBuilder.CreateTexture(ProbeDesc, TEXT("GIProbeTexture3D"));
+	}
 
 	FRayTracingLightGridShaderRGS::FParameters* PassParameters = GraphBuilder.AllocParameters < FRayTracingLightGridShaderRGS::FParameters>();
 
@@ -646,3 +648,4 @@ void FDeferredShadingSceneRenderer::RenderRayTracingPrimaryRaysView(
 }
 
 #endif // RHI_RAYTRACING
+

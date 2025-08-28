@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.5.1
+// AQUARAY RAYTRACER - v0.5.3
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"

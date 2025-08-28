@@ -1,4 +1,4 @@
-//AQUARAY RAYTRACER FUNCTIONS - v0.5.1
+//AQUARAY RAYTRACER FUNCTIONS - v0.5.3
 
 #include "../DeferredLightingCommon.ush"
 #include "RayTracingCommon.ush"
@@ -182,5 +182,6 @@ float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVec
 	float AveragedLightColor = (LightColor.r + LightColor.g + LightColor.b) / 3.0f;
 	float ClampedLightColor = clamp(AveragedLightColor, 0.0f, 1.5f);
 	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * ClampedLightColor;
+
 
 }

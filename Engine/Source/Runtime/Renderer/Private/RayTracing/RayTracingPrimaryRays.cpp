@@ -24,7 +24,7 @@
 class FRayTracingLightGridShaderRGS : public FGlobalShader
 {
 	DECLARE_GLOBAL_SHADER(FRayTracingLightGridShaderRGS)
-		SHADER_USE_ROOT_PARAMETER_STRUCT(FRayTracingLightGridShaderRGS, FGlobalShader)
+	SHADER_USE_ROOT_PARAMETER_STRUCT(FRayTracingLightGridShaderRGS, FGlobalShader)
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER(FLinearColor, ColorInput1)
 		SHADER_PARAMETER(FLinearColor, ColorInput2)
@@ -65,7 +65,7 @@ class FRayTracingLightGridShaderRGS : public FGlobalShader
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FReflectionUniformParameters, ReflectionStruct)
 		SHADER_PARAMETER_RDG_UNIFORM_BUFFER(FFogUniformParameters, FogUniformParameters)
 		SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture3D<float4>, RWProbeTexture)
-		END_SHADER_PARAMETER_STRUCT()
+	END_SHADER_PARAMETER_STRUCT()
 
 	//this must stay here unchanged
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
@@ -84,7 +84,7 @@ IMPLEMENT_GLOBAL_SHADER(FRayTracingLightGridShaderRGS, "/Engine/Private/RayTraci
 class FRayTracingPrimaryRaysRGS : public FGlobalShader
 {
 	DECLARE_GLOBAL_SHADER(FRayTracingPrimaryRaysRGS)
-		SHADER_USE_ROOT_PARAMETER_STRUCT(FRayTracingPrimaryRaysRGS, FGlobalShader)
+	SHADER_USE_ROOT_PARAMETER_STRUCT(FRayTracingPrimaryRaysRGS, FGlobalShader)
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
 		SHADER_PARAMETER(FLinearColor, ColorInput1)
 		SHADER_PARAMETER(FLinearColor, ColorInput2)
@@ -132,7 +132,7 @@ class FRayTracingPrimaryRaysRGS : public FGlobalShader
 
 		SHADER_PARAMETER_RDG_TEXTURE(Texture3D<float4>, ProbeTexture)
 
-		END_SHADER_PARAMETER_STRUCT()
+	END_SHADER_PARAMETER_STRUCT()
 
 	// this must stay here or it breaks
 	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
@@ -181,12 +181,12 @@ void FDeferredShadingSceneRenderer::RenderRayTracingGIgrid(
 	ERayTracingPrimaryRaysFlag Flags)
 {
 	auto IsColorValid = [](const FLinearColor& Color) -> bool
-	{
-		return !FMath::IsNaN(Color.R) &&
-			!FMath::IsNaN(Color.G) &&
-			!FMath::IsNaN(Color.B) &&
-			!FMath::IsNaN(Color.A);
-	};
+		{
+			return !FMath::IsNaN(Color.R) &&
+				!FMath::IsNaN(Color.G) &&
+				!FMath::IsNaN(Color.B) &&
+				!FMath::IsNaN(Color.A);
+		};
 
 	// Hardcoded Directory - Your MPC MUST be at that Location with said name
 	UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/AquaRay/GIgridMPC"));
@@ -430,12 +430,12 @@ void FDeferredShadingSceneRenderer::RenderRayTracingPrimaryRaysView(
 	FRDGTextureRef GIProbeDataTexture)
 {
 	auto IsColorValid = [](const FLinearColor& Color) -> bool
-	{
-		return !FMath::IsNaN(Color.R) &&
-			!FMath::IsNaN(Color.G) &&
-			!FMath::IsNaN(Color.B) &&
-			!FMath::IsNaN(Color.A);
-	};
+		{
+			return !FMath::IsNaN(Color.R) &&
+				!FMath::IsNaN(Color.G) &&
+				!FMath::IsNaN(Color.B) &&
+				!FMath::IsNaN(Color.A);
+		};
 
 	// Hardcoded Directory - Your MPC MUST be at that Location with said name
 	UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/AquaRay/AquarayMPC"));
@@ -648,4 +648,3 @@ void FDeferredShadingSceneRenderer::RenderRayTracingPrimaryRaysView(
 }
 
 #endif // RHI_RAYTRACING
-

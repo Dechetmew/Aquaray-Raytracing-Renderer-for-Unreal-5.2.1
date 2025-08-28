@@ -164,22 +164,10 @@ float MetersToCenti(float DistanceInMeters)
 	return DistanceInMeters * 100.0f;
 }
 
-//Converts Distance From Centimeters to Meters
-float CentiToMeter(float DistanceInCentimeters)
-{
-	return DistanceInCentimeters / 100.0f;
-}
-
 //Converts Distance From Meters to Centimeters
 float3 MetersToCenti3(float3 DistanceInMeters)
 {
 	return DistanceInMeters * 100.0f;
-}
-
-//Converts Distance From Centimeters to Meters
-float3 CentiToMeter3(float3 DistanceInCentimeters)
-{
-	return DistanceInCentimeters / 100.0f;
 }
 
 //Returns a Yep when a Surface can be Possibly lit by this Light Source, a Nope when it cant

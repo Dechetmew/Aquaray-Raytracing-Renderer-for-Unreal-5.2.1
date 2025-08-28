@@ -14,9 +14,9 @@ RayHitDistanceOutput[DispatchThreadId] = Payload.HitT;
 //for Detail lighting like Indirect Irradiance (TODO) and Ambient Occlusion
 
 //Jitter Up Vectors a little
-float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
 for (int i = 0; i < 5; ++i)
 {
+	float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
 	DiffuseKernel[i].Offset = normalize(lerp(DiffuseKernel[i].Offset, randVec, 0.1f));
 }
 
@@ -66,13 +66,13 @@ for (int i = 0; i < 5; i++)
 	{
 		//We hit Another Surface
 		
-		DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-CentiToMeter(DiffusePayload.HitT) + 1.0f);
-		DiffuseKernel[i].Color  = DiffusePayload.BaseColor * (-CentiToMeter(DiffusePayload.HitT) + 4.0f);
+		DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
+		DiffuseKernel[i].Color  = DiffusePayload.BaseColor * (-(DiffusePayload.HitT / 100) + 4.0f);
 		
 		DiffuseKernel[i].Position = Ray.Origin + Ray.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
 		DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
 		
-		DiffuseKernel[i].Distance = clamp(CentiToMeter(DiffusePayload.HitT), 0.0f , 1.0f);
+		DiffuseKernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
 	}
 	else
 	{
@@ -111,8 +111,6 @@ for (int i = 0; i < 5; ++i)
 	accumulatedFloat += DiffuseKernel[i].Distance;
 }
 Raysample.RTAO = accumulatedFloat / 5.0f;
-
-// DETAIL LIGHTING END
 
 // This Is Where I'd Put My Global Illumination.... If I had one!
 float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;

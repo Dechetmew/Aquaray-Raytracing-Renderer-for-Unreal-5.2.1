@@ -105,7 +105,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		}
 	}
 	// Raypath Loop END
-	
 
 	//Just in case clamp Raysample struct to sensical ranges
 	//variable = clamp(variable, min, max);

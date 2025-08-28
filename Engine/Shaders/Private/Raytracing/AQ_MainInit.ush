@@ -7,8 +7,7 @@ float2 UV = (float2(PixelCoord) + 0.5) * InvBufferSize;
 
 //Translate Inputs
 float SkyVisualBrightness = FloatInput1;
-int MAX_STEPS = IntInput1;
-MAX_STEPS = clamp(MAX_STEPS, 5, 20);
+int MAX_STEPS = IntInput1; MAX_STEPS = clamp(MAX_STEPS, 5, 20);
 int DetailLightingMode = IntInput2;
 int DebugMode = IntInput3;
 float3 CameraPositionWS = ColorInput9.xyz;
@@ -39,9 +38,9 @@ FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
 FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
 FMaterialClosestHitPayload Payload; //main payload
 FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
+DiffuseKernel DiffuseKernel[10];
 SurfaceHit SurfaceHit; //struct with data for directional calculations
 Stats Stats;
-DiffuseKernel DiffuseKernel[5];
 
 // STRUCT SETUPS
 Stats.RaysPerPixel = float3(0.0f, 0.0f, 0.0f);

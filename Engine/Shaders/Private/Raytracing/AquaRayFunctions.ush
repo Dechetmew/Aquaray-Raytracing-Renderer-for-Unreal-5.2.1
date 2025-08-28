@@ -1,4 +1,4 @@
-//AQUARAY RAYTRACER FUNCTIONS - v0.5.3
+//AQUARAY RAYTRACER FUNCTIONS
 
 #include "../DeferredLightingCommon.ush"
 #include "RayTracingCommon.ush"
@@ -185,3 +185,4 @@ float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVec
 
 
 }
+

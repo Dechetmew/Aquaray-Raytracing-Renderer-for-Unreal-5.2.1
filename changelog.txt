@@ -30,3 +30,8 @@ v0.5.1
 
 v0.5.2
 -Fixed A Memory Leak + Some Mistakes
+
+v0.5.4
+Added Alpha Clip Foliage Support
+Improved Unlit Transparency Blending
+Quick Patch: Foliage now responds to sun Direction

@@ -21,6 +21,7 @@ Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs ar
 ### V0.5.4
 - Added Alpha Clip Foliage Support<br/>
 - Improved Unlit Transparency Blending<br/>
+- Quick Patch: Foliage now responds to sun Direction<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already

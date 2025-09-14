@@ -1,0 +1,58 @@
+// SHADOW CHECK
+VisbilityRay.Origin    = SurfaceHit.HitPos;
+VisbilityRay.TMax      = MetersToCenti(100.0f);
+VisbilityRay.Direction = SunDirection;
+
+ShadowPayload = TraceMaterialRay(
+    TLAS,
+    RayFlags,
+    InstanceInclusionMask,
+    VisbilityRay,
+    RayCone,
+    bEnableSkyLightContribution,
+    bIgnoreTranslucentMaterials);
+
+Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+bool BlockedBySolid = false;
+
+// Step through possible foliage layers (up to 5 tries)
+[loop]
+for (int i = 0; i < 5; ++i)
+{
+	if (!ShadowPayload.IsHit())
+	{
+		// No Hit
+		break;
+	}
+
+	if (ShadowPayload.ShadingModelID != 6)
+	{
+		// Hit a solid non-foliage surface - cast full shadow
+		Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
+		Raysample.LightingContribution = 0.0f;
+		BlockedBySolid = true;
+		break;
+	}
+
+	// Advance the Ray
+	VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
+
+	ShadowPayload = TraceMaterialRay(
+		TLAS,
+		RayFlags,
+		InstanceInclusionMask,
+		VisbilityRay,
+		RayCone,
+		bEnableSkyLightContribution,
+		bIgnoreTranslucentMaterials);
+
+	Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+}
+
+if (!BlockedBySolid)
+{
+	// Sun is Shining
+	Raysample.LightColor = SunLightColor;
+	Raysample.LightingContribution = 1.0f;
+}

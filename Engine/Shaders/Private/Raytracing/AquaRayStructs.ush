@@ -20,8 +20,8 @@ struct Raysample
 	float  LightingContribution;          //How much power the Direct Lights have after absorption
 	
 	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
+	float3 DetailLight;                   //(Detail Lighting) Small Raytraced GI? Something Like that
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
-	float3 IndirectRadianceColor;         //Unused Currently
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
 	
 	float  DirectionalLightMask;          //a 0 to 1 mask for smoothly mixing indirect and direct light
@@ -150,6 +150,5 @@ static const float3 DirectionSet[85] =
         float3( 0.323, -0.910, -0.260),
         float3(-0.944, -0.230, -0.238),
         float3(-0.150,  0.010,  0.989)
-
 
 };

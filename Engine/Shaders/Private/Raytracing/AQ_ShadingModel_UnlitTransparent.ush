@@ -24,8 +24,8 @@ else
 	//Transparent
 	//Loop Again
 	Raysample.TransparencyColor = lerp(Raysample.TransparencyColor, Raysample.TransparencyColor * clamp(Payload.Radiance, 0, 1), Payload.Opacity);
-	Raysample.TransparencyOpacity = Raysample.TransparencyOpacity + Payload.Opacity;
-	Raysample.Opacity = Raysample.Opacity + Payload.Opacity;
+	Raysample.TransparencyOpacity = saturate(Raysample.TransparencyOpacity + Payload.Opacity * (Payload.Opacity - Raysample.TransparencyOpacity));
+	Raysample.Opacity = saturate(Raysample.Opacity + Payload.Opacity * (Payload.Opacity - Raysample.Opacity));
 	Raysample.TransparencyEmissive = Raysample.TransparencyEmissive + ((Payload.Radiance - Raysample.TransparencyColor) * Payload.Opacity);
 	//Promise not to tell anybody about the bug that low opacity surfaces are tinted white ok?
 	

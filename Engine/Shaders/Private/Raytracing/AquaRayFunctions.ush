@@ -183,6 +183,4 @@ float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVec
 	float ClampedLightColor = clamp(AveragedLightColor, 0.0f, 1.5f);
 	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * ClampedLightColor;
 
-
 }
-

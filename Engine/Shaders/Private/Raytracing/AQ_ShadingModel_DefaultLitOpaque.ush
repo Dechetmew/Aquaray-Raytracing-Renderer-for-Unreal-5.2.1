@@ -62,17 +62,40 @@ for (int i = 0; i < 5; i++)
 	
 	Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
 	
-	if(DiffusePayload.IsHit())
+	if(DiffusePayload.IsHit() && DiffusePayload.ShadingModelID != 6)
 	{
-		//We hit Another Surface
-		
+		//We hit A Surface
 		DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
-		DiffuseKernel[i].Color  = DiffusePayload.BaseColor * (-(DiffusePayload.HitT / 100) + 4.0f);
-		
 		DiffuseKernel[i].Position = Ray.Origin + Ray.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
 		DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
-		
 		DiffuseKernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
+		
+		DetailRay.Origin = DiffuseKernel[i].Position;
+		DetailRay.Direction = SunDirection;
+		DetailRay.TMax = MetersToCenti(50.0f);
+		
+		if (CanBeLit(DiffuseKernel[i].Normal ,SunDirection))
+		{
+			ShadowMinimalPayload = TraceVisibilityRay(
+				TLAS,
+				RayFlags,
+				RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+				InstanceInclusionMask,
+				DetailRay);
+				
+			if (ShadowMinimalPayload.IsHit())
+			{
+				DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+			}
+			else
+			{
+				DiffuseKernel[i].Color = DiffusePayload.BaseColor * Lambert(SunDirection, DiffuseKernel[i].Normal);
+			}
+		}
+		else
+		{
+			DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+		}
 	}
 	else
 	{
@@ -88,15 +111,17 @@ for (int i = 0; i < 5; i++)
 }
 //End Detail loop
 
+//used for averaging
 float3 accumulatedColor = float3(0.0f, 0.0f, 0.0f);
-float accumulatedFloat = 0.0f; //used for averaging
+float accumulatedFloat = 0.0f;
 
+accumulatedColor = float3(0.0f, 0.0f, 0.0f);
 for (int i = 0; i < 5; ++i)
 {
-	accumulatedColor += DiffuseKernel[i].Color;
+	//accumulatedColor += DiffuseKernel[i].Color * (DiffuseKernel[i].Distance * -1.0f + 1.0f);
+	accumulatedColor += DiffuseKernel[i].Color * 0.2f; //Last Value is Representing Reflectivity
 }
-Raysample.IndirectRadianceColor = accumulatedColor / 5.0f;
-Raysample.IndirectRadianceColor = Raysample.IndirectRadianceColor * 0.02f; //TODO: Parametrize
+Raysample.DetailLight = accumulatedColor / 5.0f;
 
 accumulatedColor = float3(0.0f, 0.0f, 0.0f);
 for (int i = 0; i < 5; ++i)

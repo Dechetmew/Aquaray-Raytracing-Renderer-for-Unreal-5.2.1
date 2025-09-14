@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.5.3
+// AQUARAY RAYTRACER - v0.5.1
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -93,6 +93,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{	
 				#include "AQ_ShadingModel_UnlitTransparent.ush"
 			}
+			else if (Payload.ShadingModelID == 6 && Payload.BlendingMode == 2)
+			{	
+				#include "AQ_ShadingModel_Foliage.ush"
+			}
 			else
 			{
 				#include "AQ_ShadingModel_Invalid.ush"
@@ -123,12 +127,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	Raysample.TransparencyRoughness = clamp(Raysample.TransparencyRoughness, 0.0f, 1.0f);
 	
 	Raysample.LightColor = clamp(Raysample.LightColor, 0.0f, 1.0f);
+	Raysample.DetailLight = clamp(Raysample.DetailLight,0.0f, 1.0f);
 	Raysample.LightingContribution = clamp(Raysample.LightingContribution, 0.0f, 10.0f);
 	Raysample.RTAO =  clamp(Raysample.RTAO, 0.0f, 1.0f); //should be parametrized
 		
 	Raysample.IndirectLightColor = clamp(Raysample.IndirectLightColor, 0.0f, 1.0f);
-		
-	Raysample.IndirectRadianceColor = clamp(Raysample.IndirectRadianceColor, 0.0f, 1.0f); //Currently unused
 		
 	Raysample.IndirectEmissive = clamp(Raysample.IndirectEmissive, 0.0f, 10.0f);
 	
@@ -148,9 +151,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	Direct = Direct * (Raysample.LightColor * Raysample.LightingContribution); //Apply Direct Lighting
 		
 	//INDIRECT
-	Indirect = Raysample.Color.rgb * Raysample.IndirectLightColor; //Apply Global Illumination
+	Indirect = Raysample.Color * Raysample.IndirectLightColor; //Apply Global Illumination
 	Indirect = Indirect * Raysample.RTAO; //Apply Ambient Occlusion
 	Indirect = Indirect + Raysample.IndirectEmissive * Raysample.Color.rgb; //Apply Detail Lighting Emissive
+	Indirect = Indirect + (Raysample.Color * Raysample.DetailLight);
 	
 	//TRANSLUCENCY
 	Translucent = Raysample.TransparencyColor;
@@ -158,7 +162,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	
 	//////////////////////////////////////
 		
-	//Combined Lighting
+	//Combine Lighting
 	Final = max(Indirect, Direct) + Raysample.Emissive; //Apply Direct Emissive
 	Final = lerp(Final, Translucent, Raysample.TransparencyOpacity);
 	

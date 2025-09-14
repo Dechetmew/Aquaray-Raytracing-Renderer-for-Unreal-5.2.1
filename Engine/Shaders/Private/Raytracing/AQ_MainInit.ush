@@ -1,4 +1,4 @@
-//AquaRay Main Shader Init
+ //AquaRay Main Shader Init
 
 uint2 DispatchThreadId = DispatchRaysIndex().xy + View.ViewRectMin.xy;
 uint2 PixelCoord = GetPixelCoord(DispatchThreadId, UpscaleFactor);
@@ -22,6 +22,7 @@ float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 // INITIAL RAY SETUP
 // RayTMax accepts values in centimeters
 FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space
+FRayDesc DetailRay = CreatePrimaryRay(UV); //For Detail Lighting
 FRayDesc VisbilityRay = CreatePrimaryRay(UV);
 FRayCone RayCone = (FRayCone)0;
 const uint RayFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES; //https://learn.microsoft.com/en-us/windows/win32/direct3d12/ray_flag
@@ -100,9 +101,8 @@ Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
 Raysample.LightingContribution = 1.0f;
 
 Raysample.IndirectLightColor = float3(1.0f, 1.0f, 1.0f);
+Raysample.DetailLight  = float3(0.0f, 0.0f, 0.0f);
 Raysample.RTAO = 1.0f;
-
-Raysample.IndirectRadianceColor = float3(1.0f, 1.0f, 1.0f);
 
 Raysample.IndirectEmissive = float3(0.0f, 0.0f, 0.0f);
 

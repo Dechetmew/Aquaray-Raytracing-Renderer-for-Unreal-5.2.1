@@ -54,5 +54,6 @@ if (!BlockedBySolid)
 {
 	// Sun is Shining
 	Raysample.LightColor = SunLightColor;
-	Raysample.LightingContribution = 1.0f;
+	//Raysample.LightingContribution = 1.0f;
+	Raysample.LightingContribution = Lambert(SunDirection, float3(0,0,1));
 }

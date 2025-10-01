@@ -1,8 +1,6 @@
 //Shading Model: Default Lit Opaque
 Raysample.Color = lerp(Payload.BaseColor, Raysample.Color, Raysample.Opacity); //weight by opacity of previous surface
 Raysample.Metallic = Payload.Metallic;
-Raysample.Specular = Raysample.Specular + PerformSpecular(Payload.WorldNormal, SunDirection, Ray.Direction, Payload.Specular, Payload.Metallic, SunLightColor); //in the future, this will have to run for every light source in a loop
-Raysample.Specular = Raysample.Specular * 0.5f;
 Raysample.Emissive = Payload.Radiance;
 Raysample.DirectionalLightMask = Lambert(SunDirection, Payload.WorldNormal);
 Raysample.Opacity = 1.0f;
@@ -43,19 +41,19 @@ for (int i = 0; i < 5; ++i)
 
 //Is calling this a Kernel Correct? Maybe not?, but whatever
 
-Ray.TMax = MetersToCenti(4.0f);
-Ray.Origin = SurfaceHit.HitPos;
+DetailRay.TMax = MetersToCenti(4.0f);
+DetailRay.Origin = SurfaceHit.HitPos;
 
 //Detail Sampling TraceRay Loop
 for (int i = 0; i < 5; i++)
 {			
-	Ray.Direction = normalize(Payload.WorldNormal + DiffuseKernel[i].Offset);
+	DetailRay.Direction = normalize(Payload.WorldNormal + DiffuseKernel[i].Offset);
 
 	DiffusePayload = TraceMaterialRay(
 		TLAS,
 		RayFlags,
 		InstanceInclusionMask,
-		Ray,
+		DetailRay,
 		RayCone,
 		bEnableSkyLightContribution,
 		bIgnoreTranslucentMaterials);
@@ -66,36 +64,36 @@ for (int i = 0; i < 5; i++)
 	{
 		//We hit A Surface
 		DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
-		DiffuseKernel[i].Position = Ray.Origin + Ray.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
+		DiffuseKernel[i].Position = DetailRay.Origin + DetailRay.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
 		DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
 		DiffuseKernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
 		
-		DetailRay.Origin = DiffuseKernel[i].Position;
-		DetailRay.Direction = SunDirection;
-		DetailRay.TMax = MetersToCenti(50.0f);
+		//DetailRay.Origin = DiffuseKernel[i].Position;
+		//DetailRay.Direction = SunDirection;
+		//DetailRay.TMax = MetersToCenti(50.0f);
 		
-		if (CanBeLit(DiffuseKernel[i].Normal ,SunDirection))
-		{
-			ShadowMinimalPayload = TraceVisibilityRay(
-				TLAS,
-				RayFlags,
-				RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
-				InstanceInclusionMask,
-				DetailRay);
-				
-			if (ShadowMinimalPayload.IsHit())
-			{
-				DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
-			}
-			else
-			{
-				DiffuseKernel[i].Color = DiffusePayload.BaseColor * Lambert(SunDirection, DiffuseKernel[i].Normal);
-			}
-		}
-		else
-		{
-			DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
-		}
+		//if (CanBeLit(DiffuseKernel[i].Normal ,SunDirection))
+		//{
+		//	ShadowMinimalPayload = TraceVisibilityRay(
+		//		TLAS,
+		//		RayFlags,
+		//		RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+		//		InstanceInclusionMask,
+		//		DetailRay);
+		//		
+		//	if (ShadowMinimalPayload.IsHit())
+		//	{
+		//		DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+		//	}
+		//	else
+		//	{
+		//		DiffuseKernel[i].Color = DiffusePayload.BaseColor * Lambert(SunDirection, DiffuseKernel[i].Normal);
+		//	}
+		//}
+		//else
+		//{
+		//	DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
+		//}
 	}
 	else
 	{
@@ -109,6 +107,7 @@ for (int i = 0; i < 5; i++)
 	}
 
 }
+
 //End Detail loop
 
 //used for averaging
@@ -136,12 +135,16 @@ for (int i = 0; i < 5; ++i)
 	accumulatedFloat += DiffuseKernel[i].Distance;
 }
 Raysample.RTAO = accumulatedFloat / 5.0f;
+Raysample.RTAO = saturate(Raysample.RTAO + 0.2);
 
 // This Is Where I'd Put My Global Illumination.... If I had one!
 float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;
 FakeIndirectLighting = FakeIndirectLighting * 0.5f + 0.5f;
 Raysample.IndirectLightColor = float3(0.317f, 0.376f, 0.443f) * FakeIndirectLighting; //TODO: Parametrize
+//Raysample.IndirectLightColor = float3(0.05f, 0.05f, 0.05f) * FakeIndirectLighting;
 // RESERVED FOR GI
 
-//SHADOW CHECK
+//SHADOW CHECKS
 #include "AQ_ShadowCheck.ush"
+#include "AQ_ShadowCheckLights.ush"
+break;

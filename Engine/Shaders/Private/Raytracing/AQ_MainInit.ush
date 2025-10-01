@@ -39,6 +39,8 @@ FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
 FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
 FMaterialClosestHitPayload Payload; //main payload
 FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
+FRTLightingData Light; //Point,Rect,Spot Lights in scene
+FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
 DiffuseKernel DiffuseKernel[10];
 SurfaceHit SurfaceHit; //struct with data for directional calculations
 Stats Stats;
@@ -98,7 +100,10 @@ Raysample.TransparencyEmissive = float3(1.0f, 1.0f, 1.0f);
 Raysample.TransparencyRoughness = 1.0f;
 
 Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
-Raysample.LightingContribution = 1.0f;
+Raysample.LightingContribution = 1.0f; //Try zero?
+
+Raysample.PointLightColor = float3(0.0f, 0.0f, 0.0f);
+Raysample.PointLightContribution = 0.0f;
 
 Raysample.IndirectLightColor = float3(1.0f, 1.0f, 1.0f);
 Raysample.DetailLight  = float3(0.0f, 0.0f, 0.0f);
@@ -106,4 +111,4 @@ Raysample.RTAO = 1.0f;
 
 Raysample.IndirectEmissive = float3(0.0f, 0.0f, 0.0f);
 
-Raysample.DirectionalLightMask = 1.0f;
+Raysample.DirectionalLightMask = 1.0f; //Try zero?

@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.5.4
+// AQUARAY RAYTRACER - v0.5.5
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -147,8 +147,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	//////////////////////////////////////
 		
 	//DIRECT
-	Direct = Raysample.Color.rgb + Raysample.Specular; //Apply Surface Color + Specular
+	Direct = Raysample.Color; //Apply Surface Color + Specular
 	Direct = Direct * (Raysample.LightColor * Raysample.LightingContribution); //Apply Direct Lighting
+	float3 PointLights = Raysample.Color * Raysample.PointLightColor;
+	Direct = max(Direct, PointLights);
 		
 	//INDIRECT
 	Indirect = Raysample.Color * Raysample.IndirectLightColor; //Apply Global Illumination
@@ -163,7 +165,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	//////////////////////////////////////
 		
 	//Combine Lighting
-	Final = max(Indirect, Direct) + Raysample.Emissive; //Apply Direct Emissive
+	//Final = max(Indirect, Direct) + Raysample.Emissive; //Apply Direct Emissive
+	Final = (Indirect + Direct) + Raysample.Emissive + Raysample.Specular; //Apply Direct Emissive
 	Final = lerp(Final, Translucent, Raysample.TransparencyOpacity);
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
@@ -179,6 +182,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	{
 		// Main Output
 		ColorOutput[DispatchThreadId] = float4(Final, 1.0f);
+		//ColorOutput[DispatchThreadId] = float4(Raysample.PointLightColor, 1.0f);
 	}
 	else
 	{

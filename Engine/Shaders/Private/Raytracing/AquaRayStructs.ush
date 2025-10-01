@@ -16,8 +16,11 @@ struct Raysample
 	float3 TransparencyEmissive;	      //Emissive for Bloom
 	float  TransparencyRoughness;		  //Will be used later
 	
-	float3 LightColor;                    //Color of the light that is directly shining on the Surface
-	float  LightingContribution;          //How much power the Direct Lights have after absorption
+	float3 LightColor;                    //Color of the primary light that is directly shining on the Surface
+	float  LightingContribution;          //How much power the primary light has after absorption
+	
+	float3 PointLightColor;               //Color of all Point Lights that are directly shining on the Surfaces
+	float  PointLightContribution;        //How much power Point Lights have after absorption
 	
 	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
 	float3 DetailLight;                   //(Detail Lighting) Small Raytraced GI? Something Like that
@@ -61,7 +64,7 @@ struct SurfaceHit
 	
 /////////GLOBAL ILLUMINATION
 
-static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 }; // radius = 2
+static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 };
 
 static const float3 DirectionSet[85] =
 {

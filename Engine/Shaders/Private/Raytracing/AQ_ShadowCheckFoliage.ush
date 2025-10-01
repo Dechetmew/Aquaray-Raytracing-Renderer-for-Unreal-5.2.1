@@ -1,4 +1,12 @@
 // SHADOW CHECK
+
+#ifndef AQ_SHADOWCHECKFOLIAGE_DECLARED
+#define AQ_SHADOWCHECKFOLIAGE_DECLARED
+
+bool BlockedBySolid = false;
+
+#endif // AQ_SHADOWCHECKFOLIAGE_DECLARED
+
 VisbilityRay.Origin    = SurfaceHit.HitPos;
 VisbilityRay.TMax      = MetersToCenti(100.0f);
 VisbilityRay.Direction = SunDirection;
@@ -14,9 +22,9 @@ ShadowPayload = TraceMaterialRay(
 
 Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
 
-bool BlockedBySolid = false;
+BlockedBySolid = false;
 
-// Step through possible foliage layers (up to 5 tries)
+// Step through foliage layers (up to 5 tries)
 [loop]
 for (int i = 0; i < 5; ++i)
 {

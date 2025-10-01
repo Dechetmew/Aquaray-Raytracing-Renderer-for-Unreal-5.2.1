@@ -113,7 +113,7 @@ float3 GeometryRandVec3(float3 HitPos, float RayDist)
     );
 }
 
-//Returns 1.0f on every Other Pixel, Unused
+//Returns 1.0f on every Other Pixel, will be used in the far future... Hopefully :)
 bool IsCheckerboardFromUV(float2 UV, float2 ScreenSize)
 {
     uint U = (uint)(UV.x * ScreenSize.x);
@@ -155,7 +155,7 @@ float PhongSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVec
 //Applies Lambert Lighting. If you are inputing the Vector Towards the Light Source, Please Reverse it
 float Lambert(float3 LightVector, float3 SurfaceNormal)
 {
-	return 1.0f * max(0.0f, dot(SurfaceNormal, LightVector));
+	return saturate(1.0f * max(0.0f, dot(SurfaceNormal, LightVector)));
 }
 
 //Converts Distance From Meters to Centimeters
@@ -182,5 +182,4 @@ float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVec
 	float AveragedLightColor = (LightColor.r + LightColor.g + LightColor.b) / 3.0f;
 	float ClampedLightColor = clamp(AveragedLightColor, 0.0f, 1.5f);
 	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * ClampedLightColor;
-
 }

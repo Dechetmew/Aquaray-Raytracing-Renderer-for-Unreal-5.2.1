@@ -7,7 +7,6 @@ if (Payload.Opacity > 0.99f || Raysample.Opacity > 0.99f)
 	Raysample.Emissive = Payload.Radiance - Raysample.Color;
 	Raysample.Opacity = Raysample.Opacity + Payload.Opacity;
 	Raysample.LightColor = float3(1,1,1);
-	Raysample.LightingContribution = 1;
 	Raysample.RTAO = 1;
 	Raysample.IndirectLightColor = float3(1,1,1);
 	break;

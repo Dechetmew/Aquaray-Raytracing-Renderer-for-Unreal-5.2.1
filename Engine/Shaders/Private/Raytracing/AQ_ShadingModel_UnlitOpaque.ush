@@ -3,7 +3,6 @@ Raysample.Color = lerp(clamp(Payload.Radiance, 0.0f, 1.0f), Raysample.Color, Ray
 Raysample.Emissive = Payload.Radiance - Raysample.Color;
 Raysample.Opacity = Payload.Opacity;
 Raysample.LightColor = float3(1,1,1);
-Raysample.LightingContribution = 1;
 Raysample.RTAO = 1;
 Raysample.IndirectLightColor = float3(1,1,1);
 break;

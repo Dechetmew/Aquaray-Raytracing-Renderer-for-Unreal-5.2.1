@@ -5,12 +5,12 @@ if (Payload.Opacity > 0.5f || Raysample.Opacity > 0.99f)
 	Raysample.Color = lerp(Payload.BaseColor, Raysample.Color, Raysample.Opacity);
 	Raysample.Emissive = Payload.Radiance;
 	Raysample.Opacity = Raysample.Opacity + 1.0f;
-	//Raysample.Opacity = saturate(Raysample.Opacity + 1.0f * (1.0f - Raysample.Opacity));
 	Raysample.RTAO = 1;
 	
 	Raysample.IndirectLightColor = float3(0.317f, 0.376f, 0.443f); //TODO: Parametrize
 	
 	#include "AQ_ShadowCheckFoliage.ush"
+	#include "AQ_ShadowCheckFoliageLights.usf"
 	break;
 }
 else
@@ -21,4 +21,4 @@ else
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
 }
 
-//Maybe set the main ray to use only opaque polygons after hitting too much grass?
+//Maybe set the main ray to use only opaque polygons after hitting too much foliage?

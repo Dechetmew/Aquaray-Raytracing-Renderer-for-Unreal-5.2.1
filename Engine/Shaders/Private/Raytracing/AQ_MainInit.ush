@@ -8,10 +8,11 @@ float2 UV = (float2(PixelCoord) + 0.5) * InvBufferSize;
 //Translate Inputs
 float SkyVisualBrightness = FloatInput1;
 int MAX_STEPS = IntInput1; MAX_STEPS = clamp(MAX_STEPS, 5, 20);
-int DetailLightingMode = IntInput2;
+int DetailLightingMode = clamp(IntInput2, 0,5);
 int DebugMode = IntInput3;
 float3 CameraPositionWS = ColorInput9.xyz;
 int EnableShadowOpacity = clamp(IntInput4, 0, 1);
+int EnablePointLightsShadowFoliage = clamp(IntInput5, 0, 1);
 
 // SCENE SETUP
 //Its Fun hunting across All Shaders for what kinds of View Struct variables exist, almost like Collecting Pokemon! 
@@ -21,7 +22,7 @@ float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 // INITIAL RAY SETUP
 // RayTMax accepts values in centimeters
-FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space
+FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space :)
 FRayDesc DetailRay = CreatePrimaryRay(UV); //For Detail Lighting
 FRayDesc VisbilityRay = CreatePrimaryRay(UV);
 FRayCone RayCone = (FRayCone)0;
@@ -100,15 +101,9 @@ Raysample.TransparencyEmissive = float3(1.0f, 1.0f, 1.0f);
 Raysample.TransparencyRoughness = 1.0f;
 
 Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
-Raysample.LightingContribution = 1.0f; //Try zero?
-
 Raysample.PointLightColor = float3(0.0f, 0.0f, 0.0f);
-Raysample.PointLightContribution = 0.0f;
-
 Raysample.IndirectLightColor = float3(1.0f, 1.0f, 1.0f);
 Raysample.DetailLight  = float3(0.0f, 0.0f, 0.0f);
 Raysample.RTAO = 1.0f;
 
 Raysample.IndirectEmissive = float3(0.0f, 0.0f, 0.0f);
-
-Raysample.DirectionalLightMask = 1.0f; //Try zero?

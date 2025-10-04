@@ -16,18 +16,12 @@ struct Raysample
 	float3 TransparencyEmissive;	      //Emissive for Bloom
 	float  TransparencyRoughness;		  //Will be used later
 	
-	float3 LightColor;                    //Color of the primary light that is directly shining on the Surface
-	float  LightingContribution;          //How much power the primary light has after absorption
-	
-	float3 PointLightColor;               //Color of all Point Lights that are directly shining on the Surfaces
-	float  PointLightContribution;        //How much power Point Lights have after absorption
-	
+	float3 LightColor;                    //Color of the primary light
+	float3 PointLightColor;               //Color of all Point Lights
 	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
 	float3 DetailLight;                   //(Detail Lighting) Small Raytraced GI? Something Like that
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
-	
-	float  DirectionalLightMask;          //a 0 to 1 mask for smoothly mixing indirect and direct light
 
 	//More stuff will be added later
 	//Currently, Indirect Radiance will be disabled as Implementation is wrong. I cant know how much color I should add without knowing how much surrounding surfaces are lit
@@ -61,97 +55,5 @@ struct SurfaceHit
 	float3 ReflectionVector;
 	float3 RefractionVector;
 };
-	
-/////////GLOBAL ILLUMINATION
 
 static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 };
-
-static const float3 DirectionSet[85] =
-{
-		float3( 0.123,  0.123, -0.123),
-        float3(-0.701, -0.408, -0.584),
-        float3( 0.517, -0.743, -0.426),
-        float3(-0.214, -0.204,  0.956),
-        float3( 0.302,  0.411, -0.860),
-        float3(-0.852,  0.452,  0.264),
-        float3(-0.591, -0.806, -0.032),
-        float3( 0.817, -0.221, -0.532),
-        float3( 0.019, -0.975, -0.222),
-        float3( 0.189,  0.961, -0.204),
-        float3(-0.378,  0.650, -0.659),
-        float3(-0.455, -0.528,  0.717),
-        float3( 0.091,  0.568,  0.818),
-        float3(-0.992, -0.004, -0.123),
-        float3( 0.744,  0.600, -0.294),
-        float3( 0.561, -0.007,  0.828),
-        float3( 0.135, -0.195, -0.971),
-        float3(-0.033, -0.772,  0.635),
-        float3( 0.679,  0.254,  0.689),
-        float3(-0.655,  0.733, -0.182),
-        float3(-0.162, -0.914, -0.371),
-        float3( 0.837, -0.545,  0.045),
-        float3(-0.488,  0.200,  0.850),
-        float3( 0.351, -0.539,  0.766),
-        float3( 0.272,  0.907,  0.321),
-        float3(-0.215,  0.898,  0.384),
-        float3(-0.609, -0.078, -0.789),
-        float3( 0.975,  0.184,  0.126),
-        float3( 0.022, -0.368,  0.929),
-        float3(-0.379, -0.920,  0.096),
-        float3(-0.631,  0.370, -0.681),
-        float3( 0.751, -0.343,  0.564),
-        float3( 0.193, -0.981,  0.028),
-        float3( 0.511,  0.720,  0.470),
-        float3(-0.738,  0.665,  0.112),
-        float3(-0.463, -0.622, -0.631),
-        float3( 0.610, -0.736,  0.292),
-        float3( 0.032,  0.152, -0.988),
-        float3(-0.853, -0.206,  0.479),
-        float3( 0.399, -0.139, -0.906),
-        float3( 0.267, -0.712, -0.650),
-        float3(-0.139,  0.386, -0.912),
-        float3(-0.789,  0.015, -0.614),
-        float3( 0.672,  0.681,  0.291),
-        float3(-0.118, -0.554, -0.824),
-        float3( 0.899,  0.432,  0.068),
-        float3(-0.021,  0.998,  0.056),
-        float3(-0.516,  0.848, -0.118),
-        float3( 0.611, -0.314, -0.726),
-        float3( 0.814, -0.142,  0.563),
-        float3(-0.251, -0.733,  0.632),
-        float3( 0.539, -0.756, -0.373),
-        float3(-0.707, -0.513,  0.487),
-        float3( 0.496,  0.480, -0.725),
-        float3( 0.152,  0.222,  0.963),
-        float3(-0.454, -0.344, -0.823),
-        float3(-0.134,  0.987, -0.088),
-        float3( 0.895,  0.075, -0.440),
-        float3( 0.086, -0.679,  0.729),
-        float3(-0.936,  0.342,  0.083),
-        float3(-0.078, -0.956,  0.283),
-        float3(-0.234,  0.088, -0.968),
-        float3( 0.289,  0.697, -0.656),
-        float3( 0.617,  0.233, -0.751),
-        float3( 0.177, -0.305, -0.935),
-        float3( 0.735, -0.658, -0.164),
-        float3( 0.020,  0.761,  0.648),
-        float3(-0.658, -0.252, -0.709),
-        float3( 0.783,  0.352, -0.513),
-        float3(-0.292,  0.710,  0.640),
-        float3( 0.455, -0.837,  0.304),
-        float3(-0.273,  0.513, -0.814),
-        float3(-0.832, -0.475, -0.287),
-        float3( 0.119, -0.812,  0.571),
-        float3(-0.050,  0.451,  0.891),
-        float3(-0.513, -0.847,  0.132),
-        float3( 0.844, -0.055, -0.534),
-        float3(-0.317, -0.615,  0.722),
-        float3( 0.657, -0.083,  0.749),
-        float3(-0.117,  0.707, -0.697),
-        float3(-0.562,  0.655,  0.506),
-        float3( 0.225,  0.613,  0.756),
-        float3( 0.323, -0.910, -0.260),
-        float3(-0.944, -0.230, -0.238),
-        float3(-0.150,  0.010,  0.989)
-
-};

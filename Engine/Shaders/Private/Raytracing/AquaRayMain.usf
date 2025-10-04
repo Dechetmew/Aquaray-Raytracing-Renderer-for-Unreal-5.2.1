@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.5.5
+// AQUARAY RAYTRACER - v0.6.0
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -28,10 +28,10 @@ float FloatInput7;
 float FloatInput8;
 float FloatInput9;
 int IntInput1; //MAX_STEPS
-int IntInput2; //Detail Lighting Mode (0=OFF 1=AO 2=AO+IIRR) TODO: Implement
+int IntInput2; //Detail Lighting Mode (0=OFF 1=AO 2=AO+GLOW)
 int IntInput3; //Debug View Mode (0=OFF 1-15=Debug Viewmodes)
 int IntInput4; //Enable Shadow Opacity for Nonrefractive
-int IntInput5;
+int IntInput5; //Enable Shadows for Point Lights on Foliage
 int IntInput6;
 int IntInput7;
 int IntInput8;
@@ -63,7 +63,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			bEnableSkyLightContribution,
 			bIgnoreTranslucentMaterials);
 			
-		//Populate structs
 		Stats.Steps = Stats.Steps + float3(0.0f, 0.025f, 0.0f);
 		Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
 		SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
@@ -128,14 +127,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	
 	Raysample.LightColor = clamp(Raysample.LightColor, 0.0f, 1.0f);
 	Raysample.DetailLight = clamp(Raysample.DetailLight,0.0f, 1.0f);
-	Raysample.LightingContribution = clamp(Raysample.LightingContribution, 0.0f, 10.0f);
 	Raysample.RTAO =  clamp(Raysample.RTAO, 0.0f, 1.0f); //should be parametrized
 		
 	Raysample.IndirectLightColor = clamp(Raysample.IndirectLightColor, 0.0f, 1.0f);
 		
 	Raysample.IndirectEmissive = clamp(Raysample.IndirectEmissive, 0.0f, 10.0f);
-	
-	Raysample.DirectionalLightMask = clamp(Raysample.DirectionalLightMask, 0.0f, 1.0f);
 	//////////////////////////
 	
 	//Final pixel color calculation from Raysample struct data
@@ -148,7 +144,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		
 	//DIRECT
 	Direct = Raysample.Color; //Apply Surface Color + Specular
-	Direct = Direct * (Raysample.LightColor * Raysample.LightingContribution); //Apply Direct Lighting
+	Direct = Direct * Raysample.LightColor; //Apply Direct Lighting
 	float3 PointLights = Raysample.Color * Raysample.PointLightColor;
 	Direct = max(Direct, PointLights);
 		
@@ -172,7 +168,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
 	Final = lerp(sky, Final, Raysample.Opacity);
 	
-	// uninitialized variables can sometimes end up reading garbage data if the code is messed up, causing NaN (and D3D crashes)
+	// NaN check to prevent my belowed D3D crashes
 	if (any(isnan(Final)) || any(isinf(Final)))
 	{
 		Final = float3(1, 0, 1);
@@ -182,7 +178,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	{
 		// Main Output
 		ColorOutput[DispatchThreadId] = float4(Final, 1.0f);
-		//ColorOutput[DispatchThreadId] = float4(Raysample.PointLightColor, 1.0f);
 	}
 	else
 	{
@@ -198,11 +193,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			case 7: ColorOutput[DispatchThreadId] = float4(Raysample.Roughness.xxx, 1.0f); break;
 			case 8: ColorOutput[DispatchThreadId] = float4(Raysample.Opacity.xxx, 1.0f); break;
 			case 9: ColorOutput[DispatchThreadId] = float4(Raysample.LightColor.rgb, 1.0f); break;
-			case 10: ColorOutput[DispatchThreadId] = float4(Raysample.LightingContribution.xxx, 1.0f); break;
+			case 10: ColorOutput[DispatchThreadId] = float4(Raysample.PointLightColor.rgb, 1.0f); break;
 			case 11: ColorOutput[DispatchThreadId] = float4(Raysample.RTAO.xxx, 1.0f); break;
 			case 12: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectLightColor.rgb, 1.0f); break;
 			case 13: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectEmissive.rgb, 1.0f); break;
-			case 14: ColorOutput[DispatchThreadId] = float4(Raysample.DirectionalLightMask.xxx, 1.0f); break;
+
 			case 15: ColorOutput[DispatchThreadId] = float4(Direct, 1.0f); break;
 			case 16: ColorOutput[DispatchThreadId] = float4(Indirect, 1.0f); break;	
 			case 17: ColorOutput[DispatchThreadId] = float4(Translucent, 1.0f); break;

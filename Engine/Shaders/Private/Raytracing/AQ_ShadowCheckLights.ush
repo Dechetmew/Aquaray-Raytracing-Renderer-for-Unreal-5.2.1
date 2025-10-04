@@ -32,7 +32,6 @@
 #define AQ_SHADOWCHECKLIGHTS_DECLARED
 
 //Declare only once
-uint LightIndex;
 uint LightCount;
 float3 AccumulatedPointLightColor = float3(0,0,0);
 

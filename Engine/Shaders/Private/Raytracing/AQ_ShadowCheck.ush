@@ -13,7 +13,7 @@ float3 baseColor = clamp(ShadowPayload.BaseColor, 0.0f, 1.0f);
 
 if (!CanBeLit(Payload.WorldNormal, SunDirection))
 {
-	// The Surface Must be in shadow, dont do anything
+	// The Surface Must be in shadow
 }
 else
 {
@@ -55,31 +55,15 @@ else
 
 				Transmission *= (1.0f - opacity);
 
-				// Advance the ray
+				// Advance ray
 				VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
 
-				// If fully blocked, stop
 				if (Transmission <= 0.01f)
 				{
+					// Fully Blocked
 					Transmission = 0.0f;
 					break;
 				}
-			}
-			else if (ShadowPayload.ShadingModelID == 6 && ShadowPayload.BlendingMode == 2)
-			{
-				// Foliage
-				if (ShadowPayload.Opacity > 0.5f)
-				{
-					//Blocked
-					Transmission = 0.0f;
-					break;
-				}
-				else
-				{
-					// Advance the ray
-					VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
-				}
-				break;
 			}
 			else
 			{
@@ -92,9 +76,7 @@ else
 		Transmission = clamp(Transmission, 0.0f, 1.0f);
 
 		//I tried making colored shadows (werent working obv.) but Its clear I will have to implement that as part of Glass Caustics Later
-		Raysample.LightColor = SunLightColor;
-		Raysample.LightingContribution = Lambert(SunDirection, Payload.WorldNormal) * Transmission;
-		//break;
+		Raysample.LightColor = SunLightColor * (Lambert(SunDirection, Payload.WorldNormal) * Transmission);
 	}
 	else
 	{
@@ -111,14 +93,12 @@ else
 		{
 			// The Surface is in shadow
 			Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
-			Raysample.LightingContribution = 0.0f;
 			//break;
 		}
 		else
 		{
 			// The Sun is Shining :)
-			Raysample.LightColor = SunLightColor;
-			Raysample.LightingContribution = Lambert(SunDirection, Payload.WorldNormal);
+			Raysample.LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
 			Raysample.Specular = Raysample.Specular + PerformSpecular(Payload.WorldNormal, SunDirection, SurfaceHit.IncidentVector, Payload.Specular, Payload.Metallic, SunLightColor);
 			Raysample.Specular = Raysample.Specular * 0.5f;
 			//break;

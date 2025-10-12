@@ -21,7 +21,7 @@ Make sure you have a HWRT DirectX 16 SM6 Capable GPU, the sample project runs ar
 ### Patch V0.6.1
 - Now Color is FINNALY getting Applied Back to Front, which will make Reflections and Translucency way easier to Implement<br/>
 - Improved Specular<br/>
-- Sky is now Considered as a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)<br/>
+- Sky is now Considered a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)<br/>
 - And Many Changes, Cleanups, And Code Improvements I forgot to Document<br/>
 
 ## __How to Install__

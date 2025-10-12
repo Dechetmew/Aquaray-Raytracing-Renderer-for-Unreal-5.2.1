@@ -1,0 +1,72 @@
+// LIGHTING SHADING MODEL FOLIAGE
+
+#ifndef AQ_SHADOWCHECKFOLIAGE_DECLARED
+#define AQ_SHADOWCHECKFOLIAGE_DECLARED
+
+bool BlockedBySolidFoliage = false;
+int ShadowFoliageIndex = 0;
+
+#endif // AQ_SHADOWCHECKFOLIAGE_DECLARED
+
+VisbilityRay.Origin    = SurfaceHit.HitPos;
+VisbilityRay.TMax      = MetersToCenti(100.0f);
+VisbilityRay.Direction = SunDirection;
+
+ShadowPayload = TraceMaterialRay(
+    TLAS,
+    RayFlags,
+    InstanceInclusionMask,
+    VisbilityRay,
+    RayCone,
+    bEnableSkyLightContribution,
+    bIgnoreTranslucentMaterials);
+
+Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+BlockedBySolidFoliage = false;
+
+// Step through foliage layers (up to 5 tries)
+for (int i = 0; i < 5; ++i)
+{
+	ShadowFoliageIndex += 1;
+
+	if (!ShadowPayload.IsHit())
+	{
+		// No Hit
+		break;
+	}
+
+	if (ShadowPayload.ShadingModelID != 6)
+	{
+		// Hit a solid non-foliage surface - cast shadow
+		Raysample[SampleIndex].LightColor = float3(0.0f, 0.0f, 0.0f);
+		BlockedBySolidFoliage = true;
+		break;
+	}
+
+	// Advance the Ray
+	VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
+
+	ShadowPayload = TraceMaterialRay(
+		TLAS,
+		RayFlags,
+		InstanceInclusionMask,
+		VisbilityRay,
+		RayCone,
+		bEnableSkyLightContribution,
+		bIgnoreTranslucentMaterials);
+
+	Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+}
+
+if (!BlockedBySolidFoliage)
+{
+	// Sun is Shining
+	Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, float3(0,0,1));
+}
+
+if (ShadowFoliageIndex >= 8)
+{
+	// Too many steps
+	Raysample[SampleIndex].LightColor = float3(0,0,0);
+}

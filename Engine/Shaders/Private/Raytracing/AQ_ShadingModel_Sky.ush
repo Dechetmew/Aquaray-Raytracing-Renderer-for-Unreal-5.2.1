@@ -1,0 +1,8 @@
+//Shading Model: Sky
+//Its possible to implement custom Sky Rendering code here too...
+
+Raysample[SampleIndex].ShadingModel = 100;
+Raysample[SampleIndex].BlendingMode = 0;
+Raysample[SampleIndex].Color = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
+Raysample[SampleIndex].Opacity = 1;
+break;

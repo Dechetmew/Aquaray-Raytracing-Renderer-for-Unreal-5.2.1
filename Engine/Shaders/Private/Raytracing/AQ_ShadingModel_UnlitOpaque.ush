@@ -1,8 +1,5 @@
 //Shading Model: Unlit Opaque
-Raysample.Color = lerp(clamp(Payload.Radiance, 0.0f, 1.0f), Raysample.Color, Raysample.Opacity);
-Raysample.Emissive = Payload.Radiance - Raysample.Color;
-Raysample.Opacity = Payload.Opacity;
-Raysample.LightColor = float3(1,1,1);
-Raysample.RTAO = 1;
-Raysample.IndirectLightColor = float3(1,1,1);
+Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
+Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+Raysample[SampleIndex].Color = Payload.Radiance;
 break;

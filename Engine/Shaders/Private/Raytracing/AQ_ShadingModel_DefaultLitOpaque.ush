@@ -1,8 +1,9 @@
 //Shading Model: Default Lit Opaque
-Raysample.Color = lerp(Payload.BaseColor, Raysample.Color, Raysample.Opacity);
-Raysample.Metallic = Payload.Metallic;
-Raysample.Emissive = Payload.Radiance;
-Raysample.Opacity = 1.0f;
+Raysample[SampleIndex].Color = Payload.BaseColor + Payload.Radiance;
+Raysample[SampleIndex].Metallic = Payload.Metallic;
+Raysample[SampleIndex].Opacity = 1.0f;
+Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
+Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
 
 RayHitDistanceOutput[DispatchThreadId] = Payload.HitT;
 
@@ -10,7 +11,7 @@ if (DetailLightingMode > 0)
 {
 	// DETAIL LIGHTING START
 	//It Traces Rays in a 5-way Kernel Pattern on Every Valid Surface Pixel
-	//for Detail lighting like Indirect Irradiance (TODO) and Ambient Occlusion
+	//for Detail lighting like Ambient Occlusion
 	//EDIT: I really think this sucks, I hope I will end up replacing this mess with proper Raytraced Lighting in the future
 
 	//Jitter Up Vectors a little
@@ -25,11 +26,7 @@ if (DetailLightingMode > 0)
 	float sinA = sin(RandomAngle);
 
 	// Spin in local tangent space (XY plane)
-	float3x3 spinMatrix = float3x3(
-		float3(cosA, -sinA, 0.0f),
-		float3(sinA,  cosA, 0.0f),
-		float3(0.0f,   0.0f, 1.0f)
-	);
+	float3x3 spinMatrix = float3x3(float3(cosA, -sinA, 0.0f), float3(sinA,  cosA, 0.0f), float3(0.0f,   0.0f, 1.0f));
 
 	// Build the tangent basis from surface normal
 	float3x3 tangentBasis = BuildTangentBasis(Payload.WorldNormal);
@@ -93,8 +90,8 @@ if (DetailLightingMode > 0)
 	{
 		accumulatedFloat += DiffuseKernel[i].Distance;
 	}
-	Raysample.RTAO = accumulatedFloat / 5.0f;
-	Raysample.RTAO = saturate(Raysample.RTAO + 0.2);
+	Raysample[SampleIndex].RTAO = accumulatedFloat / 5.0f;
+	Raysample[SampleIndex].RTAO = saturate(Raysample[SampleIndex].RTAO + 0.2);
 
 	if (DetailLightingMode > 1)
 	{
@@ -103,20 +100,19 @@ if (DetailLightingMode > 0)
 		{
 			accumulatedColor += DiffuseKernel[i].Radiance;
 		}
-		Raysample.IndirectEmissive = accumulatedColor / 5.0f;
-		Raysample.IndirectEmissive = Raysample.IndirectEmissive * 0.15f; //TODO: Parametrize
+		Raysample[SampleIndex].IndirectEmissive = accumulatedColor / 5.0f;
+		Raysample[SampleIndex].IndirectEmissive = Raysample[SampleIndex].IndirectEmissive * 0.15f;
 	}
 }
-
+	
 // This Is Where I'd Put My Global Illumination.... If I had one!
 float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;
 FakeIndirectLighting = FakeIndirectLighting * 0.5f + 0.5f;
-Raysample.IndirectLightColor = float3(0.317f, 0.376f, 0.443f) * FakeIndirectLighting; //TODO: Parametrize
-//Raysample.IndirectLightColor = float3(0.05f, 0.05f, 0.05f) * FakeIndirectLighting;
+Raysample[SampleIndex].IndirectLightColor = IndirectLightColor * FakeIndirectLighting;
+//Raysample[SampleIndex].IndirectLightColor = float3(0.317f, 0.376f, 0.443f) * FakeIndirectLighting; //for Debuging
 // RESERVED FOR GI
 
-//SHADOW CHECKS
-#include "AQ_ShadowCheck.ush"
-#include "AQ_ShadowCheckLights.ush"
+#include "AQ_Lighting.ush"
+#include "AQ_LightingPoint.ush"
 
 break;

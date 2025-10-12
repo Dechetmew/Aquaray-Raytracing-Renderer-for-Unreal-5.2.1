@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.6.0
+// AQUARAY RAYTRACER - v0.6.1
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -9,7 +9,7 @@
 #include "AquarayFunctions.ush"
 
 // SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
-float4 ColorInput1;
+float4 ColorInput1; //Ambient/Indirect Light Color
 float4 ColorInput2;
 float4 ColorInput3;
 float4 ColorInput4;
@@ -51,9 +51,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 {
 	#include "AQ_MainInit.ush"
 
-	// MAIN LOOP
-	for (int i = 0; i < MAX_STEPS; i++)
+	// Raypath Loop
+    for (int i = 0; i < MAX_STEPS; i++)
 	{
+		SampleIndex = i;
+	
 		Payload = TraceMaterialRay(
 			TLAS,
 			RayFlags,
@@ -77,7 +79,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		//break;
 		//Also disable output at the bottom when debuging
 
-		//Based on what we hit we take a Shading Path. It is up to the Shading Path to Terminate Traversal or Advance Rays
+		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0)
@@ -103,105 +105,105 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		}
 		else
 		{
-			//We hit the Sky
-			break;
+			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
 	// Raypath Loop END
-
-	//Just in case clamp Raysample struct to sensical ranges
-	//variable = clamp(variable, min, max);
-	Raysample.Color = clamp(Raysample.Color, 0.0f, 1.0f);
-	Raysample.Metallic = clamp(Raysample.Metallic, 0.0f, 1.0f);
-	Raysample.Specular = clamp(Raysample.Specular, 0.0f, 1.0f);
-	Raysample.Emissive = clamp(Raysample.Emissive, 0.0f, 100.0f);
-	Raysample.Roughness = clamp(Raysample.Roughness, 0.0f, 1.0f);
-	Raysample.Opacity = clamp(Raysample.Opacity, 0.0f, 1.0f); 
-	
-	Raysample.TransparencyOpacity = clamp(Raysample.TransparencyOpacity, 0.0f, 1.0f);                     
-	Raysample.TransparencyColor = clamp(Raysample.TransparencyColor, 0.0f, 1.0f);
-	Raysample.TransparencyMetallic = clamp(Raysample.TransparencyMetallic, 0.0f, 1.0f);
-	Raysample.TransparencySpecular = clamp(Raysample.TransparencySpecular, 0.0f, 1.0f);
-	Raysample.TransparencyEmissive = clamp(Raysample.TransparencyEmissive, 0.0f, 1.0f);
-	Raysample.TransparencyRoughness = clamp(Raysample.TransparencyRoughness, 0.0f, 1.0f);
-	
-	Raysample.LightColor = clamp(Raysample.LightColor, 0.0f, 1.0f);
-	Raysample.DetailLight = clamp(Raysample.DetailLight,0.0f, 1.0f);
-	Raysample.RTAO =  clamp(Raysample.RTAO, 0.0f, 1.0f); //should be parametrized
-		
-	Raysample.IndirectLightColor = clamp(Raysample.IndirectLightColor, 0.0f, 1.0f);
-		
-	Raysample.IndirectEmissive = clamp(Raysample.IndirectEmissive, 0.0f, 10.0f);
-	//////////////////////////
-	
-	//Final pixel color calculation from Raysample struct data
-	float3 Final;
-	float3 Direct;
-	float3 Indirect;
-	float3 Translucent;
-		
-	//////////////////////////////////////
-		
-	//DIRECT
-	Direct = Raysample.Color; //Apply Surface Color + Specular
-	Direct = Direct * Raysample.LightColor; //Apply Direct Lighting
-	float3 PointLights = Raysample.Color * Raysample.PointLightColor;
-	Direct = max(Direct, PointLights);
-		
-	//INDIRECT
-	Indirect = Raysample.Color * Raysample.IndirectLightColor; //Apply Global Illumination
-	Indirect = Indirect * Raysample.RTAO; //Apply Ambient Occlusion
-	Indirect = Indirect + Raysample.IndirectEmissive * Raysample.Color.rgb; //Apply Detail Lighting Emissive
-	Indirect = Indirect + (Raysample.Color * Raysample.DetailLight);
-	
-	//TRANSLUCENCY
-	Translucent = Raysample.TransparencyColor;
-	//Other Sample Data will be added later
 	
 	//////////////////////////////////////
-		
-	//Combine Lighting
-	//Final = max(Indirect, Direct) + Raysample.Emissive; //Apply Direct Emissive
-	Final = (Indirect + Direct) + Raysample.Emissive + Raysample.Specular; //Apply Direct Emissive
-	Final = lerp(Final, Translucent, Raysample.TransparencyOpacity);
+	//Final Color Mixer, It works like Layers on Photoshop!
+	float3 Final = float3(0,0,0);
+	float FinalOpacity = 0;
+	
+	//The Mixing is done Back to Front
+    for (int i = SampleIndex; i >= 0; i--)
+	{
+		if (Raysample[i].ShadingModel == 100)
+		{
+			//Shading Model Sky
+			Final = Raysample[i].Color;
+			FinalOpacity = 1;
+		}
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0)
+		{
+			//Shading Model Default Lit Opaque
+			Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+			Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
+			Final = Final + Raysample[i].Specular;
+			Final = Final + Raysample[i].IndirectEmissive;
+			
+			FinalOpacity = 1;
+		}
+		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 0)
+		{
+			//Shading Model Unlit Opaque
+			Final = Raysample[i].Color;
+			FinalOpacity = 1;
+		}
+		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 2)
+		{
+			//Shading Model Unlit Transparent
+			if (Raysample[i].Opacity == 1)
+			{
+				//Opaque
+				Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor);
+				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
+				FinalOpacity = 1;
+			}
+			else if (Raysample[i].Opacity == 0)
+			{
+				//Invisible
+				continue;
+			}
+			else
+			{
+				//Transparent
+				Final = lerp(Final, Raysample[i].Color, Raysample[i].Opacity);
+				FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
+			}
+		}
+		else if (Raysample[i].ShadingModel == 6 && Raysample[i].BlendingMode == 2)
+		{
+			//Shading Model Foliage
+			if (Raysample[i].Opacity == 1)
+			{
+				//Opaque
+				Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor);
+				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
+				FinalOpacity = 1;
+			}
+			else
+			{
+				//Invisible
+				continue;
+			}
+		}
+		else
+		{
+			//Shading Model Invalid
+			Final = float3(0.2,0,1);
+			FinalOpacity = 1;
+		}
+	}
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
-	Final = lerp(sky, Final, Raysample.Opacity);
+	Final = lerp(sky, Final, FinalOpacity);
 	
-	// NaN check to prevent my belowed D3D crashes
+	//Debug Viewmodes
+	switch(DebugMode)
+	{
+		case 1: Final = float4(Stats.Steps, 1.0f); break;
+		case 2: Final = float4(Stats.RaysPerPixel, 1.0f); break;
+		default: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break;
+	}
+	
+	// NaN check to prevent my beloved D3D crashes
 	if (any(isnan(Final)) || any(isinf(Final)))
 	{
 		Final = float3(1, 0, 1);
 	}
 	
-	if (DebugMode == 0)
-	{
-		// Main Output
-		ColorOutput[DispatchThreadId] = float4(Final, 1.0f);
-	}
-	else
-	{
-		//Debug Viewmodes
-		switch(DebugMode)
-		{
-			case 1: ColorOutput[DispatchThreadId] = float4(Stats.Steps, 1.0f); break;
-			case 2: ColorOutput[DispatchThreadId] = float4(Stats.RaysPerPixel, 1.0f); break;
-			case 3: ColorOutput[DispatchThreadId] = float4(Raysample.Color.rgb, 1.0f); break;
-			case 4: ColorOutput[DispatchThreadId] = float4(Raysample.Metallic.xxx, 1.0f); break;
-			case 5: ColorOutput[DispatchThreadId] = float4(Raysample.Specular.xxx, 1.0f); break;
-			case 6: ColorOutput[DispatchThreadId] = float4(Raysample.Emissive.rgb, 1.0f); break;
-			case 7: ColorOutput[DispatchThreadId] = float4(Raysample.Roughness.xxx, 1.0f); break;
-			case 8: ColorOutput[DispatchThreadId] = float4(Raysample.Opacity.xxx, 1.0f); break;
-			case 9: ColorOutput[DispatchThreadId] = float4(Raysample.LightColor.rgb, 1.0f); break;
-			case 10: ColorOutput[DispatchThreadId] = float4(Raysample.PointLightColor.rgb, 1.0f); break;
-			case 11: ColorOutput[DispatchThreadId] = float4(Raysample.RTAO.xxx, 1.0f); break;
-			case 12: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectLightColor.rgb, 1.0f); break;
-			case 13: ColorOutput[DispatchThreadId] = float4(Raysample.IndirectEmissive.rgb, 1.0f); break;
+	// Main Output
+	ColorOutput[DispatchThreadId] = float4(Final, 1.0f);
 
-			case 15: ColorOutput[DispatchThreadId] = float4(Direct, 1.0f); break;
-			case 16: ColorOutput[DispatchThreadId] = float4(Indirect, 1.0f); break;	
-			case 17: ColorOutput[DispatchThreadId] = float4(Translucent, 1.0f); break;
-			default: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break;
-		}
-	}
 } //A Happy Ending of The Raygen Shader

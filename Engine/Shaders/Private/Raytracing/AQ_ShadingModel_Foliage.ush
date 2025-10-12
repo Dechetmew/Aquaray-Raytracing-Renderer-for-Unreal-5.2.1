@@ -1,16 +1,17 @@
 //Shading Model: Foliage
-if (Payload.Opacity > 0.5f || Raysample.Opacity > 0.99f)
+Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
+Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+
+if (Payload.Opacity > 0.5f)
 {
 	//Opaque
-	Raysample.Color = lerp(Payload.BaseColor, Raysample.Color, Raysample.Opacity);
-	Raysample.Emissive = Payload.Radiance;
-	Raysample.Opacity = Raysample.Opacity + 1.0f;
-	Raysample.RTAO = 1;
+	Raysample[SampleIndex].Color = Payload.BaseColor + Payload.Radiance;
+	Raysample[SampleIndex].Opacity = 1;
 	
-	Raysample.IndirectLightColor = float3(0.317f, 0.376f, 0.443f); //TODO: Parametrize
+	Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 	
-	#include "AQ_ShadowCheckFoliage.ush"
-	#include "AQ_ShadowCheckFoliageLights.usf"
+	#include "AQ_LightingFoliage.ush"
+	#include "AQ_LightingFoliagePoint.usf"
 	break;
 }
 else

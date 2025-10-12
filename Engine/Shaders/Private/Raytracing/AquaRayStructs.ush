@@ -5,16 +5,11 @@ struct Raysample
 	float3 Color;                         //BaseColor of the last hit matte Surface or sky. Alpha is for Opacity Blending
 	float  Metallic;                      //Used for Specular Calculation
 	float  Specular;                      //Amount of Specular to apply
-	float3 Emissive;                      //Emissive for Bloom
-	float  Roughness;                     //Will be used later
+	float  Roughness;                     //Maybe will be used for specular
 	float  Opacity;						  //Opacity of Pixel relative to sky
-	
-	float  TransparencyOpacity;           //Opacity of Transparency
-	float3 TransparencyColor;             //Color of Transparency
-	float  TransparencyMetallic;          //Used for Specular Calculation
-	float  TransparencySpecular;		  //Amount of Specular to apply
-	float3 TransparencyEmissive;	      //Emissive for Bloom
-	float  TransparencyRoughness;		  //Will be used later
+	int    Samples;						  //Amount of samples taken
+	int    ShadingModel;				  //Shading Model of the Hit Surface
+	int    BlendingMode;				  //Blending Mode of the Hit Surface
 	
 	float3 LightColor;                    //Color of the primary light
 	float3 PointLightColor;               //Color of all Point Lights
@@ -25,15 +20,12 @@ struct Raysample
 
 	//More stuff will be added later
 	//Currently, Indirect Radiance will be disabled as Implementation is wrong. I cant know how much color I should add without knowing how much surrounding surfaces are lit
-	//In the future, we will probably need a bool if to apply Reflections or Translucency first. Not realistic, but good enough
 };
 
 struct DiffuseKernel
 {
 	float3 Offset;       //Stores which direction diffuse rays fire
 	float3 Color;        //Base Color of Sampled Surfaces
-	float  Contribution; //UNUSED
-	float3 LightColor;   //UNUSED
 	float3 Radiance;     //Emissive of Sampled Surfaces
 	float3 Position;     //Hit Position of Sampled Surfaces
 	float  Distance;     //Distance to closest surface

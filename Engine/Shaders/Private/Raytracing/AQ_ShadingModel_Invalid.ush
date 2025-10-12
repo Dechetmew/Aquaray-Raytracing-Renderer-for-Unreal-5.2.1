@@ -1,6 +1,4 @@
 //Invalid Shading Model
-Raysample.Color = float3(1,0,1);
-Raysample.LightColor = float3(1,1,1);
-Raysample.RTAO = 1;
-Raysample.IndirectLightColor = 1;
+Raysample[SampleIndex].ShadingModel = -1;
+Raysample[SampleIndex].BlendingMode = 0;
 break;

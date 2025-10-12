@@ -179,7 +179,6 @@ bool CanBeLit(float3 WorldNormal, float3 LightVector)
 //Combines Plastic and Metallic Specular into Final Specular Contribution based on Metallic Input
 float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVector, float SurfaceSpecular, float SurfaceMetallic, float3 LightColor)
 {
-	float AveragedLightColor = (LightColor.r + LightColor.g + LightColor.b) / 3.0f;
-	float ClampedLightColor = clamp(AveragedLightColor, 0.0f, 1.5f);
-	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * ClampedLightColor;
+	float Power = Lambert(LightVector, WorldNormal);
+	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * Power;
 }

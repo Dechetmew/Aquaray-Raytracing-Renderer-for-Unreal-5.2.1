@@ -7,17 +7,18 @@ float2 UV = (float2(PixelCoord) + 0.5) * InvBufferSize;
 
 //Translate Inputs
 float SkyVisualBrightness = FloatInput1;
-int MAX_STEPS = IntInput1; MAX_STEPS = clamp(MAX_STEPS, 5, 20);
+int MAX_STEPS = IntInput1; MAX_STEPS = clamp(MAX_STEPS, 5, 10);
 int DetailLightingMode = clamp(IntInput2, 0,5);
 int DebugMode = IntInput3;
+float3 IndirectLightColor = ColorInput1.rgb;
 float3 CameraPositionWS = ColorInput9.xyz;
 int EnableShadowOpacity = clamp(IntInput4, 0, 1);
 int EnablePointLightsShadowFoliage = clamp(IntInput5, 0, 1);
 
 // SCENE SETUP
 //Its Fun hunting across All Shaders for what kinds of View Struct variables exist, almost like Collecting Pokemon! 
-float3 SunLightColor = View.DirectionalLightColor.rgb;
-//float3 SunLightColor = float3(1.0f,1.0f,1.0f); //for Debuging
+//float3 SunLightColor = View.DirectionalLightColor.rgb;
+float3 SunLightColor = float3(1.0f,1.0f,1.0f); //for Debuging
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 // INITIAL RAY SETUP
@@ -50,16 +51,10 @@ Stats Stats;
 Stats.RaysPerPixel = float3(0.0f, 0.0f, 0.0f);
 Stats.Steps = float3(0.0f, 0.0f, 0.0f);
 
-// 4 Side Rays
-// 4 Lower Rays
-// 4 Higher Rays
-// 1 Up ray (13 rays total)
 for (int i = 0; i < 5; ++i)
 {
 	DiffuseKernel[i].Offset       = float3(0.0f, 0.0f, 0.0f);
 	DiffuseKernel[i].Color        = float3(0.0f, 0.0f, 0.0f);
-	DiffuseKernel[i].Contribution = 0.0f;
-	DiffuseKernel[i].LightColor   = float3(0.0f, 0.0f, 0.0f);
 	DiffuseKernel[i].Radiance     = float3(0.0f, 0.0f, 0.0f);
 	DiffuseKernel[i].Position     = float3(0.0f, 0.0f, 0.0f);
 	DiffuseKernel[i].Distance     = 0.0f;
@@ -84,26 +79,23 @@ for (int i = 0; i < 5; ++i)
 }
 
 //////////// Raysample Struct Init
-Raysample Raysample;
+Raysample Raysample[10];
+int SampleIndex = 0;
 
-Raysample.Color = float3(0.0f, 0.0f,0.0f);
-Raysample.Metallic = 0.0f;
-Raysample.Specular = 0.0f;
-Raysample.Emissive = float3(0.0f, 0.0f, 0.0f);
-Raysample.Roughness = 1.0f;
-Raysample.Opacity = 0.0f; 
-
-Raysample.TransparencyOpacity = 0.0f;                
-Raysample.TransparencyColor = float3(1.0f, 1.0f, 1.0f);
-Raysample.TransparencyMetallic = 0.0f;
-Raysample.TransparencySpecular = 0.0f;
-Raysample.TransparencyEmissive = float3(1.0f, 1.0f, 1.0f);
-Raysample.TransparencyRoughness = 1.0f;
-
-Raysample.LightColor = float3(0.0f, 0.0f, 0.0f);
-Raysample.PointLightColor = float3(0.0f, 0.0f, 0.0f);
-Raysample.IndirectLightColor = float3(1.0f, 1.0f, 1.0f);
-Raysample.DetailLight  = float3(0.0f, 0.0f, 0.0f);
-Raysample.RTAO = 1.0f;
-
-Raysample.IndirectEmissive = float3(0.0f, 0.0f, 0.0f);
+for (int i = 0; i < 10; i++)
+{
+	Raysample[i].Color = float3(0,0,0);
+	Raysample[i].Metallic = 0;
+	Raysample[i].Specular = 0;
+	Raysample[i].Roughness = 1;
+	Raysample[i].Opacity = 0;
+	Raysample[i].Samples = 0;
+	Raysample[i].ShadingModel = -1;
+	Raysample[i].BlendingMode = 0;
+	Raysample[i].LightColor = float3(0,0,0);
+	Raysample[i].PointLightColor = float3(0,0,0);
+	Raysample[i].IndirectLightColor = float3(0,0,0);
+	Raysample[i].DetailLight = float3(0,0,0);
+	Raysample[i].RTAO = 1;
+	Raysample[i].IndirectEmissive = float3(0,0,0);
+}

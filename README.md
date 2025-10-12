@@ -25,8 +25,7 @@ Make sure you have a DirectX 16 SM6 Capable GPU With Hardware Acceleration suppo
 - And Many Changes, Cleanups, And Code Improvements I forgot to Document<br/>
 
 ## __How to Install__
-1. Install Unreal Engine 5.2.1 Source  if you havent already
-
+1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>
 Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile
 https://www.unrealengine.com/en-US/ue-on-github<br/>
 https://dev.epicgames.com/documentation/en-us/unreal-engine/building-unreal-engine-from-source<br/>

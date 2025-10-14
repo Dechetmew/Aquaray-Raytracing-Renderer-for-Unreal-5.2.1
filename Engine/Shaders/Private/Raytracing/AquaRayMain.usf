@@ -127,7 +127,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0)
 		{
 			//Shading Model Default Lit Opaque
-			Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+			Final = Raysample[i].Color * ((Raysample[i].LightColor + Raysample[i].IndirectLightColor) * Raysample[i].RTAO);
 			Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 			Final = Final + Raysample[i].Specular;
 			Final = Final + Raysample[i].IndirectEmissive;
@@ -146,7 +146,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Raysample[i].Opacity == 1)
 			{
 				//Opaque
-				Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor);
+				Final = Raysample[i].Color;
 				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}
@@ -168,7 +168,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Raysample[i].Opacity == 1)
 			{
 				//Opaque
-				Final = Raysample[i].Color * max(Raysample[i].LightColor, Raysample[i].IndirectLightColor);
+				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
 				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}

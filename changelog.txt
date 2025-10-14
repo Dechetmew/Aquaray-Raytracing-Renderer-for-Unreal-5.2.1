@@ -38,3 +38,15 @@ Quick Patch: Foliage now responds to sun Direction
 
 v0.5.5
 Added Support for Point and Spot Lights for The Default Lit Opaque Shading Model
+
+v0.6.0
+Added Point and Spot Lighting
+Added Foliage Shading Model
+More Settings
+Code Improvements
+
+v0.6.1
+Now Color is FINNALY getting Applied Back to Front, which will make Reflections and Translucency way easier to Implement
+Improved Specular
+Sky is now Considered a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)
+And Many Changes, Cleanups, And Code Improvements I forgot to Document

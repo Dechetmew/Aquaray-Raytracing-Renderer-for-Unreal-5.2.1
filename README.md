@@ -2,11 +2,13 @@
 ## V0.6.1
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project<br/>
 SAMPLE PROJECT: https://mega.nz/file/DZgzFZKL#TDsautGjtkMpEODBVYFwjvYCzrVAfbX21R4qgzyx6nc
-![alt text](yay/img1.png)
+![alt text](yay/logo.png)
 
 I was always fascinated by Raytracing for a long time, wanting to make a Game where the Environment is built Around Typical Raytracing Effects. After finding out that Lumen and all the Additional NVRTX stuff ~~sucks~~ is not satisfactory for my project, I decided to find a Way to Implement my own Raytracing code into the Engine that would suit the what I need<br/>
+![alt text](yay/models.png)
 
 After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, Running them using Console Commands<br/>
+![alt text](yay/lights.png)
 
 It should work in Unreal 5.2.1, but im not sure about other versions (But you can try :D)<br/>
 

@@ -84,7 +84,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		{
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0)
 			{
-				#include "AQ_ShadingModel_DefaultLitOpaque.ush"
+				#include "AQ_ShadingModel_Dielectric.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 0)
 			{	
@@ -126,7 +126,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		}
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0)
 		{
-			//Shading Model Default Lit Opaque
+			//Shading Model Dielectric
 			Final = Raysample[i].Color * ((Raysample[i].LightColor + Raysample[i].IndirectLightColor) * Raysample[i].RTAO);
 			Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 			Final = Final + Raysample[i].Specular;

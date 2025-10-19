@@ -20,6 +20,7 @@ else
 	//No Action, Loop Again
 	Ray.Direction = SurfaceHit.IncidentVector;
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
+	
+	//Disable Transparent Geometry after too much Foliage to reduce Artifacts
+	if (SampleIndex == (MAX_STEPS - 2)) {RayFlags = RAY_FLAG_CULL_NON_OPAQUE;}
 }
-
-//Maybe set the main ray to use only opaque polygons after hitting too much foliage?

@@ -50,3 +50,6 @@ Now Color is FINNALY getting Applied Back to Front, which will make Reflections 
 Improved Specular
 Sky is now Considered a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)
 And Many Changes, Cleanups, And Code Improvements I forgot to Document
+
+v0.6.2
+Reduced Artifacts on Dense Foliage

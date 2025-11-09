@@ -1,13 +1,12 @@
 // AQUARAY RAYTRACER STRUCTS
 
-struct Raysample
+struct RaySample
 {
 	float3 Color;                         //BaseColor of the last hit matte Surface or sky. Alpha is for Opacity Blending
 	float  Metallic;                      //Used for Specular Calculation
 	float  Specular;                      //Amount of Specular to apply
 	float  Roughness;                     //Maybe will be used for specular
-	float  Opacity;						  //Opacity of Pixel relative to sky
-	int    Samples;						  //Amount of samples taken
+	float  Opacity;						  //Opacity
 	int    ShadingModel;				  //Shading Model of the Hit Surface
 	int    BlendingMode;				  //Blending Mode of the Hit Surface
 	
@@ -17,9 +16,9 @@ struct Raysample
 	float3 DetailLight;                   //(Detail Lighting) Small Raytraced GI? Something Like that
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
-
-	//More stuff will be added later
-	//Currently, Indirect Radiance will be disabled as Implementation is wrong. I cant know how much color I should add without knowing how much surrounding surfaces are lit
+	
+	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Smooth Surfaces
+	bool   ForceBloomPoint;               //ForceBloom for Point Lighting
 };
 
 struct DiffuseKernel
@@ -41,7 +40,7 @@ struct Stats
 struct SurfaceHit
 {
 	float3 HitPos;
-	float3 HitPosTranslucency; //Pushes the Hit Pos Through the mesh so the any next rays can continue without Self Intersection
+	float3 HitPosTranslucency; //Pushes the Hit Pos Through the mesh so the any following rays can continue without Self Intersection
 	float  Distance;
 	float3 IncidentVector;
 	float3 ReflectionVector;

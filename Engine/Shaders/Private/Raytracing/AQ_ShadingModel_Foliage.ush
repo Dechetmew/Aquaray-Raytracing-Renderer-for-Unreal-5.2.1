@@ -10,8 +10,8 @@ if (Payload.Opacity > 0.5f)
 	
 	Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 	
-	#include "AQ_LightingFoliage.ush"
-	#include "AQ_LightingFoliagePoint.usf"
+	#include "AQ_ShadingModel_Foliage_Lighting.ush"
+	#include "AQ_ShadingModel_Foliage_LightingPoint.usf"
 	break;
 }
 else

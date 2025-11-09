@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.6.1
+// AQUARAY RAYTRACER - v0.6.3
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -54,7 +54,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	// Raypath Loop
     for (int i = 0; i < MAX_STEPS; i++)
 	{
-		SampleIndex = i;
+		SampleIndex = SampleIndex + 1;
 	
 		Payload = TraceMaterialRay(
 			TLAS,
@@ -82,9 +82,29 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
-			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0)
+			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic < 0.5f)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
+			}
+			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.05f && Payload.Roughness < 0.95f && Payload.Metallic < 0.5f)
+			//{
+			//	#include "AQ_ShadingModel_DielectricRoughness.ush"
+			//}
+			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic < 0.5f)
+			//{
+			//	#include "AQ_ShadingModel_DielectricMirror.ush"
+			//}
+			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic > 0.5f)
+			//{
+			//	#include "AQ_ShadingModel_Metallic.ush"
+			//}
+			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.05f && Payload.Roughness < 0.95f && Payload.Metallic > 0.5f)
+			//{
+			//	#include "AQ_ShadingModel_MetallicRoughness.ush"
+			//}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.95f && Payload.Metallic > 0.5f)
+			{
+				#include "AQ_ShadingModel_MetallicMirror.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 0)
 			{	
@@ -124,7 +144,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = Raysample[i].Color;
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0)
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic < 0.5f)
 		{
 			//Shading Model Dielectric
 			Final = Raysample[i].Color * ((Raysample[i].LightColor + Raysample[i].IndirectLightColor) * Raysample[i].RTAO);
@@ -133,6 +153,50 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = Final + Raysample[i].IndirectEmissive;
 			
 			FinalOpacity = 1;
+		}
+		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.05f && Raysample[i].Roughness < 0.95f && Raysample[i].Metallic < 0.5f)
+		//{
+		//	
+		//}
+		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic < 0.5f)
+		//{
+		//	
+		//}
+		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic > 0.5f)
+		//{
+		//	
+		//}
+		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.05f && Raysample[i].Roughness< 0.95f && Raysample[i].Metallic > 0.5f)
+		//{
+		//	
+		//}
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.05f && Raysample[i].Metallic > 0.5f)
+		{
+			//Shading Model Metallic Mirror
+			Final = Final * Raysample[i].Color;
+			
+			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
+			if (Raysample[i].ForceBloom)
+			{
+				Final = float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
+			}
+			
+			if (Raysample[i].ForceBloomPoint)
+			{
+				Final = float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
+			}
+			
+			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders
+			if (Raysample[i].Roughness > 0.02f && !all(Raysample[i].LightColor > float3(2,2,2)))
+			{
+				float metallic_A = max(max(Raysample[i].LightColor.r, Raysample[i].LightColor.g), Raysample[i].LightColor.b);
+				float3 metallic_C = Final * ((metallic_A * 0.6) + 0.4);
+				
+				float metallic_B = max(max(Raysample[i].PointLightColor.r, Raysample[i].PointLightColor.g), Raysample[i].PointLightColor.b);
+				float3 metallic_D = Final * ((metallic_B * 0.6) + 0.4);
+				
+				Final = metallic_C + metallic_D;
+			}
 		}
 		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 0)
 		{
@@ -147,7 +211,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				//Opaque
 				Final = Raysample[i].Color;
-				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}
 			else if (Raysample[i].Opacity == 0)
@@ -181,7 +244,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else
 		{
 			//Shading Model Invalid
-			Final = float3(0.2,0,1);
+			Final = float3(0.4,0,1);
 			FinalOpacity = 1;
 		}
 	}
@@ -192,8 +255,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	//Debug Viewmodes
 	switch(DebugMode)
 	{
-		case 1: Final = float4(Stats.Steps, 1.0f); break;
-		case 2: Final = float4(Stats.RaysPerPixel, 1.0f); break;
+		case 1: Final = Stats.Steps; break;
+		case 2: Final = Stats.RaysPerPixel; break;
+        case 3: Final = Raysample[1].Color; break;
+		
 		default: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break;
 	}
 	

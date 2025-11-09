@@ -1,7 +1,6 @@
-//Shading Model: Default Lit Opaque
-Raysample[SampleIndex].Color = Payload.BaseColor + Payload.Radiance;
+//Shading Model: Dielectric
+Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].Metallic = Payload.Metallic;
-Raysample[SampleIndex].Opacity = 1.0f;
 Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
 Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
 
@@ -9,7 +8,7 @@ RayHitDistanceOutput[DispatchThreadId] = Payload.HitT;
 
 if (DetailLightingMode > 0)
 {
-	// DETAIL LIGHTING START
+	// DETAIL LIGHTING
 	//It Traces Rays in a 5-way Kernel Pattern on Every Valid Surface Pixel
 	//for Detail lighting like Ambient Occlusion
 	//EDIT: I really think this sucks, I hope I will end up replacing this mess with proper Raytraced Lighting in the future
@@ -112,7 +111,7 @@ Raysample[SampleIndex].IndirectLightColor = IndirectLightColor * FakeIndirectLig
 //Raysample[SampleIndex].IndirectLightColor = float3(0.317f, 0.376f, 0.443f) * FakeIndirectLighting; //for Debuging
 // RESERVED FOR GI
 
-#include "AQ_Lighting.ush"
-#include "AQ_LightingPoint.ush"
+#include "AQ_ShadingModel_Dielectric_Lighting.ush"
+#include "AQ_ShadingModel_Dielectric_LightingPoint.ush"
 
 break;

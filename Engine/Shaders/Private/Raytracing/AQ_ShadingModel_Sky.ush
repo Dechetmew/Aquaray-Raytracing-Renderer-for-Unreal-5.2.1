@@ -3,6 +3,6 @@
 
 Raysample[SampleIndex].ShadingModel = 100;
 Raysample[SampleIndex].BlendingMode = 0;
-Raysample[SampleIndex].Color = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
+Raysample[SampleIndex].Color = GetSkyRadianceSun(SurfaceHit.IncidentVector, 0, SunDirection) * SkyVisualBrightness;
 Raysample[SampleIndex].Opacity = 1;
 break;

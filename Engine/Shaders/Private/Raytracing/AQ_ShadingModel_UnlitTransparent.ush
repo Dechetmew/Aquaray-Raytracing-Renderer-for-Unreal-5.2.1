@@ -15,7 +15,7 @@ if (Payload.Opacity > 0.99f)
 else if (Payload.Opacity < 0.01f)
 {
 	//Fully Invisible
-	//No Action, Loop Again
+	//No Action, Advance Ray
 	Ray.Direction = SurfaceHit.IncidentVector;
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
 	Raysample[SampleIndex].Opacity = 0;
@@ -27,7 +27,7 @@ else
 	Raysample[SampleIndex].Color = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
 	
-	//Prep next Main Loop
+	//Advance Ray
 	Ray.Direction = SurfaceHit.IncidentVector;
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
 }

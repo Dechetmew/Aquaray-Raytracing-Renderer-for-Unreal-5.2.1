@@ -1,0 +1,310 @@
+// POINT LIGHTING FOR SHADING MODEL FOLIAGE
+
+#ifndef AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
+#define AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
+
+//Declare only once
+uint LightCountFoliage;
+float3 AccumulatedPointLightColorFoliage = float3(0,0,0);
+int ShadowFoliageIndexLights = 0;
+
+#endif // AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
+
+FCulledLightList LightsCulled = FCulledLightList::Create(SurfaceHit.HitPos);
+LightCountFoliage = LightsCulled.NumLights();
+LightCountFoliage = clamp(LightCountFoliage, 0, 5); //Max Lights Evaluated Per Pixel 
+
+if (EnablePointLightsShadowFoliage == 0)
+{
+	//Simple Point Lighting (With no Sloooow Raytracing)
+	for (uint i = 0; i < LightCountFoliage; ++i)
+	{
+		bool BlockedBySolidFoliageLights = false;
+		uint Lit = 0;
+		uint LightIndex = LightsCulled.GetLightIndex(i, Lit);
+		if (Lit == 0)
+		{
+			continue;
+		}
+
+		FRTLightingData Light = GetRayTracingLightData(LightIndex);
+		
+		if (Light.Type == LIGHT_TYPE_SPOT)
+		{
+			//Spot Light (Cone)
+			float3 toLightVec = Light.TranslatedLightPosition - SurfaceHit.HitPos;
+			float dist = length(toLightVec);
+			
+			float3 toLight = toLightVec / dist;
+			
+			if (Light.InvRadius <= 0.0)
+			{
+				//Invalid Radius
+				continue;
+			}
+
+			float radius = 1.0 / Light.InvRadius;
+			if (dist > radius) 
+			{
+				//Too far
+				continue;
+			}
+
+			float cosAngle = dot(normalize(Light.Direction), toLight);
+			float innerCos = max(Light.SpotAngles.x, Light.SpotAngles.y);
+			float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y);
+			if (cosAngle < outerCos)
+			{
+				//Not Inside the Cone
+				continue;
+			}
+
+			float spotAtten = (innerCos - outerCos <= 1e-5) ? 1.0 : saturate((cosAngle - outerCos) / (innerCos - outerCos));
+			if (spotAtten <= 0.0)
+			{   
+				//Invalid spotAtten
+				continue;
+			}
+
+			float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * spotAtten * 0.001;
+			AccumulatedPointLightColorFoliage += Light.LightColor * atten * Lambert(toLight, float3(0,0,1));
+		}
+		else if (Light.Type == LIGHT_TYPE_POINT)
+		{
+			//Point Light (Sphere)
+			float3 L = Light.TranslatedLightPosition - SurfaceHit.HitPos;
+			float dist = length(L);
+			float3 LightDir = normalize(L);
+			
+			float radius = 1.0 / Light.InvRadius;
+			
+			if (radius <= 0.0)
+			{
+				//Invalid Radius
+				continue;
+			}
+			
+			if (dist > radius)
+			{
+				// Too far away
+				continue;
+			}
+
+			float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
+			AccumulatedPointLightColorFoliage += Light.LightColor * atten * Lambert(LightDir, float3(0,0,1));
+		}
+		else if (Light.Type == LIGHT_TYPE_RECT)
+		{
+			//5 Refined Metal for anybody who figures out those stupid rect lights. I give up
+		}
+	}
+	
+	// Output the accumulated color
+	Raysample[SampleIndex].PointLightColor = clamp(AccumulatedPointLightColorFoliage, float3(0,0,0), Payload.BaseColor);
+}
+else
+{
+	//Shadowed Point Lighting
+	for (uint i = 0; i < LightCountFoliage; ++i)
+	{
+		bool BlockedBySolidFoliageLights = false;
+		uint Lit = 0;
+		uint LightIndex = LightsCulled.GetLightIndex(i, Lit);
+		if (Lit == 0)
+		{
+			continue;
+		}
+
+		FRTLightingData Light = GetRayTracingLightData(LightIndex);
+		
+		if (Light.Type == LIGHT_TYPE_SPOT)
+		{
+			//Spot Light (Cone)
+			float3 L = Light.TranslatedLightPosition - SurfaceHit.HitPos;
+			float dist = length(L);
+			float3 LightSomething = L / dist;
+			float3 LightDir = normalize(L);
+			
+			if (Light.InvRadius <= 0.0)
+			{
+				//Invalid Radius
+				continue;
+			}
+
+			float radius = 1.0 / Light.InvRadius;
+			if (dist > radius) 
+			{
+				//Too far
+				continue;
+			}
+
+			float cosAngle = dot(normalize(Light.Direction), LightSomething);
+			float innerCos = max(Light.SpotAngles.x, Light.SpotAngles.y);
+			float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y);
+			if (cosAngle < outerCos)
+			{
+				//Not Inside the Cone
+				continue;
+			}
+
+			float spotAtten = (innerCos - outerCos <= 1e-5) ? 1.0 : saturate((cosAngle - outerCos) / (innerCos - outerCos));
+			if (spotAtten <= 0.0)
+			{   
+				//Invalid spotAtten
+				continue;
+			}
+			
+			VisbilityRay.Origin    = SurfaceHit.HitPos;
+			VisbilityRay.TMax      = dist;
+			VisbilityRay.Direction = LightDir;
+
+			ShadowPayload = TraceMaterialRay(
+				TLAS,
+				RayFlags,
+				InstanceInclusionMask,
+				VisbilityRay,
+				RayCone,
+				bEnableSkyLightContribution,
+				bIgnoreTranslucentMaterials);
+
+			Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+			BlockedBySolidFoliageLights = false;
+			ShadowFoliageIndexLights = 0;
+
+			// Step through foliage layers (up to 5 tries)
+			for (int i = 0; i < 5; ++i)
+			{
+				ShadowFoliageIndexLights += 1;
+
+				if (!ShadowPayload.IsHit())
+				{
+					// No Hit
+					break;
+				}
+
+				if (ShadowPayload.ShadingModelID != 6)
+				{
+					// Hit a solid non-foliage surface - cast shadow
+					BlockedBySolidFoliageLights = true;
+					break;
+				}
+
+				// Advance the Ray
+				VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
+				VisbilityRay.TMax = VisbilityRay.TMax - ShadowPayload.HitT;
+
+				ShadowPayload = TraceMaterialRay(
+					TLAS,
+					RayFlags,
+					InstanceInclusionMask,
+					VisbilityRay,
+					RayCone,
+					bEnableSkyLightContribution,
+					bIgnoreTranslucentMaterials);
+
+				Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+			}
+
+			if (ShadowFoliageIndexLights >= 8)
+			{
+				// Too many steps
+			}
+			else if (BlockedBySolidFoliageLights == false)
+			{
+				// Shining
+				float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * spotAtten * 0.001;
+				AccumulatedPointLightColorFoliage += Light.LightColor * atten * Lambert(LightDir, float3(0,0,1));
+			}
+		}
+		else if (Light.Type == LIGHT_TYPE_POINT)
+		{
+			//Point Light (Sphere)
+			float3 L = Light.TranslatedLightPosition - SurfaceHit.HitPos;
+			float dist = length(L);
+			float3 LightDir = normalize(L);
+			
+			float radius = 1.0 / Light.InvRadius;
+			if (radius <= 0.0)
+			{
+				//Invalid Radius
+				continue;
+			}
+			
+			if (dist > radius)
+			{
+				// Too far away
+				continue;
+			}
+			
+			VisbilityRay.Origin    = SurfaceHit.HitPos;
+			VisbilityRay.TMax      = dist;
+			VisbilityRay.Direction = LightDir;
+
+			ShadowPayload = TraceMaterialRay(
+				TLAS,
+				RayFlags,
+				InstanceInclusionMask,
+				VisbilityRay,
+				RayCone,
+				bEnableSkyLightContribution,
+				bIgnoreTranslucentMaterials);
+
+			Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+			BlockedBySolidFoliageLights = false;
+
+			// Step through foliage layers (up to 5 tries)
+			for (int i = 0; i < 5; ++i)
+			{
+				ShadowFoliageIndexLights += 1;
+
+				if (!ShadowPayload.IsHit())
+				{
+					// No Hit
+					break;
+				}
+
+				if (ShadowPayload.ShadingModelID != 6)
+				{
+					// Hit a solid non-foliage surface - cast shadow
+					BlockedBySolidFoliageLights = true;
+					break;
+				}
+
+				// Advance the Ray
+				VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
+				VisbilityRay.TMax = VisbilityRay.TMax - ShadowPayload.HitT;
+
+				ShadowPayload = TraceMaterialRay(
+					TLAS,
+					RayFlags,
+					InstanceInclusionMask,
+					VisbilityRay,
+					RayCone,
+					bEnableSkyLightContribution,
+					bIgnoreTranslucentMaterials);
+
+				Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+			}
+
+			if (ShadowFoliageIndexLights >= 8)
+			{
+				// Too many steps
+			}
+			else if (BlockedBySolidFoliageLights == false)
+			{
+				// Sun is Shining
+				float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
+				AccumulatedPointLightColorFoliage += Light.LightColor * atten * Lambert(LightDir, float3(0,0,1));
+			}
+		}
+		else if (Light.Type == LIGHT_TYPE_RECT)
+		{
+			//5 Refined Metal for anybody who figures out those stupid rect lights. I give up
+		}
+	}
+	
+	// Output the accumulated color
+	Raysample[SampleIndex].PointLightColor = clamp(AccumulatedPointLightColorFoliage, float3(0,0,0), Payload.BaseColor);
+}

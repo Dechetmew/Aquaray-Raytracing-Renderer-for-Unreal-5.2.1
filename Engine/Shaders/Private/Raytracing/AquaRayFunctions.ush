@@ -74,7 +74,7 @@ float3x3 BuildRotationMatrixFromZ(float3 N)
     return transpose(float3x3(Tangent, Bitangent, Up));
 }
 
-//Does exactly what is says on the can
+//Does exactly what it says on the can
 float3x3 BuildTangentBasis(float3 N)
 {
     float3 up = abs(N.z) < 0.999f ? float3(0, 0, 1) : float3(1, 0, 0);
@@ -121,35 +121,29 @@ bool IsCheckerboardFromUV(float2 UV, float2 ScreenSize)
     return ((U + V) & 1) == 0;
 }
 
-//Gets Skylight Color at Provided Direction and Blur Level
+//Gets Skylight Color at Provided Direction
 float3 GetSkyRadiance(float3 Direction, float Roughness)
 {
 	float SkyAverageBrightness = 1.0f;
 	return GetSkyLightReflection(Direction, Roughness, SkyAverageBrightness);
 }
 
-//Applies Blinn-Phong Specular, for Metallic Surfaces
-float BlinnPhongSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector)
+// Like GetSkyRadiance(), but manually adds a sun
+float3 GetSkyRadianceSun(float3 Direction, float Roughness, float3 SunDirection)
 {
-	float3 A = IncidentVector * -1.0f;
-	float3 B = LightVector + A;
-	float3 C = normalize(B);
-	float D = dot(C, SurfaceNormal);
-	float E = saturate(D);
-	float F = pow(E, 32.0f);
-	
-	return F;
-}
+	float SunValue = dot(Direction, SunDirection);
+	float SkyAverageBrightness = 1.0f;
 
-//Applies Phong Specular, for Plastic Surfaces
-float PhongSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector)
-{
-	float3 A = reflect(LightVector, SurfaceNormal);
-	float C = dot(A, IncidentVector);
-	float D = saturate(C);
-	float E = pow(D, 8.0f);
-
-	return E;
+	if (SunValue < 0.99995)
+	{
+		//Sky
+		return GetSkyLightReflection(Direction, Roughness, SkyAverageBrightness);
+	}
+	else
+	{
+		//Sun
+		return float3(1000,1000,1000);
+	}
 }
 
 //Applies Lambert Lighting. If you are inputing the Vector Towards the Light Source, Please Reverse it
@@ -176,9 +170,28 @@ bool CanBeLit(float3 WorldNormal, float3 LightVector)
     return dot(WorldNormal, LightVector) > 0.0f;
 }
 
-//Combines Plastic and Metallic Specular into Final Specular Contribution based on Metallic Input
-float PerformSpecular(float3 WorldNormal, float3 LightVector, float3 IncidentVector, float SurfaceSpecular, float SurfaceMetallic, float3 LightColor)
+//Applies Specular for Metallic Surfaces
+float MetallicSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
 {
-	float Power = Lambert(LightVector, WorldNormal);
-	return lerp(PhongSpecular(LightVector, WorldNormal, IncidentVector), BlinnPhongSpecular(LightVector, WorldNormal, IncidentVector), SurfaceMetallic) * SurfaceSpecular * Power;
+	float Power = Lambert(LightVector, SurfaceNormal);
+	float3 A = IncidentVector * -1.0f;
+	float3 B = LightVector + A;
+	float3 C = normalize(B);
+	float D = dot(C, SurfaceNormal);
+	float E = saturate(D);
+	float F = pow(E, 32.0f);
+	
+	return F * Power * Specular;
+}
+
+//Applies Specular for Dielectric Surfaces
+float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
+{
+	float Power = Lambert(LightVector, SurfaceNormal);
+	float3 A = reflect(LightVector, SurfaceNormal);
+	float C = dot(A, IncidentVector);
+	float D = saturate(C);
+	float E = pow(D, 8.0f);
+
+	return E * Power * Specular;
 }

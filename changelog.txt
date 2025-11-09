@@ -53,3 +53,7 @@ And Many Changes, Cleanups, And Code Improvements I forgot to Document
 
 v0.6.2
 Reduced Artifacts on Dense Foliage
+
+v0.6.3
+- REFLECTIONS! Added Shading Model Metallic Mirror
+- Improved Ray Sample Struct Init

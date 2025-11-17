@@ -37,7 +37,6 @@ else
 			if (!ShadowPayload.IsHit())
 			{
 				//sun is visible
-				Raysample[SampleIndex].Specular = DielectricSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
 				break;
 			}
 
@@ -71,28 +70,41 @@ else
 
 		//I tried making colored shadows (werent working obv.) but Its clear I will have to implement that as part of Glass Caustics Later
 		Raysample[SampleIndex].LightColor = SunLightColor * (Lambert(SunDirection, Payload.WorldNormal) * Transmission);
+		Raysample[SampleIndex].Specular = DielectricSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * Transmission;
 	}
 	else
 	{
-		ShadowMinimalPayload = TraceVisibilityRay(
-			TLAS,
-			RayFlags,
-			RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
-			InstanceInclusionMask,
-			VisbilityRay);
-
-		Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
-
-		if (ShadowMinimalPayload.IsHit())
+		if (!CanBeLit(Payload.WorldNormal, SunDirection))
 		{
-			// The Surface is in shadow
-			Raysample[SampleIndex].LightColor = float3(0.0f, 0.0f, 0.0f);
+			// The Surface Must be in shadow
 		}
 		else
 		{
-			// The Sun is Shining :)
-			Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
-			Raysample[SampleIndex].Specular = DielectricSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
+			VisbilityRay.Origin = SurfaceHit.HitPos;
+			VisbilityRay.TMax = MetersToCenti(100.0f);
+			VisbilityRay.Direction = SunDirection;
+
+			ShadowMinimalPayload = TraceVisibilityRay(
+				TLAS,
+				RayFlags,
+				RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+				InstanceInclusionMask,
+				VisbilityRay);
+
+			Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+			if (ShadowMinimalPayload.IsHit())
+			{
+				// The Surface is in shadow
+				Raysample[SampleIndex].LightColor = float3(0.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				// The Sun is Shining :)
+				Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
+				Raysample[SampleIndex].Specular = DielectricSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
+			}
 		}
 	}
 }
+

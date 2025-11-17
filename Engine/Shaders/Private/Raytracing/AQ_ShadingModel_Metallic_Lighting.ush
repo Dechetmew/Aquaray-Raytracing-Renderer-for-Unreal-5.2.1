@@ -1,4 +1,6 @@
-// LIGHTING SHADING MODEL METAllIC MIRROR
+// LIGHTING SHADING MODEL METALLIC
+
+Raysample[SampleIndex].IndirectLightColor = FakeRoughReflectIndirect(SurfaceHit.ReflectionVector);
 
 const int MaxShadowSteps = 4;
 float3 TransmissionColor = float3(1.0f, 1.0f, 1.0f);
@@ -67,18 +69,17 @@ else
 		}
 
 		Transmission = clamp(Transmission, 0.0f, 1.0f);
-		float SunValue = dot(SurfaceHit.ReflectionVector, SunDirection);
-		
-		Raysample[SampleIndex].LightColor = SunLightColor * (Lambert(SunDirection, Payload.WorldNormal) * Transmission);
-		Raysample[SampleIndex].Specular = MetallicSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
 
-		if (SunValue > 0.998 && Transmission > 0.9)
-		{
-			Raysample[SampleIndex].ForceBloom = true;
-		}
+		//I tried making colored shadows (werent working obv.) but Its clear I will have to implement that as part of Glass Caustics Later
+		Raysample[SampleIndex].LightColor = SunLightColor * (Lambert(SunDirection, Payload.WorldNormal) * Transmission);
+		Raysample[SampleIndex].Specular = MetallicSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * Transmission;
 	}
 	else
 	{
+		VisbilityRay.Origin = SurfaceHit.HitPos;
+		VisbilityRay.TMax = MetersToCenti(100.0f);
+		VisbilityRay.Direction = SunDirection;
+
 		ShadowMinimalPayload = TraceVisibilityRay(
 			TLAS,
 			RayFlags,
@@ -91,12 +92,11 @@ else
 		if (ShadowMinimalPayload.IsHit())
 		{
 			// The Surface is in shadow
-			Raysample[SampleIndex].LightColor = float3(0.0f, 0.0f, 0.0f);
 		}
 		else
 		{
 			// The Sun is Shining :)
-			Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
+			Raysample[SampleIndex].LightColor = FakeRoughReflectDirect(SurfaceHit.ReflectionVector, SunDirection, Payload.WorldNormal);
 			Raysample[SampleIndex].Specular = MetallicSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
 		}
 	}

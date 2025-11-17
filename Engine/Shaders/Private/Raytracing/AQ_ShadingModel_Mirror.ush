@@ -1,0 +1,18 @@
+// Shading Model: Metallic Mirror
+Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
+Raysample[SampleIndex].Metallic = Payload.Metallic;
+Raysample[SampleIndex].Roughness = Payload.Roughness;
+Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
+Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
+
+float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;
+FakeIndirectLighting = FakeIndirectLighting * 0.5f + 0.5f;
+Raysample[SampleIndex].IndirectLightColor = IndirectLightColor * FakeIndirectLighting;
+
+#include "AQ_ShadingModel_MetallicMirror_Lighting.ush"
+#include "AQ_ShadingModel_MetallicMirror_LightingPoint.ush"
+
+// Advance Ray
+Ray.Direction = SurfaceHit.ReflectionVector;
+Ray.Origin = SurfaceHit.HitPos;

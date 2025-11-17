@@ -82,29 +82,22 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
-			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic < 0.5f)
+			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
 			}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.05f && Payload.Roughness < 0.95f && Payload.Metallic < 0.5f)
-			//{
-			//	#include "AQ_ShadingModel_DielectricRoughness.ush"
-			//}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic < 0.5f)
-			//{
-			//	#include "AQ_ShadingModel_DielectricMirror.ush"
-			//}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.95f && Payload.Metallic > 0.5f)
-			//{
-			//	#include "AQ_ShadingModel_Metallic.ush"
-			//}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.05f && Payload.Roughness < 0.95f && Payload.Metallic > 0.5f)
-			//{
-			//	#include "AQ_ShadingModel_MetallicRoughness.ush"
-			//}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.95f && Payload.Metallic > 0.5f)
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic < 0.5f)
 			{
-				#include "AQ_ShadingModel_MetallicMirror.ush"
+				//Yeah, its the same code
+				#include "AQ_ShadingModel_Mirror.ush"
+			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic > 0.5f)
+			{
+				#include "AQ_ShadingModel_Metallic.ush"
+			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f)
+			{
+				#include "AQ_ShadingModel_Mirror.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 0)
 			{	
@@ -147,43 +140,56 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic < 0.5f)
 		{
 			//Shading Model Dielectric
-			Final = Raysample[i].Color * ((Raysample[i].LightColor + Raysample[i].IndirectLightColor) * Raysample[i].RTAO);
+			Final = Raysample[i].Color * (Raysample[i].LightColor + (Raysample[i].IndirectLightColor * Raysample[i].RTAO));
 			Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 			Final = Final + Raysample[i].Specular;
 			Final = Final + Raysample[i].IndirectEmissive;
 			
 			FinalOpacity = 1;
 		}
-		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.05f && Raysample[i].Roughness < 0.95f && Raysample[i].Metallic < 0.5f)
-		//{
-		//	
-		//}
-		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic < 0.5f)
-		//{
-		//	
-		//}
-		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic > 0.5f)
-		//{
-		//	
-		//}
-		//else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.05f && Raysample[i].Roughness< 0.95f && Raysample[i].Metallic > 0.5f)
-		//{
-		//	
-		//}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.05f && Raysample[i].Metallic > 0.5f)
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.5f && Raysample[i].Roughness < 0.95f && Raysample[i].Metallic < 0.5f)
 		{
-			//Shading Model Metallic Mirror
-			Final = Final * Raysample[i].Color;
+			//Shading Model Dielectric Mirror
+			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
+			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
+
+			Final = Diffuse + (Final * Fresnel);
 			
 			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
 			if (Raysample[i].ForceBloom)
 			{
-				Final = float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
+				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
 			}
 			
 			if (Raysample[i].ForceBloomPoint)
 			{
-				Final = float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
+				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
+			}
+		}
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.5f && Raysample[i].Metallic > 0.5f)
+		{
+			//Shading Model Metallic
+			Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
+			Final = Final + Raysample[i].Specular;
+			
+			FinalOpacity = 1;
+		}
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.05f && Raysample[i].Metallic > 0.5f)
+		{
+			//Shading Model Metallic Mirror
+			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
+			Final = lerp(Final * Raysample[i].Color, Final, Fresnel);
+			Final = Final + Raysample[i].Specular;
+			
+			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
+			if (Raysample[i].ForceBloom)
+			{
+				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
+			}
+			
+			if (Raysample[i].ForceBloomPoint)
+			{
+				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
 			}
 			
 			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders

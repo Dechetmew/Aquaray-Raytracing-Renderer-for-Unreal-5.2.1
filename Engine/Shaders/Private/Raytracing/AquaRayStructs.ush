@@ -17,6 +17,8 @@ struct RaySample
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
 	
+	float  NdotV;                         //How much the surface faces the Incident Ray
+	
 	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Smooth Surfaces
 	bool   ForceBloomPoint;               //ForceBloom for Point Lighting
 };

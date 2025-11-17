@@ -152,6 +152,17 @@ float Lambert(float3 LightVector, float3 SurfaceNormal)
 	return saturate(1.0f * max(0.0f, dot(SurfaceNormal, LightVector)));
 }
 
+//Amount of how much the Surface is Facing the Incident Vector
+float NdotV(float3 Normal, float3 IncidentVector)
+{
+    return saturate(dot(Normal, -IncidentVector));
+}
+
+float3 FresnelSchlick(float NdotV, float3 F0)
+{
+    return F0 + (1.0f - F0) * pow(1.0f - NdotV, 5.0f);
+}
+
 //Converts Distance From Meters to Centimeters
 float MetersToCenti(float DistanceInMeters)
 {
@@ -179,7 +190,7 @@ float MetallicSpecular(float3 LightVector, float3 SurfaceNormal, float3 Incident
 	float3 C = normalize(B);
 	float D = dot(C, SurfaceNormal);
 	float E = saturate(D);
-	float F = pow(E, 32.0f);
+	float F = pow(E, 50.0f);
 	
 	return F * Power * Specular;
 }
@@ -194,4 +205,31 @@ float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 Incide
 	float E = pow(D, 8.0f);
 
 	return E * Power * Specular;
+}
+
+//Returns a fake Rough Sky Reflection
+float FakeRoughReflectDirect(float3 ReflectionVector, float3 LightDirection, float3 SurfaceNormal)
+{
+	float expo = Lambert(LightDirection, SurfaceNormal);
+	return saturate(dot(ReflectionVector, float3(0,0,1))) * expo;
+}
+
+float FakeEnvSin(float3 ReflectionVector, float3 offset)
+{
+	float3 T = ReflectionVector * 0.5 + offset;
+	float s = sin(T.x * 6.28318548) * 0.1 + sin(T.y * 6.28318548) * 0.1 - sin(T.z * 6.28318548) * 0.1;
+	s = saturate(s);
+	return s * 0.8 + 0.05;
+}
+
+//Returns a fake Rough Environment Reflection
+float FakeRoughReflectIndirect(float3 ReflectionVector)
+{
+	ReflectionVector = normalize(ReflectionVector);
+
+	float layer1 = FakeEnvSin(ReflectionVector, float3(0.34,  0.34,  0.34));
+	float layer2 = FakeEnvSin(ReflectionVector, float3(0.0,   0.0,   0.0));
+	float layer3 = FakeEnvSin(ReflectionVector, float3(0.786, 0.786, 0.786));
+	
+	return layer1 + layer2 + layer3;
 }

@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.6.4
+// AQUARAY RAYTRACER - v0.6.3
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -82,13 +82,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
-			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
+			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.9f && Payload.Metallic < 0.5f)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
 			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic < 0.5f)
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.9f && Payload.Metallic < 0.5f)
 			{
-				//Yeah, its the same code
+				//(Dielectric Mirror) Yeah, its the same code
 				#include "AQ_ShadingModel_Mirror.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic > 0.5f)
@@ -137,7 +137,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = Raysample[i].Color;
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.95f && Raysample[i].Metallic < 0.5f)
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.9f && Raysample[i].Metallic < 0.5f)
 		{
 			//Shading Model Dielectric
 			Final = Raysample[i].Color * (Raysample[i].LightColor + (Raysample[i].IndirectLightColor * Raysample[i].RTAO));
@@ -147,13 +147,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.5f && Raysample[i].Roughness < 0.95f && Raysample[i].Metallic < 0.5f)
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.9f && Raysample[i].Metallic < 0.5f)
 		{
 			//Shading Model Dielectric Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
+			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor + Raysample[i].PointLightColor);
 
-			Final = Diffuse + (Final * Fresnel);
+			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f);
 			
 			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
 			if (Raysample[i].ForceBloom)

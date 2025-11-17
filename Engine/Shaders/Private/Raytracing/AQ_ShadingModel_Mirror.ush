@@ -1,4 +1,5 @@
 // Shading Model: Metallic Mirror
+
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].Metallic = Payload.Metallic;
 Raysample[SampleIndex].Roughness = Payload.Roughness;

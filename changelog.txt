@@ -64,3 +64,9 @@ Improved Reflection Color Behaviour
 Various Bug Fixes
 Changed Fake Indirect Lighting
 Fixed AO (Again)
+
+v0.7.0
+Added Reflections!
+Shading Model Metallic Mirror
+Shading Model Dielectric Mirror
+Shading Model Metallic (No Diffuse Lighting, Only Cosmetic)

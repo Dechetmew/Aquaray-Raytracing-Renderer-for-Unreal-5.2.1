@@ -15,6 +15,7 @@ It should work in Unreal 5.2.1, but im not sure about other versions (But you ca
 - Simple One-Ray Shadows<br/>
 - 10 step Reflections & Translucency with Interaction<br/>
 - Simple Reflective/Refractive Caustics<br/>
+(also some silly lighting hacks, not too important)<br/>
 
 Currently, This Version of AquaRay Wont support any kind of Diffuse Lighting, This is only a Proof of Concept.<br/>
 After This, Im planning to make a Rebuilt Version which will have both Classic Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
@@ -57,6 +58,8 @@ The Sample project uses:<br/>
 -Some Models by the [Stanford University](https://graphics.stanford.edu/data/3Dscanrep/)<br/>
 
 ## Gallery
+![alt text](yay/reflections.png)
+
 ![alt text](yay/models.png)
 
 ![alt text](yay/lights.png)

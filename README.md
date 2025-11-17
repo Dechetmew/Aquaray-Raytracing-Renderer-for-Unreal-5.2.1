@@ -33,6 +33,7 @@ Make sure you have a DirectX 16 SM6 Capable GPU With Hardware Acceleration suppo
 - Improved Reflection Color Behaviour<br/>
 - Various Bug Fixes<br/>
 - Changed Fake Indirect Lighting<br/>
+- Fixed AO (Again)<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

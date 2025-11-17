@@ -15,6 +15,8 @@ It should work in Unreal 5.2.1, but im not sure about other versions (But you ca
 - Simple One-Ray Shadows<br/>
 - 10 step Reflections & Translucency with Interaction<br/>
 - Simple Reflective/Refractive Caustics<br/>
+- Some Fog<br/>
+- Water<br/>
 (also some silly lighting hacks, not too important)<br/>
 
 Currently, This Version of AquaRay Wont support any kind of Diffuse Lighting, This is only a Proof of Concept.<br/>

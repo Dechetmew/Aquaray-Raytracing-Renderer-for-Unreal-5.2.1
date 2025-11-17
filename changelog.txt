@@ -63,3 +63,4 @@ Added Shading Model Dielectric Mirror
 Improved Reflection Color Behaviour
 Various Bug Fixes
 Changed Fake Indirect Lighting
+Fixed AO (Again)

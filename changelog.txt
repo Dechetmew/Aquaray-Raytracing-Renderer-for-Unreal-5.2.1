@@ -55,5 +55,11 @@ v0.6.2
 Reduced Artifacts on Dense Foliage
 
 v0.6.3
-- REFLECTIONS! Added Shading Model Metallic Mirror
-- Improved Ray Sample Struct Init
+REFLECTIONS! Added Shading Model Metallic Mirror
+Improved Ray Sample Struct Init
+
+v0.6.4
+Added Shading Model Dielectric Mirror
+Improved Reflection Color Behaviour
+Various Bug Fixes
+Changed Fake Indirect Lighting

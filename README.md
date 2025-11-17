@@ -5,10 +5,8 @@ SAMPLE PROJECT: https://mega.nz/file/DZgzFZKL#TDsautGjtkMpEODBVYFwjvYCzrVAfbX21R
 ![alt text](yay/logo.png)
 
 I was always fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, Especially focusing on Complex Reflection and Translucency, which other Games with Raytracing seem to have issues with or Drawbacks. With that, I decided to find a Way to Implement my own Raytracer into the Engine that would suit what I need<br/>
-![alt text](yay/models.png)
 
 After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, Running them using Console Commands<br/>
-![alt text](yay/lights.png)
 
 It should work in Unreal 5.2.1, but im not sure about other versions (But you can try :D)<br/>
 
@@ -57,3 +55,8 @@ After Clicking the button of Doom, you will be either Greeted by a "D3D Crashed"
 The Sample project uses:<br/>
 -Skyboxes from [PolyHaven](https://polyhaven.com/)<br/>
 -Some Models by the [Stanford University](https://graphics.stanford.edu/data/3Dscanrep/)<br/>
+
+## Gallery
+![alt text](yay/models.png)
+
+![alt text](yay/lights.png)

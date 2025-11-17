@@ -1,5 +1,5 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
-## V0.6.3
+## V0.6.4
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Game Project<br/>
 SAMPLE PROJECT: https://mega.nz/file/DZgzFZKL#TDsautGjtkMpEODBVYFwjvYCzrVAfbX21R4qgzyx6nc
 ![alt text](yay/logo.png)
@@ -20,9 +20,11 @@ Make sure you have a DirectX 16 SM6 Capable GPU With Hardware Acceleration suppo
 - More Settings<br/>
 - Code Improvements<br/>
 
-### Patch V0.6.3
-- REFLECTIONS! Added Shading Model Metallic Mirror<br/>
-- Improved Ray Sample Struct Init<br/>
+### Patch V0.6.4
+- Added Shading Model Dielectric Mirror<br/>
+- Improved Reflection Color Behaviour<br/>
+- Various Bug Fixes<br/>
+- Changed Fake Indirect Lighting<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

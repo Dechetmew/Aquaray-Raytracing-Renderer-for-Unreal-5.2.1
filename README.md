@@ -4,7 +4,7 @@ A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2
 SAMPLE PROJECT: https://mega.nz/file/DZgzFZKL#TDsautGjtkMpEODBVYFwjvYCzrVAfbX21R4qgzyx6nc
 ![alt text](yay/logo.png)
 
-I was always fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, Especially focusing on Complex Reflection and Translucency, which other Games with Raytracing seem to have issues with or Drawbacks. With that, I decided to find a Way to Implement my own Raytracer into the Engine that would suit what I need<br/>
+I was always fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, Especially focusing on Complex Reflection and Translucency, which I miss in other Raytraced Games. With that, I decided to find a Way to Implement my own Raytracer into the Engine that would suit what I need<br/>
 
 After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, Running them using Console Commands<br/>
 

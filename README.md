@@ -4,25 +4,25 @@ A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2
 SAMPLE PROJECT: https://mega.nz/file/DZgzFZKL#TDsautGjtkMpEODBVYFwjvYCzrVAfbX21R4qgzyx6nc
 ![alt text](yay/logo.png)
 
-I was always fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, Especially focusing on Complex Reflection and Translucency, which I miss in other Raytraced Games. With that, I decided to find a Way to Implement my own Raytracer into the Engine that would suit what I need<br/>
+I have always been fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, especially focusing on Complex Reflection and Translucency, which I miss in other Raytraced Games. With that, I decided to find a way to implement my own Raytracer into the engine that would suit what I needed.<br/>
 
-After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, Running them using Console Commands<br/>
+After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, running them using Console Commands.<br/>
 
-It should work in Unreal 5.2.1, but im not sure about other versions (But you can try :D)<br/>
+It should work in Unreal 5.2.1, but I'm not sure about other versions (But you can try :D)<br/>
 
 ## Scope of Project
 - Direct Lighting With Point Light Support<br/>
 - Simple One-Ray Shadows<br/>
-- 10 step Reflections & Translucency with Interaction<br/>
+- 10 steps Reflections & Translucency with Interaction<br/>
 - Simple Reflective/Refractive Caustics<br/>
 - Some Fog<br/>
 - Water<br/>
 (also some silly lighting hacks, not too important)<br/>
 
-Currently, This Version of AquaRay Wont support any kind of Diffuse Lighting, This is only a Proof of Concept.<br/>
-After This, Im planning to make a Rebuilt Version which will have both Classic Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
+Currently, this version of AquaRay won't support any kind of Diffuse Lighting. This is only a Proof of Concept.<br/>
+After this, I'm planning to make a Rebuilt Version which will have both Classic Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
 
-Make sure you have a DirectX 16 SM6 Capable GPU With Hardware Acceleration support for Raytracing, the sample project runs around 60-120fps on my Geforce RTX 3050 (The Framerate is mostly Based on how much is on the Screen)<br/>
+Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my Geforce RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 
 ## Update V0.7.0
 - Added Reflections!<br/>

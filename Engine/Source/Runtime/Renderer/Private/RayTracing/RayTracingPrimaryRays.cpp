@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "RendererPrivate.h"
 #include "GlobalShader.h"
 #include "DeferredShadingRenderer.h"
@@ -648,3 +646,4 @@ void FDeferredShadingSceneRenderer::RenderRayTracingPrimaryRaysView(
 }
 
 #endif // RHI_RAYTRACING
+

@@ -70,3 +70,7 @@ Added Reflections!
 Shading Model Metallic Mirror
 Shading Model Dielectric Mirror
 Shading Model Metallic (No Diffuse Lighting, Only Cosmetic)
+
+v0.8.0
+Added Exponential Height Fog
+(Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project

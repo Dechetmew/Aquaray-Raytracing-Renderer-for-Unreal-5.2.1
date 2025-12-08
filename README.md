@@ -19,8 +19,8 @@ It should work in Unreal 5.2.1, but I'm not sure about other versions (But you c
 - Water<br/>
 (also some silly lighting hacks, not too important)<br/>
 
-Currently, this version of AquaRay won't support any kind of Diffuse Lighting. This is only a Proof of Concept.<br/>
-After this, I'm planning to make a Rebuilt Version which will have both Classic Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
+Currently, this version of AquaRay won't support any kind of Diffuse Raytracing. This is only a Proof of Concept.<br/>
+After this, I'm planning to make a Rebuilt Version which will be a combination of Something closer to Standard Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
 
 Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my Geforce RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 

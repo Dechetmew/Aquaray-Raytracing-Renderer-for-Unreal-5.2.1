@@ -233,3 +233,27 @@ float FakeRoughReflectIndirect(float3 ReflectionVector)
 	
 	return layer1 + layer2 + layer3;
 }
+
+//Gets fog
+float GetFogAmount(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPos, float3 endPos)
+{
+    float distMeters = distance(startPos, endPos) * 0.01;
+    float z = endPos.z;
+    float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+    float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+
+    // Beer Lambert
+    float fog = 1.0 - exp(-(density * heightFactor) * distMeters);
+
+    return saturate(fog);
+}
+
+// Gets fog at a single world position. Used for sky
+float GetFogAtPoint(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 posWS)
+{
+    float z = posWS.z;
+    float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+    float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+
+    return saturate(density * heightFactor) * 2.5f; //Magic number yaay
+}

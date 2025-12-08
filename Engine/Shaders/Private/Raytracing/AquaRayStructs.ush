@@ -41,12 +41,24 @@ struct Stats
 	
 struct SurfaceHit
 {
+	float3 StartPos;
 	float3 HitPos;
-	float3 HitPosTranslucency; //Pushes the Hit Pos Through the mesh so the any following rays can continue without Self Intersection
+	float3 HitPosTranslucency; //Pushes the Hit Pos Through the mesh
 	float  Distance;
 	float3 IncidentVector;
 	float3 ReflectionVector;
 	float3 RefractionVector;
+};
+
+struct Fog
+{	
+	float3 Color;
+	float Density;
+	float BottomHeight;
+	float TopHeight;
+	float AmountBottom;
+	float AmountTop;
+	float Transmittance;
 };
 
 static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 };

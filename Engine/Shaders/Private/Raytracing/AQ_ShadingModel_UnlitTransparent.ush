@@ -2,7 +2,7 @@
 Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
 Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
 
-if (Payload.Opacity > 0.99f)
+if (Payload.Opacity > 0.99999f)
 {
 	//Opaque
 	Raysample[SampleIndex].Color = Payload.Radiance;
@@ -10,9 +10,10 @@ if (Payload.Opacity > 0.99f)
 	Raysample[SampleIndex].LightColor = float3(1,1,1);
 	Raysample[SampleIndex].RTAO = 1;
 	Raysample[SampleIndex].IndirectLightColor = float3(1,1,1);
+	
 	break;
 }
-else if (Payload.Opacity < 0.01f)
+else if (Payload.Opacity < 0.00001f)
 {
 	//Fully Invisible
 	//No Action, Advance Ray

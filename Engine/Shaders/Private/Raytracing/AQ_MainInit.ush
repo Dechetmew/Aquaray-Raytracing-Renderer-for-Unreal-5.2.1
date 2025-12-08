@@ -5,15 +5,36 @@ uint2 PixelCoord = GetPixelCoord(DispatchThreadId, UpscaleFactor);
 float2 InvBufferSize = View.BufferSizeAndInvSize.zw;
 float2 UV = (float2(PixelCoord) + 0.5) * InvBufferSize;
 
-//Translate Inputs
-float SkyVisualBrightness = FloatInput1;
+// STRUCTS
+FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
+FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
+FMaterialClosestHitPayload Payload; //main payload
+FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
+FRTLightingData Light; //Point,Rect,Spot Lights in scene
+FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
+DiffuseKernel DiffuseKernel[10];
+SurfaceHit SurfaceHit; //struct with data for directional calculations
+Stats Stats;
+Fog Fog;
+
+///////////// Translate Inputs
+float SkyVisualBrightness = clamp(FloatInput1, 0, 99);
+Fog.Density               = clamp(FloatInput2, 0, 1);
+Fog.AmountBottom          = clamp(FloatInput3, 0, 1);
+
 int MAX_STEPS = IntInput1; MAX_STEPS = clamp(MAX_STEPS, 5, 10);
-int DetailLightingMode = clamp(IntInput2, 0,5);
-int DebugMode = IntInput3;
+int DetailLightingMode               = clamp(IntInput2, 0,5);
+int DebugMode                        = IntInput3;
+int EnableShadowOpacity              = clamp(IntInput4, 0, 1);
+int EnablePointLightsShadowFoliage   = clamp(IntInput5, 0, 1);
+
 float3 IndirectLightColor = ColorInput1.rgb;
-float3 CameraPositionWS = ColorInput9.xyz;
-int EnableShadowOpacity = clamp(IntInput4, 0, 1);
-int EnablePointLightsShadowFoliage = clamp(IntInput5, 0, 1);
+Fog.Color                 = ColorInput2.rgb;
+Fog.BottomHeight          = ColorInput3.r;
+Fog.TopHeight             = ColorInput3.g;
+Fog.AmountTop             = clamp(ColorInput3.b, 0, 1);
+float3 CameraPositionWS   = ColorInput9.xyz;
+//////////////
 
 // SCENE SETUP
 //Its Fun hunting across All Shaders for what kinds of View Struct variables exist, almost like Collecting Pokemon! 
@@ -23,7 +44,7 @@ float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 // INITIAL RAY SETUP
 // RayTMax accepts values in centimeters
-FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space :)
+FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space
 FRayDesc DetailRay = CreatePrimaryRay(UV); //For Detail Lighting
 FRayDesc VisbilityRay = CreatePrimaryRay(UV);
 FRayCone RayCone = (FRayCone)0;
@@ -36,20 +57,10 @@ Ray.TMax = MetersToCenti(100.0f);
 VisbilityRay.TMin = 0.0f;
 VisbilityRay.TMax = MetersToCenti(100.0f);
 
-// STRUCTS
-FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
-FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
-FMaterialClosestHitPayload Payload; //main payload
-FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
-FRTLightingData Light; //Point,Rect,Spot Lights in scene
-FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
-DiffuseKernel DiffuseKernel[10];
-SurfaceHit SurfaceHit; //struct with data for directional calculations
-Stats Stats;
-
 // STRUCT SETUPS
 Stats.RaysPerPixel = float3(0.0f, 0.0f, 0.0f);
 Stats.Steps = float3(0.0f, 0.0f, 0.0f);
+Fog.Transmittance = 0.0f;
 
 for (int i = 0; i < 5; ++i)
 {
@@ -68,7 +79,6 @@ DiffuseKernel[0].Offset = float3(0.0f, 1.0f, 1.0f); //forward
 DiffuseKernel[1].Offset = float3(1.0f, 0.0f, 1.0f); //right
 DiffuseKernel[2].Offset = float3(0.0f, -1.0f, 1.0f); //backward
 DiffuseKernel[3].Offset = float3(-1.0f, 0.0f, 1.0f); //left
-
 DiffuseKernel[4].Offset = float3(0.0f, 0.0f, 1.0f); //up
 //vectors are not normalized
 

@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.7.0
+// AQUARAY RAYTRACER - v0.6.3
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -10,8 +10,8 @@
 
 // SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
 float4 ColorInput1; //Ambient/Indirect Light Color
-float4 ColorInput2;
-float4 ColorInput3;
+float4 ColorInput2; //Fog Color
+float4 ColorInput3; //R=Fog Bottom Height, G=Fog Top Height, B=Fog Amount Top, A=Fog Amount Bottom
 float4 ColorInput4;
 float4 ColorInput5;
 float4 ColorInput6;
@@ -19,7 +19,7 @@ float4 ColorInput7;
 float4 ColorInput8;
 float4 ColorInput9; //CameraPositionWS
 float FloatInput1; //Sky Visual Brightness
-float FloatInput2;
+float FloatInput2; //Fog Density
 float FloatInput3;
 float FloatInput4;
 float FloatInput5;
@@ -67,28 +67,32 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 		Stats.Steps = Stats.Steps + float3(0.0f, 0.025f, 0.0f);
 		Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
-		SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
-		SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f;
-		SurfaceHit.Distance = Payload.HitT;
 		SurfaceHit.IncidentVector = Ray.Direction;
-		SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
-		SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, Payload.Ior); //not used yet
 			
 		//Debug stuff here
-		//ColorOutput[DispatchThreadId] = float4(Payload.BaseColor, 1.0f);
+		//ColorOutput[DispatchThreadId] = float4(CameraPositionWS, 1.0f);
 		//break;
 		//Also disable output at the bottom when debuging
 
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
+			SurfaceHit.Distance = Payload.HitT;
+			SurfaceHit.StartPos = Ray.Origin;
+			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
+			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, Payload.Ior); //not used yet
+			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
+			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f;
+			
+			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
+		
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.9f && Payload.Metallic < 0.5f)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.9f && Payload.Metallic < 0.5f)
 			{
-				//(Dielectric Mirror) Yeah, its the same code
+				//(Dielectric Mirror), its the same code
 				#include "AQ_ShadingModel_Mirror.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic > 0.5f)
@@ -118,6 +122,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		}
 		else
 		{
+			//Also Bake Fog to the Sky Material as needed
+			Fog.Transmittance = Fog.Transmittance + GetFogAtPoint(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, CameraPositionWS);
 			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
@@ -169,7 +175,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.5f && Raysample[i].Metallic > 0.5f)
 		{
 			//Shading Model Metallic
-			Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
+			Final = Raysample[i].Color * (lerp(Raysample[i].LightColor, Raysample[i].IndirectLightColor, 0.7) + Raysample[i].IndirectLightColor);
 			Final = Final + Raysample[i].Specular;
 			
 			FinalOpacity = 1;
@@ -256,7 +262,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	}
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
-	Final = lerp(sky, Final, FinalOpacity);
+	Final = lerp(sky, Final, FinalOpacity); //Apply sky to Incomplete pixels
+	if (Fog.Density > 0.00001f)
+	{
+		Final = lerp(Final, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
+	}
 	
 	//Debug Viewmodes
 	switch(DebugMode)
@@ -264,11 +274,12 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		case 1: Final = Stats.Steps; break;
 		case 2: Final = Stats.RaysPerPixel; break;
         case 3: Final = Raysample[1].Color; break;
+		case 4: Final = saturate(Fog.Transmittance); break;
 		
-		default: ColorOutput[DispatchThreadId] = float4(Final, 1.0f); break;
+		default: break;
 	}
 	
-	// NaN check to prevent my beloved D3D crashes
+	// NaN check to prevent my beloved D3D crashes (reduces crashes from Uninitialized Values by 1%)
 	if (any(isnan(Final)) || any(isinf(Final)))
 	{
 		Final = float3(1, 0, 1);

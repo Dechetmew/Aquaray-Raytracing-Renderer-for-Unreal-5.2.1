@@ -32,45 +32,45 @@ v0.5.2
 -Fixed A Memory Leak + Some Mistakes
 
 v0.5.4
-Added Alpha Clip Foliage Support
-Improved Unlit Transparency Blending
-Quick Patch: Foliage now responds to sun Direction
+-Added Alpha Clip Foliage Support
+-Improved Unlit Transparency Blending
+-Quick Patch: Foliage now responds to sun Direction
 
 v0.5.5
-Added Support for Point and Spot Lights for The Default Lit Opaque Shading Model
+-Added Support for Point and Spot Lights for The Default Lit Opaque Shading Model
 
 v0.6.0
-Added Point and Spot Lighting
-Added Foliage Shading Model
-More Settings
-Code Improvements
+-Added Point and Spot Lighting
+-Added Foliage Shading Model
+-More Settings
+-Code Improvements
 
 v0.6.1
-Now Color is FINNALY getting Applied Back to Front, which will make Reflections and Translucency way easier to Implement
-Improved Specular
-Sky is now Considered a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)
-And Many Changes, Cleanups, And Code Improvements I forgot to Document
+-Now Color is FINNALY getting Applied Back to Front, which will make Reflections and Translucency way easier to Implement
+-Improved Specular
+-Sky is now Considered a Shading Model in the Raytracer (which also opens up Possibility for Custom Sky Rendering Functions)
+-And Many Changes, Cleanups, And Code Improvements I forgot to Document
 
 v0.6.2
-Reduced Artifacts on Dense Foliage
+-Reduced Artifacts on Dense Foliage
 
 v0.6.3
-REFLECTIONS! Added Shading Model Metallic Mirror
-Improved Ray Sample Struct Init
+-REFLECTIONS! Added Shading Model Metallic Mirror
+-Improved Ray Sample Struct Init
 
 v0.6.4
-Added Shading Model Dielectric Mirror
-Improved Reflection Color Behaviour
-Various Bug Fixes
-Changed Fake Indirect Lighting
-Fixed AO (Again)
+-Added Shading Model Dielectric Mirror
+-Improved Reflection Color Behaviour
+-Various Bug Fixes
+-Changed Fake Indirect Lighting
+-Fixed AO (Again)
 
 v0.7.0
-Added Reflections!
-Shading Model Metallic Mirror
-Shading Model Dielectric Mirror
-Shading Model Metallic (No Diffuse Lighting, Only Cosmetic)
+-Added Reflections!
+-Shading Model Metallic Mirror
+-Shading Model Dielectric Mirror
+-Shading Model Metallic (No Diffuse Lighting, Only Cosmetic)
 
 v0.8.0
-Added Exponential Height Fog
+-Added Exponential Height Fog
 (Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project

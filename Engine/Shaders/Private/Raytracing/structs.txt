@@ -1,0 +1,92 @@
+//Structs Reference
+
+//light types
+#define LIGHT_TYPE_DIRECTIONAL			0 //sun or moon
+#define LIGHT_TYPE_POINT			1 //sphere
+#define LIGHT_TYPE_SPOT				2 //cone light
+#define LIGHT_TYPE_RECT				3 //rectangle light
+
+struct FRTLightingData
+{
+	uint Type;						//type of light (see LIGHT_TYPEs)
+	float IESAtlasIndex;
+	float RectLightAtlasMaxLevel;
+	uint LightMissShaderIndex;
+	float3 TranslatedLightPosition;				//position relative to the camera
+	float InvRadius;					//1.0 / Radius
+	float3 Direction;					//direction for rect/spot lights
+	float FalloffExponent;
+	float3 LightColor;					//color
+	float SpecularScale;
+	float3 Tangent;
+	float SourceRadius;					//radius
+	float2 SpotAngles;
+	float SourceLength;                   
+	float SoftSourceRadius;
+	float2 DistanceFadeMAD;
+	float RectLightBarnCosAngle;
+	float RectLightBarnLength;
+	float2 RectLightAtlasUVOffset;
+	float2 RectLightAtlasUVScale;
+};
+
+struct FCulledLightList
+{
+	static FCulledLightList Create(float3 TranslatedWorldPosition)
+	bool IsPacked()
+	uint NumLights()
+	uint GetLightIndex(int LightNum, out uint Valid)
+};
+
+struct FRayDesc
+{
+	float3 Origin;
+	float TMin;
+	float3 Direction;
+	float TMax;    
+};
+
+struct FRayCone
+{
+	float Width;
+	float SpreadAngle;
+};
+
+struct FMinimalPayload
+{
+	float HitT; // Distance from ray origin to the intersection point in the ray direction. Negative on miss.
+	bool IsMiss() 
+	bool IsHit()
+};
+
+struct FMaterialClosestHitPayload : FMinimalPayload
+{
+	float HitT
+	float3 Radiance;
+	float3 WorldNormal;
+	float3 BaseColor;
+	float3 DiffuseColor;
+	float3 SpecularColor;
+	float Opacity;
+	float Metallic;
+	float Specular;
+	float Roughness;
+	float Ior;
+	uint ShadingModelID;
+	uint BlendingMode;
+	uint PrimitiveLightingChannelMask;
+	float4 CustomData;
+	float GBufferAO;
+	float3 IndirectIrradiance;
+	float3 TranslatedWorldPos;
+	uint Flags;
+	float3 WorldTangent;
+	float Anisotropy;
+
+	bool IsFrontFace()
+	bool IsTwoSided()
+	FRayCone GetRayCone()
+	void SetRayCone(FRayCone NewRayCone)
+	bool HasAnisotropy() { return abs(Anisotropy) >= 0.001f; }
+	float3 GetRayDirection()
+};

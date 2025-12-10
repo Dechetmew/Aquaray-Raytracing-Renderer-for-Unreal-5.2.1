@@ -87,6 +87,6 @@ struct FMaterialClosestHitPayload : FMinimalPayload
 	bool IsTwoSided()
 	FRayCone GetRayCone()
 	void SetRayCone(FRayCone NewRayCone)
-	bool HasAnisotropy() { return abs(Anisotropy) >= 0.001f; }
+	bool HasAnisotropy()
 	float3 GetRayDirection()
 };

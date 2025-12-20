@@ -8,7 +8,7 @@ I have always been fascinated by Raytracing for a long time, wanting to make my 
 
 After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, running them using Console Commands.<br/>
 
-It should work in Unreal 5.2.1, but I'm not sure about other versions (But you can try :D)<br/>
+It should work in Unreal 5.2.1, I'm not sure about other versions (But you can try :D)<br/>
 
 ## Scope of Project
 - Whitted Style Raytracing<br/>

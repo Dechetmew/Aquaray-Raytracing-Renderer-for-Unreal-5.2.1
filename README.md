@@ -11,16 +11,17 @@ After YEARS of brute forcing a solution, I came up with this.... hack. It uses U
 It should work in Unreal 5.2.1, but I'm not sure about other versions (But you can try :D)<br/>
 
 ## Scope of Project
+- Whitted Style Raytracing<br/>
 - Direct Lighting With Point Light Support<br/>
-- Simple One-Ray Shadows<br/>
-- 10 steps Reflections & Translucency with Interaction<br/>
-- Simple Reflective/Refractive Caustics<br/>
-- Some Fog<br/>
+- Simple One Ray Path Shadows<br/>
+- Reflections & Translucency in 10 steps<br/>
+- Simplified Reflective/Refractive Caustics<br/>
+- Simple Fog<br/>
 - Water<br/>
 (also some silly lighting hacks, not too important)<br/>
 
-Currently, this version of AquaRay won't support any kind of Diffuse Raytracing. This is only a Proof of Concept.<br/>
-After this, I'm planning to make a Rebuilt Version which will be a combination of Something closer to Standard Raytraced Diffuse Lighting, and the Deep Reflections/Translucency code from this Version.<br/>
+Currently, this version of AquaRay won't support any kind of Path Tracing. This is only a Proof of Concept.<br/>
+After this, I'm planning to make a Rebuilt Version which will be a combination of Standard Path Traced Lighting, and the Whitted Style Reflections/Translucency code from this Version.<br/>
 
 Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my Geforce RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 

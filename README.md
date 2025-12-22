@@ -25,7 +25,7 @@ After this, I'm planning to make a Rebuilt Version which will be a combination o
 
 Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my Geforce RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 
-## Update V0.7.0
+## Update V0.8.0
 - Added Exponential Height Fog<br/>
 (Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project<br/>
 

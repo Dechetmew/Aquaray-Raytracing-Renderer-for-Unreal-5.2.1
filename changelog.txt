@@ -76,5 +76,5 @@ v0.8.0
 (Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project
 
 v0.8.1
-Added Translucent Shading Model with Refraction (not reflections yet)
+Added Translucent Shading Model with Refraction (no reflections yet)
 Added Thin Translucent Shading Model

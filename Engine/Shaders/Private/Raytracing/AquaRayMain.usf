@@ -80,7 +80,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			SurfaceHit.Distance = Payload.HitT;
 			SurfaceHit.StartPos = Ray.Origin;
 			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
-			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, Payload.Ior); //not used yet
+			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f;
 			
@@ -102,6 +102,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f)
 			{
 				#include "AQ_ShadingModel_Mirror.ush"
+			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2 && Payload.IsTwoSided())
+			{	
+				#include "AQ_ShadingModel_Translucent.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 0)
 			{	
@@ -209,6 +213,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 				
 				Final = metallic_C + metallic_D;
 			}
+		}
+		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 2)
+		{	
+			// Shading Model Translucent
+			Final = lerp(Final, Final * Raysample[i].Color, Raysample[i].Opacity);
+			
+			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}
 		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 0)
 		{

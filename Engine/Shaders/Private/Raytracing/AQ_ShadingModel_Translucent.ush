@@ -1,0 +1,46 @@
+// Shading Model: Translucent
+
+Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
+Raysample[SampleIndex].Metallic = Payload.Metallic;
+Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
+Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
+
+//Init Refraction Ray
+RefractionRay.Origin = SurfaceHit.HitPosTranslucency;
+RefractionRay.Direction = SurfaceHit.RefractionVector;
+RefractionRay.TMin = 0;
+RefractionRay.TMax = MetersToCenti(100.0f);
+
+//Dont forget to Enable Two Sided Geometry in the Material for Proper Glass Rendering
+//If the Ray doesnt hit a Backside, It will assume the Material is Thin Translucent
+
+RefractionPayload = TraceMaterialRay(
+	TLAS,
+	RayFlags,
+	InstanceInclusionMask,
+	RefractionRay,
+	RayCone,
+	bEnableSkyLightContribution,
+	bIgnoreTranslucentMaterials);
+	
+Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
+	
+if (RefractionPayload.IsHit())
+{
+	//Volumetric Translucent
+	Raysample[SampleIndex].Opacity = saturate(Payload.Opacity * RefractionPayload.HitT); //For large Glass stuff, Use very low Opacity
+	Raysample[SampleIndex].Color = lerp(Raysample[SampleIndex].Color, float3(0,0,0), saturate(Payload.Opacity * (RefractionPayload.HitT * 0.7))); //Absorption Hack!
+	
+	//Prepare Next Ray
+	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, Payload.Ior / 1); //Like RefractionVector
+	Ray.Origin = RefractionRay.Origin + RefractionRay.Direction * RefractionPayload.HitT + RefractionRay.Direction * 0.001f; //Like HitPosTranslucency
+}
+else
+{
+	//Prepare Next Ray
+	//Ray Direction Stays Unchanged
+	Ray.Origin = SurfaceHit.HitPosTranslucency + (SurfaceHit.RefractionVector * 1); // 1cm thickness hardcoded
+	
+	Raysample[SampleIndex].Opacity = Payload.Opacity;
+}

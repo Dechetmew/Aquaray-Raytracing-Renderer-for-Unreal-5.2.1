@@ -10,6 +10,7 @@ FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
 FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
 FMaterialClosestHitPayload Payload; //main payload
 FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
+FMaterialClosestHitPayload RefractionPayload; //Refraction payload
 FRTLightingData Light; //Point,Rect,Spot Lights in scene
 FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
 DiffuseKernel DiffuseKernel[10];
@@ -44,10 +45,11 @@ float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 // INITIAL RAY SETUP
 // RayTMax accepts values in centimeters
-FRayDesc Ray = CreatePrimaryRay(UV); //Gets Camera Position and Direction. IMPORTANT: The Ray struct is in Local Space
-FRayDesc DetailRay = CreatePrimaryRay(UV); //For Detail Lighting
-FRayDesc VisbilityRay = CreatePrimaryRay(UV);
-FRayCone RayCone = (FRayCone)0;
+FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camera Position and Direction 
+FRayDesc DetailRay = CreatePrimaryRay(UV); //For Detail Lighting //TODO: Init Manually
+FRayDesc VisbilityRay = CreatePrimaryRay(UV); //For Shadow Checks //TODO: Init Manually
+FRayDesc RefractionRay; //For Refraction Rays
+FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unused
 uint RayFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES; //https://learn.microsoft.com/en-us/windows/win32/direct3d12/ray_flag
 const uint InstanceInclusionMask = RAY_TRACING_MASK_ALL;
 const bool bEnableSkyLightContribution = false;
@@ -75,18 +77,11 @@ for (int i = 0; i < 5; ++i)
 //https://academo.org/demos/3d-vector-plotter/ (this is handy)
 //assume x=1.0,y=1.0 is in top right corner, and z=1.0 is up
 //this is in TANGENT SPACE
-DiffuseKernel[0].Offset = float3(0.0f, 1.0f, 1.0f); //forward
-DiffuseKernel[1].Offset = float3(1.0f, 0.0f, 1.0f); //right
-DiffuseKernel[2].Offset = float3(0.0f, -1.0f, 1.0f); //backward
-DiffuseKernel[3].Offset = float3(-1.0f, 0.0f, 1.0f); //left
-DiffuseKernel[4].Offset = float3(0.0f, 0.0f, 1.0f); //up
-//vectors are not normalized
-
-//so we normalize them
-for (int i = 0; i < 5; ++i)
-{
-	DiffuseKernel[i].Offset = normalize(DiffuseKernel[i].Offset);
-}
+DiffuseKernel[0].Offset = normalize(float3(0.0f, 1.0f, 1.0f)); //forward
+DiffuseKernel[1].Offset = normalize(float3(1.0f, 0.0f, 1.0f)); //right
+DiffuseKernel[2].Offset = normalize(float3(0.0f, -1.0f, 1.0f)); //backward
+DiffuseKernel[3].Offset = normalize(float3(-1.0f, 0.0f, 1.0f)); //left
+DiffuseKernel[4].Offset = normalize(float3(0.0f, 0.0f, 1.0f)); //up
 
 //////////// Raysample Struct Init
 int SampleIndex = -1;

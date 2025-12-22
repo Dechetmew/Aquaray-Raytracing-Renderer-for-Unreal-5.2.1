@@ -1,33 +1,5 @@
 // POINT LIGHTING FOR SHADING MODEL DIELECTRIC
 
-//light types for reference:
-//#define LIGHT_TYPE_DIRECTIONAL		0 //sun or moon
-//#define LIGHT_TYPE_POINT				1 //sphere
-//#define LIGHT_TYPE_SPOT				2 //cone light
-//#define LIGHT_TYPE_RECT				3 //rectangle light
-
-//struct FRTLightingData: for reference
-//	uint Type;                          -type of light (see LIGHT_TYPEs)
-//	float IESAtlasIndex;
-//	float RectLightAtlasMaxLevel;
-//	uint LightMissShaderIndex;
-//	float3 TranslatedLightPosition;		-position relative to the camera
-//	float InvRadius;					-1.0 / Radius
-//	float3 Direction;					-direction for rect/spot lights
-//	float FalloffExponent;
-//	float3 LightColor;					-color
-//	float SpecularScale;
-//	float3 Tangent;
-//	float SourceRadius;					-radius
-//	float2 SpotAngles;
-//	float SourceLength;                   
-//	float SoftSourceRadius;
-//	float2 DistanceFadeMAD;
-//	float RectLightBarnCosAngle;
-//	float RectLightBarnLength;
-//	float2 RectLightAtlasUVOffset;
-//	float2 RectLightAtlasUVScale;
-
 uint LightCount;
 float3 AccumulatedPointLightColor = float3(0,0,0);
 

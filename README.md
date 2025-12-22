@@ -30,7 +30,7 @@ Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration suppo
 (Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project<br/>
 
 ### Minor Update V0.8.1
-- Added Translucent Shading Model with Refraction (nor reflections yet)<br/>
+- Added Translucent Shading Model with Refraction (no reflections yet)<br/>
 - Added Thin Translucent Shading Model<br/>
 
 ## __How to Install__

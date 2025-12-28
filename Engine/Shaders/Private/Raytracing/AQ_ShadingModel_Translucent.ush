@@ -72,7 +72,7 @@ if (RefractionPayload.IsHit())
 	Raysample[SampleIndex].Color += ReflectionColor;
 	
 	//Prepare Next Ray
-	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, Payload.Ior / 1); //Like RefractionVector
+	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
 	Ray.Origin = RefractionRay.Origin + RefractionRay.Direction * RefractionPayload.HitT + RefractionRay.Direction * 0.001f; //Like HitPosTranslucency
 }
 else
@@ -82,4 +82,5 @@ else
 	Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
 	
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
+
 }

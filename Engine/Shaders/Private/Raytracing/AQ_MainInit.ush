@@ -42,6 +42,7 @@ float3 CameraPositionWS   = ColorInput9.xyz;
 //float3 SunLightColor = View.DirectionalLightColor.rgb;
 float3 SunLightColor = float3(1.0f,1.0f,1.0f); //for Debuging
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
+float3 IndirectColor = float3(0.317f, 0.376f, 0.443f);
 
 // INITIAL RAY SETUP
 // RayTMax accepts values in centimeters
@@ -95,6 +96,4 @@ for (int i = 0; i < 10; ++i)
     Raysample[i].Roughness = 1.0;
     Raysample[i].ShadingModel = -1;
     Raysample[i].RTAO = 1.0;
-    Raysample[i].ForceBloom = 0;
-    Raysample[i].ForceBloomPoint = 0;
 }

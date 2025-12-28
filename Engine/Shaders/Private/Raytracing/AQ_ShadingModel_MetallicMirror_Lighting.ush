@@ -98,6 +98,7 @@ else
 			// The Sun is Shining :)
 			Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
 			Raysample[SampleIndex].Specular = MetallicSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
+			Raysample[SampleIndex].ForceBloom = true;
 		}
 	}
 }

@@ -154,9 +154,10 @@ for (uint i = 0; i < LightCount; ++i)
 			Raysample[SampleIndex].ForceBloomPoint = true;
 		}
 	}
-	else if (Light.Type == LIGHT_TYPE_RECT)
+	else
 	{
 		//5 Refined Metal for anybody who figures out those stupid rect lights. I give up
+		continue;
 	}
 }
 

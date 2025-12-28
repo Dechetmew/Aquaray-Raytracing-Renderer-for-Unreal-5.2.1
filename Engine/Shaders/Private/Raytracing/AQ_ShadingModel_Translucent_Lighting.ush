@@ -1,0 +1,34 @@
+// LIGHTING SHADING MODEL TRANSLUCENT
+
+if (CanBeLit(Payload.WorldNormal, SunDirection))
+{
+	VisbilityRay.Origin = SurfaceHit.HitPos;
+	VisbilityRay.TMax = MetersToCenti(100.0f);
+	VisbilityRay.Direction = SunDirection;
+
+	ShadowMinimalPayload = TraceVisibilityRay(
+		TLAS,
+		RayFlags,
+		RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+		InstanceInclusionMask,
+		VisbilityRay);
+
+	Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+	if (ShadowMinimalPayload.IsHit())
+	{
+		// The Surface is in shadow
+		Raysample[SampleIndex].LightColor = float3(0.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		// The Sun is Shining :)
+		Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
+		
+		float SunValue = dot(SurfaceHit.ReflectionVector, SunDirection);
+		if (SunValue > 0.99)
+		{
+			Raysample[SampleIndex].ForceBloom = true;
+		}
+	}
+}

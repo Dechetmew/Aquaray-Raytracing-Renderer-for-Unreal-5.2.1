@@ -1,14 +1,8 @@
 // POINT LIGHTING FOR SHADING MODEL FOLIAGE
 
-#ifndef AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
-#define AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
-
-//Declare only once
 uint LightCountFoliage;
 float3 AccumulatedPointLightColorFoliage = float3(0,0,0);
 int ShadowFoliageIndexLights = 0;
-
-#endif // AQ_SHADOWCHECKFOLIAGELIGHTS_DECLARED
 
 FCulledLightList LightsCulled = FCulledLightList::Create(SurfaceHit.HitPos);
 LightCountFoliage = LightsCulled.NumLights();
@@ -93,9 +87,10 @@ if (EnablePointLightsShadowFoliage == 0)
 			float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
 			AccumulatedPointLightColorFoliage += Light.LightColor * atten * Lambert(LightDir, float3(0,0,1));
 		}
-		else if (Light.Type == LIGHT_TYPE_RECT)
+		else
 		{
 			//5 Refined Metal for anybody who figures out those stupid rect lights. I give up
+			continue;
 		}
 	}
 	

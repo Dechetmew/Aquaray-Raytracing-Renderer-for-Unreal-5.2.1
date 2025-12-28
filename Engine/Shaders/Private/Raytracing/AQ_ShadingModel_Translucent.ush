@@ -6,6 +6,38 @@ Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
 Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
 Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
 
+#include "AQ_ShadingModel_Translucent_Lighting.ush"
+#include "AQ_ShadingModel_Translucent_LightingPoint.ush"
+
+float3 ReflectionColor;
+
+////////////////// Reflect Sky. Before you ask, I tried coding a Full Raytraced Reflection, but that went Horribly
+VisbilityRay.Origin = SurfaceHit.HitPos;
+VisbilityRay.TMax = MetersToCenti(100.0f);
+VisbilityRay.Direction = SurfaceHit.ReflectionVector;
+
+ShadowMinimalPayload = TraceVisibilityRay(
+	TLAS,
+	RayFlags,
+	RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
+	InstanceInclusionMask,
+	VisbilityRay);
+
+Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+
+if (ShadowMinimalPayload.IsHit())
+{
+	// No Reflection
+	ReflectionColor = float3(0.0f, 0.0f, 0.0f);
+}
+else
+{
+	// Reflection
+	ReflectionColor = GetSkyRadianceSun(SurfaceHit.ReflectionVector, 0, SunDirection);
+	ReflectionColor = lerp(ReflectionColor, ReflectionColor * Payload.BaseColor, Payload.Opacity); //Not The Greatest Implementation, but it does offer At least some control Over Reflection Tint
+}
+//////////////////
+
 //Init Refraction Ray
 RefractionRay.Origin = SurfaceHit.HitPosTranslucency;
 RefractionRay.Direction = SurfaceHit.RefractionVector;
@@ -29,8 +61,15 @@ Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
 if (RefractionPayload.IsHit())
 {
 	//Volumetric Translucent
-	Raysample[SampleIndex].Opacity = saturate(Payload.Opacity * RefractionPayload.HitT); //For large Glass stuff, Use very low Opacity
-	Raysample[SampleIndex].Color = lerp(Raysample[SampleIndex].Color, float3(0,0,0), saturate(Payload.Opacity * (RefractionPayload.HitT * 0.7))); //Absorption Hack!
+	Raysample[SampleIndex].Opacity = saturate(Payload.Opacity * RefractionPayload.HitT);
+
+	float sigma = -log(max(1.0f - Payload.Opacity, 1e-6));
+	float3 Absorption = sigma * (1.0f - Payload.BaseColor);
+	Raysample[SampleIndex].Color = exp(-Absorption * RefractionPayload.HitT); //For large Glass stuff, Use very low Opacity
+	
+	Raysample[SampleIndex].Color = Raysample[SampleIndex].Color * dot(-Payload.WorldNormal, SurfaceHit.IncidentVector);
+	
+	Raysample[SampleIndex].Color += ReflectionColor;
 	
 	//Prepare Next Ray
 	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, Payload.Ior / 1); //Like RefractionVector
@@ -40,7 +79,7 @@ else
 {
 	//Prepare Next Ray
 	//Ray Direction Stays Unchanged
-	Ray.Origin = SurfaceHit.HitPosTranslucency + (SurfaceHit.RefractionVector * 1); // 1cm thickness hardcoded
+	Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
 	
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
 }

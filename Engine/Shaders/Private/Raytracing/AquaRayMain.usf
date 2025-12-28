@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.8.1
+// AQUARAY RAYTRACER - v0.8.2
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -92,15 +92,12 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.9f && Payload.Metallic < 0.5f)
 			{
-				//(Dielectric Mirror), its the same code
+				//Dielectric Mirror
 				#include "AQ_ShadingModel_Mirror.ush"
-			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic > 0.5f)
-			{
-				#include "AQ_ShadingModel_Metallic.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f)
 			{
+				//Metallic Mirror
 				#include "AQ_ShadingModel_Mirror.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2 && Payload.IsTwoSided())
@@ -127,7 +124,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else
 		{
 			//Also Bake Fog to the Sky Material as needed
-			Fog.Transmittance = Fog.Transmittance + GetFogAtPoint(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, CameraPositionWS);
+			if (Fog.Density > 0.00001f) {Fog.Transmittance = Fog.Transmittance + GetFogAtPoint(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, CameraPositionWS);}
 			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
@@ -166,23 +163,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f);
 			
 			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
-			if (Raysample[i].ForceBloom)
-			{
-				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
-			}
-			
-			if (Raysample[i].ForceBloomPoint)
-			{
-				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
-			}
-		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.5f && Raysample[i].Metallic > 0.5f)
-		{
-			//Shading Model Metallic
-			Final = Raysample[i].Color * (lerp(Raysample[i].LightColor, Raysample[i].IndirectLightColor, 0.7) + Raysample[i].IndirectLightColor);
-			Final = Final + Raysample[i].Specular;
-			
-			FinalOpacity = 1;
+			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
+			Final += 2000.0f * Raysample[i].Color * BloomLight;
 		}
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.05f && Raysample[i].Metallic > 0.5f)
 		{
@@ -192,24 +174,17 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = Final + Raysample[i].Specular;
 			
 			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
-			if (Raysample[i].ForceBloom)
-			{
-				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * SunLightColor;
-			}
-			
-			if (Raysample[i].ForceBloomPoint)
-			{
-				Final = Final + float3(2000,2000,2000) * Raysample[i].Color * (Raysample[i].PointLightColor * 10.0f);
-			}
+			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
+			Final += 2000.0f * Raysample[i].Color * BloomLight;
 			
 			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders
 			if (Raysample[i].Roughness > 0.02f && !all(Raysample[i].LightColor > float3(2,2,2)))
 			{
 				float metallic_A = max(max(Raysample[i].LightColor.r, Raysample[i].LightColor.g), Raysample[i].LightColor.b);
-				float3 metallic_C = Final * ((metallic_A * 0.6) + 0.4);
+				float3 metallic_C = lerp(Final * IndirectColor, Final * Raysample[i].LightColor, metallic_A);
 				
 				float metallic_B = max(max(Raysample[i].PointLightColor.r, Raysample[i].PointLightColor.g), Raysample[i].PointLightColor.b);
-				float3 metallic_D = Final * ((metallic_B * 0.6) + 0.4);
+				float3 metallic_D = lerp(Final * IndirectColor, Final * Raysample[i].PointLightColor, metallic_B);
 				
 				Final = metallic_C + metallic_D;
 			}
@@ -217,7 +192,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 2)
 		{	
 			// Shading Model Translucent
-			Final = lerp(Final, Final * Raysample[i].Color, Raysample[i].Opacity);
+			Final = Final * Raysample[i].Color;
+			
+			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
+			Final += 2000.0f * Raysample[i].Color * BloomLight;
 			
 			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}

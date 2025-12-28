@@ -1,12 +1,7 @@
 // LIGHTING SHADING MODEL FOLIAGE
 
-#ifndef AQ_SHADOWCHECKFOLIAGE_DECLARED
-#define AQ_SHADOWCHECKFOLIAGE_DECLARED
-
 bool BlockedBySolidFoliage = false;
 int ShadowFoliageIndex = 0;
-
-#endif // AQ_SHADOWCHECKFOLIAGE_DECLARED
 
 VisbilityRay.Origin    = SurfaceHit.HitPos;
 VisbilityRay.TMax      = MetersToCenti(100.0f);

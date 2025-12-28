@@ -1,4 +1,4 @@
-// POINT LIGHTING SHADING MODEL DIELECTRIC
+// POINT LIGHTING SHADING MODEL TRANSLUCENT
 
 uint LightCount;
 float3 AccumulatedPointLightColor = float3(0,0,0);
@@ -82,7 +82,12 @@ for (uint i = 0; i < LightCount; ++i)
 		//The Point Light is Shining on the Surface
 		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * spotAtten * 0.001;
 		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(toLight, Payload.WorldNormal);
-		Raysample[SampleIndex].Specular += DielectricSpecular(toLight, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * (atten * 100000.0f);
+		
+		float SunValue = dot(SurfaceHit.ReflectionVector, normalize(toLight));
+		if (SunValue > 0.99)
+		{
+			Raysample[SampleIndex].ForceBloom = true;
+		}
 	}
 	else if (Light.Type == LIGHT_TYPE_POINT)
 	{
@@ -132,7 +137,12 @@ for (uint i = 0; i < LightCount; ++i)
 		//The Point Light is Shining on the Surface
 		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
 		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(LightDir, Payload.WorldNormal);
-		Raysample[SampleIndex].Specular += DielectricSpecular(LightDir, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * (atten * 1000.0f);
+		
+		float SunValue = dot(SurfaceHit.ReflectionVector, normalize(LightDir));
+		if (SunValue > 0.99)
+		{
+			Raysample[SampleIndex].ForceBloom = true;
+		}
 	}
 	else
 	{

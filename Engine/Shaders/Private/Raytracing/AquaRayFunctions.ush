@@ -113,14 +113,6 @@ float3 GeometryRandVec3(float3 HitPos, float RayDist)
     );
 }
 
-//Returns 1.0f on every Other Pixel, will be used in the far future... Hopefully :)
-bool IsCheckerboardFromUV(float2 UV, float2 ScreenSize)
-{
-    uint U = (uint)(UV.x * ScreenSize.x);
-    uint V = (uint)(UV.y * ScreenSize.y);
-    return ((U + V) & 1) == 0;
-}
-
 //Gets Skylight Color at Provided Direction
 float3 GetSkyRadiance(float3 Direction, float Roughness)
 {
@@ -205,13 +197,6 @@ float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 Incide
 	float E = pow(D, 8.0f);
 
 	return E * Power * Specular;
-}
-
-//Returns a fake Rough Sky Reflection
-float FakeRoughReflectDirect(float3 ReflectionVector, float3 LightDirection, float3 SurfaceNormal)
-{
-	float expo = Lambert(LightDirection, SurfaceNormal);
-	return saturate(dot(ReflectionVector, float3(0,0,1))) * expo;
 }
 
 float FakeEnvSin(float3 ReflectionVector, float3 offset)

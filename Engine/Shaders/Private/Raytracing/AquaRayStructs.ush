@@ -13,10 +13,8 @@ struct RaySample
 	float3 LightColor;                    //Color of the primary light
 	float3 PointLightColor;               //Color of all Point Lights
 	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
-	float3 DetailLight;                   //(Detail Lighting) Small Raytraced GI? Something Like that
-	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
-	
+	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float  NdotV;                         //How much the surface faces the Incident Ray
 	
 	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Smooth Surfaces

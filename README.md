@@ -1,5 +1,5 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
-## V0.8.1
+## V0.8.2
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Project<br/>
 SAMPLE PROJECT: https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file
 ![alt text](yay/logo.png)
@@ -29,9 +29,11 @@ Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration suppo
 - Added Exponential Height Fog<br/>
 (Doesnt Handle Thin Transparency Correctly, I want to address that In the Next Iteration of this project<br/>
 
-### Minor Update V0.8.1
-- Added Translucent Shading Model with Refraction (no reflections yet)<br/>
-- Added Thin Translucent Shading Model<br/>
+### Minor Update V0.8.2
+- Improved Glass Rendering<br/>
+- Added at Least Sky Reflections to Glass<br/>
+- Some Optimization<br/>
+- Removed Rough Metallic Shading Model as you can get the same results in the Material Graph<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

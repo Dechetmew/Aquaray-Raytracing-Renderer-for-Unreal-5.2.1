@@ -35,6 +35,7 @@ else
 	// Reflection
 	ReflectionColor = GetSkyRadianceSun(SurfaceHit.ReflectionVector, 0, SunDirection);
 	ReflectionColor = lerp(ReflectionColor, ReflectionColor * Payload.BaseColor, Payload.Opacity); //Not The Greatest Implementation, but it does offer At least some control Over Reflection Tint
+	ReflectionColor = ReflectionColor * 0.05f;
 }
 //////////////////
 
@@ -84,3 +85,4 @@ else
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
 
 }
+

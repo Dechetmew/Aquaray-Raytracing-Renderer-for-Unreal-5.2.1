@@ -61,6 +61,8 @@ The Sample project uses:<br/>
 ## Gallery
 ![alt text](yay/reflections.png)
 
+![alt text](yay/glass.gif)
+
 ![alt text](yay/models.png)
 
 ![alt text](yay/lights.png)

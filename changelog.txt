@@ -78,3 +78,9 @@ v0.8.0
 v0.8.1
 Added Translucent Shading Model with Refraction (no reflections yet)
 Added Thin Translucent Shading Model
+
+v0.8.2
+- Improved Glass Rendering
+- Added at Least Sky Reflections to Glass
+- Some Optimization
+- Removed Rough Metallic Shading Model as you can get the same results in the Material Graph

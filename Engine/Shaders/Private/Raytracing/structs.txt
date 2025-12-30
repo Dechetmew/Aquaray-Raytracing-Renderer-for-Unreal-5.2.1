@@ -83,6 +83,7 @@ struct FMaterialClosestHitPayload : FMinimalPayload
 	float3 WorldTangent;
 	float Anisotropy;
 
+	bool IsHit()
 	bool IsFrontFace()
 	bool IsTwoSided()
 	FRayCone GetRayCone()
@@ -90,3 +91,4 @@ struct FMaterialClosestHitPayload : FMinimalPayload
 	bool HasAnisotropy()
 	float3 GetRayDirection()
 };
+

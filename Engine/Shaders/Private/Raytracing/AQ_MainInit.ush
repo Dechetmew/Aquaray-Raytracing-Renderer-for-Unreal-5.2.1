@@ -1,9 +1,7 @@
  //AquaRay Main Shader Init
 
 uint2 DispatchThreadId = DispatchRaysIndex().xy + View.ViewRectMin.xy;
-uint2 PixelCoord = GetPixelCoord(DispatchThreadId, UpscaleFactor);
-float2 InvBufferSize = View.BufferSizeAndInvSize.zw;
-float2 UV = (float2(PixelCoord) + 0.5) * InvBufferSize;
+float2 UV = (float2(GetPixelCoord(DispatchThreadId, UpscaleFactor)) + 0.5) * View.BufferSizeAndInvSize.zw;
 
 // STRUCTS
 FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
@@ -50,10 +48,6 @@ FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camer
 FRayDesc VisibilityRay; //For Shadow Checks
 FRayDesc RefractionRay;
 FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unused
-uint RayFlags = RAY_FLAG_CULL_BACK_FACING_TRIANGLES; //https://learn.microsoft.com/en-us/windows/win32/direct3d12/ray_flag
-const uint InstanceInclusionMask = RAY_TRACING_MASK_ALL;
-const bool bEnableSkyLightContribution = false;
-const bool bIgnoreTranslucentMaterials = false;
 Ray.TMin = 0.0f;
 Ray.TMax = MetersToCenti(100.0f);
 VisibilityRay.TMin = 0.0f;

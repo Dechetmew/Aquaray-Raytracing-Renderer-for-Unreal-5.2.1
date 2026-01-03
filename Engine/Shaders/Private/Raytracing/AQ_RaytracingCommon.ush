@@ -5,7 +5,7 @@ FMaterialClosestHitPayload TraceMatRay(in RaytracingAccelerationStructure TLAS, 
 	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;
 	
 	uint RayFlag;
-	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;}
+	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;} //https://learn.microsoft.com/en-us/windows/win32/direct3d12/ray_flag
 
 	TraceRay(
 		TLAS,
@@ -26,7 +26,7 @@ FMaterialClosestHitPayload TraceMatRay(in RaytracingAccelerationStructure TLAS, 
 FMinimalPayload TraceVisRay(in RaytracingAccelerationStructure TLAS, in FRayDesc Ray, bool TraceTranslucent)
 {
 	uint RayFlag;
-	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;}
+	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;} //https://learn.microsoft.com/en-us/windows/win32/direct3d12/ray_flag
 
 	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;
 

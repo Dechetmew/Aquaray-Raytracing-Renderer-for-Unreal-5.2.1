@@ -60,18 +60,13 @@ for (uint i = 0; i < LightCount; ++i)
 			continue;
 		}
 		
-		VisbilityRay.Origin = SurfaceHit.HitPos;
-		VisbilityRay.TMax = dist;
-		VisbilityRay.Direction = toLight;
+		VisibilityRay.Origin = SurfaceHit.HitPos;
+		VisibilityRay.TMax = dist;
+		VisibilityRay.Direction = toLight;
 
-		ShadowMinimalPayload = TraceVisibilityRay(
-			TLAS,
-			RayFlags,
-			RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
-			InstanceInclusionMask,
-			VisbilityRay);
+		ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 			
-		Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+		Stats.RaysPerPixel += 1;
 
 		if (ShadowMinimalPayload.IsHit())
 		{
@@ -115,18 +110,13 @@ for (uint i = 0; i < LightCount; ++i)
 			continue;
 		}
 
-		VisbilityRay.Origin = SurfaceHit.HitPos;
-		VisbilityRay.TMax = dist;
-		VisbilityRay.Direction = LightDir;
+		VisibilityRay.Origin = SurfaceHit.HitPos;
+		VisibilityRay.TMax = dist;
+		VisibilityRay.Direction = LightDir;
 
-		ShadowMinimalPayload = TraceVisibilityRay(
-			TLAS,
-			RayFlags,
-			RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
-			InstanceInclusionMask,
-			VisbilityRay);
+		ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 			
-		Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+		Stats.RaysPerPixel += 1;
 
 		if (ShadowMinimalPayload.IsHit())
 		{

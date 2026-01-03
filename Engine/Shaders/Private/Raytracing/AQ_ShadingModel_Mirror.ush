@@ -3,16 +3,13 @@
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].Metallic = Payload.Metallic;
 Raysample[SampleIndex].Roughness = Payload.Roughness;
-Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
-Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+if (Payload.Metallic > 0.5f) {Raysample[SampleIndex].ShadingModel = 3;} else {Raysample[SampleIndex].ShadingModel = 2;}
 Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
 
-float FakeIndirectLighting = Lambert(SunDirection, -Payload.WorldNormal) * -1.0f + 1.0f;
-FakeIndirectLighting = FakeIndirectLighting * 0.5f + 0.5f;
-Raysample[SampleIndex].IndirectLightColor = IndirectLightColor * FakeIndirectLighting;
+Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 
-#include "AQ_ShadingModel_MetallicMirror_Lighting.ush"
-#include "AQ_ShadingModel_MetallicMirror_LightingPoint.ush"
+#include "AQ_ShadingModel_Mirror_Lighting.ush"
+#include "AQ_ShadingModel_Mirror_LightingPoint.ush"
 
 // Advance Ray
 Ray.Direction = SurfaceHit.ReflectionVector;

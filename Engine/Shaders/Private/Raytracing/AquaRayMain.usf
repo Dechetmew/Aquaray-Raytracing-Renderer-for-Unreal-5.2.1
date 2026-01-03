@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.8.2
+// AQUARAY RAYTRACER - v0.8.3
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -7,6 +7,7 @@
 #include "RayTracingLightingCommon.ush"
 #include "AquaRayStructs.ush"
 #include "AquarayFunctions.ush"
+#include "AQ_RaytracingCommon.ush"
 
 // SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
 float4 ColorInput1; //Ambient/Indirect Light Color
@@ -54,19 +55,12 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	// Raypath Loop
     for (int i = 0; i < MAX_STEPS; i++)
 	{
-		SampleIndex = SampleIndex + 1;
-	
-		Payload = TraceMaterialRay(
-			TLAS,
-			RayFlags,
-			InstanceInclusionMask,
-			Ray,
-			RayCone,
-			bEnableSkyLightContribution,
-			bIgnoreTranslucentMaterials);
+		SampleIndex += 1;
+		
+		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
 			
-		Stats.Steps = Stats.Steps + float3(0.0f, 0.025f, 0.0f);
-		Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
+		Stats.Steps += 1;
+		Stats.RaysPerPixel += 1;
 		SurfaceHit.IncidentVector = Ray.Direction;
 			
 		//Debug stuff here
@@ -86,35 +80,25 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 		
-			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.9f && Payload.Metallic < 0.5f)
+			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
 			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.9f && Payload.Metallic < 0.5f)
-			{
-				//Dielectric Mirror
-				#include "AQ_ShadingModel_Mirror.ush"
+			else if (Payload.ShadingModelID == 6 && Payload.BlendingMode == 2)
+			{	
+				#include "AQ_ShadingModel_Foliage.ush"
 			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f)
+			else if ((Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic < 0.5f) || (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f))
 			{
-				//Metallic Mirror
 				#include "AQ_ShadingModel_Mirror.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2 && Payload.IsTwoSided())
 			{	
 				#include "AQ_ShadingModel_Translucent.ush"
 			}
-			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 0)
+			else if (Payload.ShadingModelID == 0 && ((Payload.BlendingMode == 0) || (Payload.BlendingMode == 2)))
 			{	
-				#include "AQ_ShadingModel_UnlitOpaque.ush"
-			}
-			else if (Payload.ShadingModelID == 0 && Payload.BlendingMode == 2)
-			{	
-				#include "AQ_ShadingModel_UnlitTransparent.ush"
-			}
-			else if (Payload.ShadingModelID == 6 && Payload.BlendingMode == 2)
-			{	
-				#include "AQ_ShadingModel_Foliage.ush"
+				#include "AQ_ShadingModel_Unlit.ush"
 			}
 			else
 			{
@@ -144,7 +128,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			Final = Raysample[i].Color;
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness > 0.9f && Raysample[i].Metallic < 0.5f)
+		else if (Raysample[i].ShadingModel == 1)
 		{
 			//Shading Model Dielectric
 			Final = Raysample[i].Color * (Raysample[i].LightColor + (Raysample[i].IndirectLightColor * Raysample[i].RTAO));
@@ -154,7 +138,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.9f && Raysample[i].Metallic < 0.5f)
+		else if (Raysample[i].ShadingModel == 2)
 		{
 			//Shading Model Dielectric Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
@@ -166,7 +150,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
 			Final += 2000.0f * Raysample[i].Color * BloomLight;
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 0 && Raysample[i].Roughness < 0.05f && Raysample[i].Metallic > 0.5f)
+		else if (Raysample[i].ShadingModel == 3)
 		{
 			//Shading Model Metallic Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
@@ -181,15 +165,15 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Raysample[i].Roughness > 0.02f && !all(Raysample[i].LightColor > float3(2,2,2)))
 			{
 				float metallic_A = max(max(Raysample[i].LightColor.r, Raysample[i].LightColor.g), Raysample[i].LightColor.b);
-				float3 metallic_C = lerp(Final * IndirectColor, Final * Raysample[i].LightColor, metallic_A);
+				float3 metallic_C = lerp(Final * IndirectLightColor, Final * Raysample[i].LightColor, metallic_A);
 				
 				float metallic_B = max(max(Raysample[i].PointLightColor.r, Raysample[i].PointLightColor.g), Raysample[i].PointLightColor.b);
-				float3 metallic_D = lerp(Final * IndirectColor, Final * Raysample[i].PointLightColor, metallic_B);
+				float3 metallic_D = lerp(Final * IndirectLightColor, Final * Raysample[i].PointLightColor, metallic_B);
 				
 				Final = metallic_C + metallic_D;
 			}
 		}
-		else if (Raysample[i].ShadingModel == 1 && Raysample[i].BlendingMode == 2)
+		else if (Raysample[i].ShadingModel == 4)
 		{	
 			// Shading Model Translucent
 			Final = Final * Raysample[i].Color;
@@ -199,13 +183,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			
 			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}
-		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 0)
+		else if (Raysample[i].ShadingModel == 5)
 		{
 			//Shading Model Unlit Opaque
 			Final = Raysample[i].Color;
 			FinalOpacity = 1;
 		}
-		else if (Raysample[i].ShadingModel == 0 && Raysample[i].BlendingMode == 2)
+		else if (Raysample[i].ShadingModel == 6)
 		{
 			//Shading Model Unlit Transparent
 			if (Raysample[i].Opacity == 1)
@@ -226,7 +210,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 				FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 			}
 		}
-		else if (Raysample[i].ShadingModel == 6 && Raysample[i].BlendingMode == 2)
+		else if (Raysample[i].ShadingModel == 7)
 		{
 			//Shading Model Foliage
 			if (Raysample[i].Opacity == 1)
@@ -245,7 +229,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else
 		{
 			//Shading Model Invalid
-			Final = float3(0.4,0,1);
+			Final = Invalid(UV);
 			FinalOpacity = 1;
 		}
 	}
@@ -260,8 +244,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	//Debug Viewmodes
 	switch(DebugMode)
 	{
-		case 1: Final = Stats.Steps; break;
-		case 2: Final = Stats.RaysPerPixel; break;
+		case 1: Final = HeatColor(Stats.Steps); break;
+		case 2: Final = HeatColor(Stats.RaysPerPixel); break;
         case 3: Final = Raysample[1].Color; break;
 		case 4: Final = saturate(Fog.Transmittance); break;
 		
@@ -271,7 +255,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	// NaN check to prevent my beloved D3D crashes (reduces crashes from Uninitialized Values by 1%)
 	if (any(isnan(Final)) || any(isinf(Final)))
 	{
-		Final = float3(1, 0, 1);
+		Final = Error(UV);
 	}
 	
 	// Main Output

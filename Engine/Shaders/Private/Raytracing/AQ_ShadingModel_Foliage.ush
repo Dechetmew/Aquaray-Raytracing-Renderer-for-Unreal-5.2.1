@@ -1,6 +1,5 @@
 //Shading Model: Foliage
-Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
-Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+Raysample[SampleIndex].ShadingModel = 7;
 
 if (Payload.Opacity > 0.5f)
 {
@@ -22,5 +21,5 @@ else
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
 	
 	//Disable Transparent Geometry after too much Foliage to reduce Artifacts
-	if (SampleIndex == (MAX_STEPS - 2)) {RayFlags = RAY_FLAG_CULL_NON_OPAQUE;}
+	if (SampleIndex == (MAX_STEPS - 2)) {RayFlags = RAY_FLAG_CULL_NON_OPAQUE; TraceTranslucent = false;}
 }

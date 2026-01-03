@@ -7,73 +7,6 @@
 
 /////////////////////////////////////////////////// FUNCTIONS
 
-// Generic 1D Gaussian blur in a given axis
-float3 GaussianBlurAxis3D(Texture3D<float4> tex, int3 pos, int3 size, int axis)
-{
-    float3 color = 0.0;
-    for (int i = -2; i <= 2; ++i)
-    {
-        int3 offset = int3(0, 0, 0);
-        offset[axis] = i;
-
-        int3 samplePos = clamp(pos + offset, int3(0, 0, 0), size - 1);
-        float weight = Kernel5[abs(i)];
-        color += tex.Load(int4(samplePos, 0)).rgb * weight;
-    }
-    return color;
-}
-
-float3 UniformSampleSphereInVolume(float2 rand)
-{
-	float z = 1.0f - 2.0f * rand.x;                     // Map rand.x from [0,1] to [-1,1]
-	float r = sqrt(saturate(1.0f - z * z));             // radius in XY plane
-	float phi = 6.2831853f * rand.y;                    // 2π * rand.y
-
-	float x = r * cos(phi);
-	float y = r * sin(phi);
-
-	return float3(x, y, z);                             // Unit vector on sphere
-}
-
-//Another Hash
-float Hash13(float3 p)
-{
-    p = frac(p * 0.1031);
-    p += dot(p, p.yzx + 33.33);
-    return frac((p.x + p.y) * p.z);
-}
-
-// Uniformly distributed direction in hemisphere
-float3 SampleHemisphere(float3 normal, float3 seed, int index)
-{
-    float rand1 = Hash13(seed + index * 2.357f); // for azimuth
-    float rand2 = Hash13(seed + index * 7.753f); // for elevation
-
-    float phi = rand1 * 2.0f * 3.14159265f;
-    float z = rand2; // uniform in [0,1]
-    float r = sqrt(1.0f - z * z);
-
-    float3 localDir = float3(r * cos(phi), r * sin(phi), z);
-
-    // Create TBN basis
-    float3 up = abs(normal.z) < 0.999f ? float3(0,0,1) : float3(1,0,0);
-    float3 tangent = normalize(cross(up, normal));
-    float3 bitangent = cross(normal, tangent);
-
-    // Transform to world space
-    return tangent * localDir.x + bitangent * localDir.y + normal * localDir.z;
-}
-
-//Builds a Rotation Matrix for rotating a vector
-float3x3 BuildRotationMatrixFromZ(float3 N)
-{
-    float3 Up = N;
-    float3 Tangent = normalize(abs(Up.z) < 0.999f ? cross(Up, float3(0,0,1)) : float3(1,0,0));
-    float3 Bitangent = normalize(cross(Tangent, Up));
-
-    return transpose(float3x3(Tangent, Bitangent, Up));
-}
-
 //Does exactly what it says on the can
 float3x3 BuildTangentBasis(float3 N)
 {
@@ -161,12 +94,6 @@ float MetersToCenti(float DistanceInMeters)
 	return DistanceInMeters * 100.0f;
 }
 
-//Converts Distance From Meters to Centimeters
-float3 MetersToCenti3(float3 DistanceInMeters)
-{
-	return DistanceInMeters * 100.0f;
-}
-
 //Returns a Yep when a Surface can be Possibly lit by this Light Source, a Nope when it cant
 bool CanBeLit(float3 WorldNormal, float3 LightVector)
 {
@@ -199,46 +126,109 @@ float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 Incide
 	return E * Power * Specular;
 }
 
-float FakeEnvSin(float3 ReflectionVector, float3 offset)
-{
-	float3 T = ReflectionVector * 0.5 + offset;
-	float s = sin(T.x * 6.28318548) * 0.1 + sin(T.y * 6.28318548) * 0.1 - sin(T.z * 6.28318548) * 0.1;
-	s = saturate(s);
-	return s * 0.8 + 0.05;
-}
-
-//Returns a fake Rough Environment Reflection
-float FakeRoughReflectIndirect(float3 ReflectionVector)
-{
-	ReflectionVector = normalize(ReflectionVector);
-
-	float layer1 = FakeEnvSin(ReflectionVector, float3(0.34,  0.34,  0.34));
-	float layer2 = FakeEnvSin(ReflectionVector, float3(0.0,   0.0,   0.0));
-	float layer3 = FakeEnvSin(ReflectionVector, float3(0.786, 0.786, 0.786));
-	
-	return layer1 + layer2 + layer3;
-}
-
 //Gets fog
 float GetFogAmount(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPos, float3 endPos)
 {
-    float distMeters = distance(startPos, endPos) * 0.01;
-    float z = endPos.z;
-    float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
-    float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+	float distMeters = distance(startPos, endPos) * 0.01;
+	float z = endPos.z;
+	float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+	float heightFactor = bottomValue * pow(topValue / bottomValue, t);
 
-    // Beer Lambert
-    float fog = 1.0 - exp(-(density * heightFactor) * distMeters);
+	// Beer Lambert
+	float fog = 1.0 - exp(-(density * heightFactor) * distMeters);
 
-    return saturate(fog);
+	return saturate(fog);
 }
 
 // Gets fog at a single world position. Used for sky
 float GetFogAtPoint(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 posWS)
 {
-    float z = posWS.z;
-    float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
-    float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+	float z = posWS.z;
+	float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+	float heightFactor = bottomValue * pow(topValue / bottomValue, t);
 
-    return saturate(density * heightFactor) * 2.5f; //Magic number yaay
+	return saturate(density * heightFactor) * 2.5f; //Magic number yaay
+}
+
+//Measures Pixel Temperature /s
+float3 HeatColor(float t)
+{
+	t = t * 0.1;
+	t = saturate(t) * 4.0;
+
+	float3 c0 = float3(0,0,0);
+	float3 c1 = float3(0,0,1);
+	float3 c2 = float3(0,1,0);
+	float3 c3 = float3(1,1,0);
+	float3 c4 = float3(1,0,0);
+
+	float3 col = c0;
+
+	col = lerp(col, c1, saturate(t - 0.0));
+	col = lerp(col, c2, saturate(t - 1.0));
+	col = lerp(col, c3, saturate(t - 2.0));
+	col = lerp(col, c4, saturate(t - 3.0));
+
+	return col;
+}
+
+//Renders annoying Error Text Across the Affected Pixels
+float3 Error(float2 UVpos)
+{
+	UVpos = frac(UVpos * 32);
+
+    uint x = (uint)floor(UVpos.x * 32.0);
+    uint y = (uint)floor(UVpos.y * 32.0);
+
+    x = min(x, 31u);
+    y = min(y, 31u);
+	
+	if (y >= 11u)
+	{
+		return float3(1, 0, 1);
+	}
+	
+	//flip x axis
+	x = 31u - x;
+
+    bool bit = (ErrorTex[y] >> x) & 1;
+	
+	if (bit)
+	{
+		return float3(0, 0, 0); 
+	}
+	else
+	{
+		return float3(1, 0, 1);
+	}
+}
+
+float3 Invalid(float2 UVpos)
+{
+	UVpos = frac(UVpos * 32);
+
+    uint x = (uint)floor(UVpos.x * 32.0);
+    uint y = (uint)floor(UVpos.y * 32.0);
+
+    x = min(x, 31u);
+    y = min(y, 31u);
+	
+	if (y >= 11u)
+	{
+		return float3(1, 0.6, 0);
+	}
+	
+	//flip x axis
+	x = 31u - x;
+
+    bool bit = (InvalidTex[y] >> x) & 1;
+	
+	if (bit)
+	{
+		return float3(0, 0, 0); 
+	}
+	else
+	{
+		return float3(1, 0.6, 0);
+	}
 }

@@ -8,7 +8,6 @@ struct RaySample
 	float  Roughness;                     //Maybe will be used for specular
 	float  Opacity;						  //Opacity
 	int    ShadingModel;				  //Shading Model of the Hit Surface
-	int    BlendingMode;				  //Blending Mode of the Hit Surface
 	
 	float3 LightColor;                    //Color of the primary light
 	float3 PointLightColor;               //Color of all Point Lights
@@ -17,7 +16,7 @@ struct RaySample
 	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float  NdotV;                         //How much the surface faces the Incident Ray
 	
-	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Smooth Surfaces
+	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Mirror Surfaces
 	bool   ForceBloomPoint;               //ForceBloom for Point Lighting
 };
 
@@ -33,8 +32,8 @@ struct DiffuseKernel
 
 struct Stats
 {	
-	float3 RaysPerPixel;
-	float3 Steps;
+	uint RaysPerPixel;
+	uint Steps;
 };
 	
 struct SurfaceHit
@@ -60,3 +59,33 @@ struct Fog
 };
 
 static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 };
+
+static const uint ErrorTex[11] = //32x11
+{
+    0b01110101011101100111011100000000, // row 0
+    0b01000101010101010100010100000000, // row 1
+    0b01110111011101010111011000000000, // row 2
+    0b00010101010101010100010100000000, // row 3
+    0b01110101010101100111010100000000, // row 4
+    0b00000000000000000000000000000000, // row 5
+    0b00011101110111001001110000000000, // row 6
+    0b00010001010101010101010000000000, // row 7
+    0b00011101100110010101100000000000, // row 8
+    0b00010001010101010101010000000000, // row 9
+    0b00011101010101001001010000000000  // row 10
+};
+
+static const uint InvalidTex[11] = //32x11
+{
+    0b00111011001010010010001110110000, // row 0
+    0b00010010101010101010000100101000, // row 1
+    0b00010010101010111010000100101000, // row 2
+    0b00010010101010101010000100101000, // row 3
+    0b00111010100100101011101110110000, // row 4
+    0b00000000000000000000000000000000, // row 5
+    0b00000000001010010011100000000000, // row 6
+    0b00000000001110101001000000000000, // row 7
+    0b00000000001010111001000000000000, // row 8
+    0b00000000001010101001000000000000, // row 9
+    0b00000000001010101001000000000000  // row 10
+};

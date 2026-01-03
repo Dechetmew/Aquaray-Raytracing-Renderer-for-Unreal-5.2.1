@@ -1,3 +1,7 @@
+FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
+FRayDesc DetailRay; //detail ray
+
+
 if (DetailLightingMode > 0)
 {
 	// SHORT RANGE AO
@@ -9,7 +13,7 @@ if (DetailLightingMode > 0)
 	for (int i = 0; i < 5; ++i)
 	{
 		float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
-		DiffuseKernel[i].Offset = normalize(lerp(DiffuseKernel[i].Offset, randVec, 0.1f));
+		Diffusekernel[i].Offset = normalize(lerp(Diffusekernel[i].Offset, randVec, 0.1f));
 	}
 
 	float RandomAngle = GeometryRand(SurfaceHit.HitPos, Payload.HitT) * 2.0f * 3.14159f;
@@ -25,46 +29,35 @@ if (DetailLightingMode > 0)
 	// Rotate and project each local vector onto the world-space surface
 	for (int i = 0; i < 5; ++i)
 	{
-		float3 spun = mul(DiffuseKernel[i].Offset, spinMatrix);  // Spin in tangent space
-		DiffuseKernel[i].Offset = mul(spun, tangentBasis);       // Project to world space
+		float3 spun = mul(Diffusekernel[i].Offset, spinMatrix);  // Spin in tangent space
+		Diffusekernel[i].Offset = mul(spun, tangentBasis);       // Project to world space
 	}
 
+	DetailRay.TMin = 0;
 	DetailRay.TMax = MetersToCenti(4.0f);
 	DetailRay.Origin = SurfaceHit.HitPos;
 
 	//Detail Sampling TraceRay Loop
 	for (int i = 0; i < 5; i++)
 	{			
-		DetailRay.Direction = normalize(Payload.WorldNormal + DiffuseKernel[i].Offset);
+		DetailRay.Direction = normalize(Payload.WorldNormal + Diffusekernel[i].Offset);
 
-		DiffusePayload = TraceMaterialRay(
-			TLAS,
-			RayFlags,
-			InstanceInclusionMask,
-			DetailRay,
-			RayCone,
-			bEnableSkyLightContribution,
-			bIgnoreTranslucentMaterials);
+		DiffusePayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
 		
-		Stats.RaysPerPixel = Stats.RaysPerPixel + float3(0.05f, 0.0f, 0.0f);
+		Stats.RaysPerPixel += 1;
 		
 		if(DiffusePayload.IsHit() && DiffusePayload.ShadingModelID != 6)
 		{
 			//We hit A Surface
-			DiffuseKernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
-			DiffuseKernel[i].Position = DetailRay.Origin + DetailRay.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
-			DiffuseKernel[i].Normal = DiffusePayload.WorldNormal;
-			DiffuseKernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
+			Diffusekernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
+			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
+			Diffusekernel[i].Normal = DiffusePayload.WorldNormal;
+			Diffusekernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
 		}
 		else
 		{
 			//We hit nothing
-			DiffuseKernel[i].Radiance  = float3(0.0f,0.0f,0.0f);
-			DiffuseKernel[i].Color  = float3(0.0f,0.0f,0.0f);
-			
-			DiffuseKernel[i].Position = float3(0.0f,0.0f,0.0f);
-			DiffuseKernel[i].Normal = float3(0.0f,0.0f,0.0f);
-			DiffuseKernel[i].Distance = 1.0f;
+			Diffusekernel[i].Distance = 1.0f;
 		}
 
 	}
@@ -77,7 +70,7 @@ if (DetailLightingMode > 0)
 
 	for (int i = 0; i < 5; ++i)
 	{
-		accumulatedFloat += DiffuseKernel[i].Distance;
+		accumulatedFloat += Diffusekernel[i].Distance;
 	}
 	Raysample[SampleIndex].RTAO = accumulatedFloat / 5.0f;
 	Raysample[SampleIndex].RTAO = saturate(Raysample[SampleIndex].RTAO + 0.2);
@@ -87,7 +80,7 @@ if (DetailLightingMode > 0)
 		accumulatedColor = float3(0.0f, 0.0f, 0.0f);
 		for (int i = 0; i < 5; ++i)
 		{
-			accumulatedColor += DiffuseKernel[i].Radiance;
+			accumulatedColor += Diffusekernel[i].Radiance;
 		}
 		Raysample[SampleIndex].IndirectEmissive = accumulatedColor / 5.0f;
 		Raysample[SampleIndex].IndirectEmissive = Raysample[SampleIndex].IndirectEmissive * 0.15f;

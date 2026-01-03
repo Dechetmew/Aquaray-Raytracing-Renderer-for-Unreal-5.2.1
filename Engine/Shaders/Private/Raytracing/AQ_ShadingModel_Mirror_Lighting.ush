@@ -1,4 +1,4 @@
-// LIGHTING SHADING MODEL DIELECTRIC
+// LIGHTING SHADING MODEL METAllIC MIRROR
 
 if (!CanBeLit(Payload.WorldNormal, SunDirection))
 {
@@ -6,10 +6,10 @@ if (!CanBeLit(Payload.WorldNormal, SunDirection))
 }
 else
 {
-	VisibilityRay.Origin    = SurfaceHit.HitPos;
+	VisibilityRay.Origin = SurfaceHit.HitPos;
+	VisibilityRay.TMax = MetersToCenti(100.0f);
 	VisibilityRay.Direction = SunDirection;
-	VisibilityRay.TMax      = MetersToCenti(100.0f);
-
+	
 	bool Lit = true;
 
 	if (EnableShadowOpacity == 1)
@@ -46,10 +46,6 @@ else
 	}
 	else
 	{
-		VisibilityRay.Origin = SurfaceHit.HitPos;
-		VisibilityRay.TMax = MetersToCenti(100.0f);
-		VisibilityRay.Direction = SunDirection;
-
 		ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 
 		Stats.RaysPerPixel += 1;
@@ -63,7 +59,8 @@ else
 		{
 			// The Sun is Shining :)
 			Raysample[SampleIndex].LightColor = SunLightColor * Lambert(SunDirection, Payload.WorldNormal);
-			Raysample[SampleIndex].Specular = DielectricSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
+			Raysample[SampleIndex].Specular = MetallicSpecular(SunDirection, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular);
+			Raysample[SampleIndex].ForceBloom = true;
 		}
 	}
 }

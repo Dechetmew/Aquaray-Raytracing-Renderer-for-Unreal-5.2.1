@@ -2,18 +2,13 @@
 
 if (CanBeLit(Payload.WorldNormal, SunDirection))
 {
-	VisbilityRay.Origin = SurfaceHit.HitPos;
-	VisbilityRay.TMax = MetersToCenti(100.0f);
-	VisbilityRay.Direction = SunDirection;
+	VisibilityRay.Origin = SurfaceHit.HitPos;
+	VisibilityRay.TMax = MetersToCenti(100.0f);
+	VisibilityRay.Direction = SunDirection;
 
-	ShadowMinimalPayload = TraceVisibilityRay(
-		TLAS,
-		RayFlags,
-		RAY_TRACING_PAYLOAD_INPUT_FLAG_NONE,
-		InstanceInclusionMask,
-		VisbilityRay);
+	ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 
-	Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+	Stats.RaysPerPixel += 1;
 
 	if (ShadowMinimalPayload.IsHit())
 	{

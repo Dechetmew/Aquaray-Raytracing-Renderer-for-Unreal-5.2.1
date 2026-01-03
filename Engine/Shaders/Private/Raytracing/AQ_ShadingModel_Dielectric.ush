@@ -3,13 +3,12 @@
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].Metallic = Payload.Metallic;
 Raysample[SampleIndex].Roughness = 1;
-Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
-Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
+Raysample[SampleIndex].ShadingModel = 1;
 	
 #include "AQ_ShortRangeAO.ush"
-	
-// This Is Where I'd Put My Raytraced Indirect Lighting.... If I had any!
-Raysample[SampleIndex].IndirectLightColor = FakeRoughReflectIndirect(Payload.WorldNormal) + 0.5 * float3(0.317f, 0.376f, 0.443f);
+
+float indirect = saturate(dot(Payload.WorldNormal, normalize(float3(1.0f, 1.0f, 1.0f))) + 1) * 0.3 + 0.7;
+Raysample[SampleIndex].IndirectLightColor = indirect * IndirectLightColor;
 
 #include "AQ_ShadingModel_Dielectric_Lighting.ush"
 #include "AQ_ShadingModel_Dielectric_LightingPoint.ush"

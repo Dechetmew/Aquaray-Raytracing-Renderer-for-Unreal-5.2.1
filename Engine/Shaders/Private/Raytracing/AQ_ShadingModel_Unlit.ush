@@ -1,0 +1,32 @@
+//Shading Model: Unlit Transparent
+
+if ((Payload.Opacity > 0.99999f) || (Payload.BlendingMode == 0))
+{
+	//Opaque
+	Raysample[SampleIndex].Color = Payload.Radiance;
+	Raysample[SampleIndex].Opacity = 1;
+	Raysample[SampleIndex].ShadingModel = 5;
+	
+	break;
+}
+else if (Payload.Opacity < 0.00001f)
+{
+	//Fully Invisible
+	//No Action, Advance Ray
+	Ray.Direction = SurfaceHit.IncidentVector;
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
+	Raysample[SampleIndex].Opacity = 0;
+	Raysample[SampleIndex].ShadingModel = 6;
+}
+else
+{
+	//Transparent
+	//Loop Again
+	Raysample[SampleIndex].Color = Payload.Radiance;
+	Raysample[SampleIndex].Opacity = Payload.Opacity;
+	Raysample[SampleIndex].ShadingModel = 6;
+	
+	//Advance Ray
+	Ray.Direction = SurfaceHit.IncidentVector;
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
+}

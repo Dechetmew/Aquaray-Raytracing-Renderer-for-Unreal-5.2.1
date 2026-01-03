@@ -1,0 +1,45 @@
+
+
+FMaterialClosestHitPayload TraceMatRay(in RaytracingAccelerationStructure TLAS, in FRayDesc Ray, bool TraceTranslucent)
+{
+	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;
+	
+	uint RayFlag;
+	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;}
+
+	TraceRay(
+		TLAS,
+		RayFlag,
+		RAY_TRACING_MASK_ALL,
+		RAY_TRACING_SHADER_SLOT_MATERIAL,
+		RAY_TRACING_NUM_SHADER_SLOTS,
+		0,
+		Ray.GetNativeDesc(),
+		PackedPayload);
+
+	FMaterialClosestHitPayload Payload = UnpackRayTracingPayload(PackedPayload, Ray);
+
+	return Payload;
+}
+
+
+FMinimalPayload TraceVisRay(in RaytracingAccelerationStructure TLAS, in FRayDesc Ray, bool TraceTranslucent)
+{
+	uint RayFlag;
+	if (TraceTranslucent) {RayFlag = RAY_FLAG_CULL_BACK_FACING_TRIANGLES;} else {RayFlag = RAY_FLAG_CULL_NON_OPAQUE;}
+
+	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;
+
+	TraceVisibilityRayPacked(PackedPayload, TLAS, RayFlag, RAY_TRACING_MASK_ALL, Ray);
+
+	// Unpack the payload
+
+	FMinimalPayload MinimalPayload = (FMinimalPayload)0;
+
+	// In theory this unpacking setup is not needed as FPackedMaterialClosestHitPayload derives from FMinimalPayload,
+	// but the compiler currently dislikes a direct cast between them. Additionally in the future if HitT is ever packed
+	// differently and the FMinimalPayload is not directly inherited from this will need to change.
+	MinimalPayload.HitT = PackedPayload.HitT;
+
+	return MinimalPayload;
+}

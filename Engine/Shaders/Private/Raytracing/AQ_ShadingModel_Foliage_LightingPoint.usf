@@ -149,20 +149,13 @@ else
 				continue;
 			}
 			
-			VisbilityRay.Origin    = SurfaceHit.HitPos;
-			VisbilityRay.TMax      = dist;
-			VisbilityRay.Direction = LightDir;
+			VisibilityRay.Origin    = SurfaceHit.HitPos;
+			VisibilityRay.TMax      = dist;
+			VisibilityRay.Direction = LightDir;
 
-			ShadowPayload = TraceMaterialRay(
-				TLAS,
-				RayFlags,
-				InstanceInclusionMask,
-				VisbilityRay,
-				RayCone,
-				bEnableSkyLightContribution,
-				bIgnoreTranslucentMaterials);
+			ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
 
-			Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+			Stats.RaysPerPixel += 1;
 
 			BlockedBySolidFoliageLights = false;
 			ShadowFoliageIndexLights = 0;
@@ -186,19 +179,12 @@ else
 				}
 
 				// Advance the Ray
-				VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
-				VisbilityRay.TMax = VisbilityRay.TMax - ShadowPayload.HitT;
+				VisibilityRay.Origin += VisibilityRay.Direction * ShadowPayload.HitT + VisibilityRay.Direction * 0.001f;
+				VisibilityRay.TMax = VisibilityRay.TMax - ShadowPayload.HitT;
 
-				ShadowPayload = TraceMaterialRay(
-					TLAS,
-					RayFlags,
-					InstanceInclusionMask,
-					VisbilityRay,
-					RayCone,
-					bEnableSkyLightContribution,
-					bIgnoreTranslucentMaterials);
+				ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
 
-				Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+				Stats.RaysPerPixel += 1;
 			}
 
 			if (ShadowFoliageIndexLights >= 8)
@@ -232,20 +218,13 @@ else
 				continue;
 			}
 			
-			VisbilityRay.Origin    = SurfaceHit.HitPos;
-			VisbilityRay.TMax      = dist;
-			VisbilityRay.Direction = LightDir;
+			VisibilityRay.Origin    = SurfaceHit.HitPos;
+			VisibilityRay.TMax      = dist;
+			VisibilityRay.Direction = LightDir;
 
-			ShadowPayload = TraceMaterialRay(
-				TLAS,
-				RayFlags,
-				InstanceInclusionMask,
-				VisbilityRay,
-				RayCone,
-				bEnableSkyLightContribution,
-				bIgnoreTranslucentMaterials);
+			ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
 
-			Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+			Stats.RaysPerPixel += 1;
 
 			BlockedBySolidFoliageLights = false;
 
@@ -268,19 +247,12 @@ else
 				}
 
 				// Advance the Ray
-				VisbilityRay.Origin += VisbilityRay.Direction * ShadowPayload.HitT + VisbilityRay.Direction * 0.001f;
-				VisbilityRay.TMax = VisbilityRay.TMax - ShadowPayload.HitT;
+				VisibilityRay.Origin += VisibilityRay.Direction * ShadowPayload.HitT + VisibilityRay.Direction * 0.001f;
+				VisibilityRay.TMax = VisibilityRay.TMax - ShadowPayload.HitT;
 
-				ShadowPayload = TraceMaterialRay(
-					TLAS,
-					RayFlags,
-					InstanceInclusionMask,
-					VisbilityRay,
-					RayCone,
-					bEnableSkyLightContribution,
-					bIgnoreTranslucentMaterials);
+				ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
 
-				Stats.RaysPerPixel += float3(0.05f, 0.0f, 0.0f);
+				Stats.RaysPerPixel += 1;
 			}
 
 			if (ShadowFoliageIndexLights >= 8)

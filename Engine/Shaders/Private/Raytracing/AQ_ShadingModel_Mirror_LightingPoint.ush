@@ -1,4 +1,6 @@
-// POINT LIGHTING SHADING MODEL DIELECTRIC
+// POINT LIGHTING FOR SHADING MODEL DIELECTRIC
+
+//FRTLightingData and light types cheat sheet is in AQ_ShadingModel_Dielectric_LightingPoint.ush
 
 uint LightCount;
 float3 AccumulatedPointLightColor = float3(0,0,0);
@@ -6,6 +8,8 @@ float3 AccumulatedPointLightColor = float3(0,0,0);
 FCulledLightList LightsCulled = FCulledLightList::Create(SurfaceHit.HitPos);
 LightCount = LightsCulled.NumLights();
 LightCount = clamp(LightCount, 0, 5);
+
+float SunValue = 0;
 
 for (uint i = 0; i < LightCount; ++i)
 {
@@ -21,12 +25,11 @@ for (uint i = 0; i < LightCount; ++i)
 	if (Light.Type == LIGHT_TYPE_SPOT)
 	{
 		//Spot Light (Cone)
-		float3 LightDirectionLenght = Light.TranslatedLightPosition - SurfaceHit.HitPos; //direction and magnitude
-		float dist = length(LightDirectionLenght); //only distance
-		float3 toLightfromSurfDir = LightDirectionLenght / dist; //only direction, from surf to lightsource
+		float3 toLightVec = Light.TranslatedLightPosition - SurfaceHit.HitPos;
+		float dist = length(toLightVec);
 		
-		///////////////// Validation
-		if (!CanBeLit(Payload.WorldNormal, toLightfromSurfDir))
+		float3 LightDir = toLightVec / dist;
+		if (!CanBeLit(Payload.WorldNormal, LightDir))
 		{
 			//Not even Facing the Light
 			continue;
@@ -45,7 +48,7 @@ for (uint i = 0; i < LightCount; ++i)
 			continue;
 		}
 
-		float cosAngle = dot(normalize(Light.Direction), toLightfromSurfDir);
+		float cosAngle = dot(normalize(Light.Direction), LightDir);
 		float innerCos = max(Light.SpotAngles.x, Light.SpotAngles.y);
 		float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y);
 		if (cosAngle < outerCos)
@@ -60,11 +63,10 @@ for (uint i = 0; i < LightCount; ++i)
 			//Invalid spotAtten
 			continue;
 		}
-		//////////////////////////
 		
 		VisibilityRay.Origin = SurfaceHit.HitPos;
 		VisibilityRay.TMax = dist;
-		VisibilityRay.Direction = toLightfromSurfDir;
+		VisibilityRay.Direction = LightDir;
 
 		ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 			
@@ -78,8 +80,16 @@ for (uint i = 0; i < LightCount; ++i)
 
 		//The Point Light is Shining on the Surface
 		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * spotAtten * 0.001;
-		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(toLightfromSurfDir, Payload.WorldNormal);
-		Raysample[SampleIndex].Specular += DielectricSpecular(toLightfromSurfDir, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * (atten * 100000.0f);
+		
+		SunValue = dot(SurfaceHit.ReflectionVector, normalize(LightDir));
+		
+		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(LightDir, Payload.WorldNormal);
+		
+		if (SunValue > 0.998)
+		{
+			//Works as a Flag so this Pixel gets a Light Bloom boost
+			Raysample[SampleIndex].ForceBloomPoint = true;
+		}
 	}
 	else if (Light.Type == LIGHT_TYPE_POINT)
 	{
@@ -123,8 +133,16 @@ for (uint i = 0; i < LightCount; ++i)
 		
 		//The Point Light is Shining on the Surface
 		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
+		
+		SunValue = dot(SurfaceHit.ReflectionVector, normalize(LightDir));
+		
 		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(LightDir, Payload.WorldNormal);
-		Raysample[SampleIndex].Specular += DielectricSpecular(LightDir, Payload.WorldNormal, SurfaceHit.IncidentVector, Payload.Specular) * (atten * 1000.0f);
+		
+		if (SunValue > 0.995)
+		{
+			//Works as a Flag so this Pixel gets a Light Bloom boost
+			Raysample[SampleIndex].ForceBloomPoint = true;
+		}
 	}
 	else
 	{

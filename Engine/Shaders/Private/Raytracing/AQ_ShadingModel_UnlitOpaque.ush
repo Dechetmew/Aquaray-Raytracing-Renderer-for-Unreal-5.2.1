@@ -1,6 +1,0 @@
-//Shading Model: Unlit Opaque
-Raysample[SampleIndex].ShadingModel = Payload.ShadingModelID;
-Raysample[SampleIndex].BlendingMode = Payload.BlendingMode;
-Raysample[SampleIndex].Color = Payload.Radiance;
-
-break;

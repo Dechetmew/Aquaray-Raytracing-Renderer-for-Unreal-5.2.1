@@ -84,3 +84,11 @@ v0.8.2
 - Added at Least Sky Reflections to Glass
 - Some Optimization
 - Removed Rough Metallic Shading Model as you can get the same results in the Material Graph
+
+v0.8.3
+- Optimized (Maybe) many things, In my case I got 5 more fps
+- The Raytracer now has its own Native TraceRay() Wrappers
+- Modified the Shadows Code Slightly Again
+- Short Range Raytracing split from Dielectric into its own file
+- Added A Heatmap into Debug Vis so you can see where the GPU is getting Toasty
+- NaN and Invalid Pixels now render Annoying tiled text

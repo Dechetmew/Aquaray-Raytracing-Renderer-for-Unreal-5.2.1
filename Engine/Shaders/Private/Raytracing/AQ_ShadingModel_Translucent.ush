@@ -15,7 +15,7 @@ VisibilityRay.Origin = SurfaceHit.HitPos;
 VisibilityRay.TMax = MetersToCenti(100.0f);
 VisibilityRay.Direction = SurfaceHit.ReflectionVector;
 
-ShadowMinimalPayload = ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
+ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 
 Stats.RaysPerPixel += 1;
 
@@ -69,4 +69,5 @@ else
 	Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
 	
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
+
 }

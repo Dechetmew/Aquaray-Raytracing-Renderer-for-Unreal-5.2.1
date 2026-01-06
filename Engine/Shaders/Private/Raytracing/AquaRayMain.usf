@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.8.3
+// AQUARAY RAYTRACER - v0.8.4
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -41,7 +41,6 @@ int IntInput9;
 RaytracingAccelerationStructure TLAS;
 Texture2D SceneColorTexture;
 int UpscaleFactor;
-Texture3D<float4> ProbeTexture;
 
 RWTexture2D<float4> ColorOutput;
 RWTexture2D<float> RayHitDistanceOutput;

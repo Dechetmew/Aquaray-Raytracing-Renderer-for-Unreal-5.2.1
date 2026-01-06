@@ -32,6 +32,8 @@ Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration suppo
 ### Minor Update V0.8.4
 - Finally Removed the Abandoned GI pass from C++<br/>
 
+Check changelog.txt for more info<br/>
+
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>
 Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile

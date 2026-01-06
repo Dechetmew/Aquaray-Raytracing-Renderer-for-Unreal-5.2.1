@@ -5,26 +5,14 @@
 	{
 		FRDGTextureRef OutputColor = nullptr;
 		FRDGTextureRef HitDistanceTexture = nullptr;
-		FRDGTextureRef GIProbeDataTexture = nullptr;
 
-		// Pass 1: Global Illumination
-		RenderRayTracingGIgrid(
-			GraphBuilder,
-			View,
-			&GIProbeDataTexture,
-			1, 1, 1,
-			ERayTracingPrimaryRaysFlag::PrimaryView
-		);
-
-		// Pass 2: Per Pixel Ray Tracing
 		RenderRayTracingPrimaryRaysView(
 			GraphBuilder,
 			View,
 			&OutputColor,
 			&HitDistanceTexture,
 			1, 1, 1,
-			ERayTracingPrimaryRaysFlag::PrimaryView,
-			GIProbeDataTexture
+			ERayTracingPrimaryRaysFlag::PrimaryView
 		);
 
 		AddDrawTexturePass(GraphBuilder, View, OutputColor, SceneColorTexture, View.ViewRect.Min, View.ViewRect.Min, View.ViewRect.Size());

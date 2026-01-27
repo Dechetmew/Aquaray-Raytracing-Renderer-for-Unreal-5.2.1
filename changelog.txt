@@ -92,3 +92,12 @@ v0.8.3
 - Short Range Raytracing split from Dielectric into its own file
 - Added A Heatmap into Debug Vis so you can see where the GPU is getting Toasty
 - NaN and Invalid Pixels now render Annoying tiled text
+
+v0.9.0
+- Many Structural Changes and Optimization
+- The Code now uses its own TraceRay() Wrapper
+- Changes to Lighting and Shadows
+- Added A Heatmap into Debug Vis so you can see where the GPU is getting Toasty
+- NaN and Invalid Pixels now render Annoying tiled text
+- Added The Water Shading Model along with a Simple Adjustable Water Plane
+- Old GI Shader code Removed

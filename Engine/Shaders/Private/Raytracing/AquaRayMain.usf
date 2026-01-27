@@ -80,7 +80,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 			
 			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
-			if (pootis.z < Water.Level) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);}
+			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);}
 		
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{

@@ -27,7 +27,7 @@ Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration suppo
 
 ## Major Update V0.9.0
 - Many Structural Changes and Optimization<br/>
-- The Code now uses a Native TraceRay() Wrapper<br/>
+- The Code now uses its own TraceRay() Wrapper<br/>
 - Changes to Lighting and Shadows<br/>
 - Added A Heatmap into Debug Vis so you can see where the GPU is getting Toasty<br/>
 - NaN and Invalid Pixels now render Annoying tiled text<br/>

@@ -14,7 +14,7 @@ It should work in Unreal 5.2.1, I'm not sure about other versions (But you can t
 ## Scope of Project
 - Whitted Style Raytracing<br/>
 - Direct Lighting With Point Light Support<br/>
-- Simple One Ray Path Shadows<br/>
+- Simple One-Raypath Shadows<br/>
 - Reflections & Translucency in 10 steps<br/>
 - Simplified Reflective/Refractive Caustics<br/>
 - Simple Fog<br/>

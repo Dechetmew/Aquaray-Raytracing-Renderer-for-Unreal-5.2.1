@@ -33,6 +33,7 @@ Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration suppo
 - NaN and Invalid Pixels now render Annoying tiled text<br/>
 - Added The Water Shading Model along with a Simple Adjustable Water Plane<br/>
 - Old GI Shader code Removed<br/>
+
 Water is currently somewhat Limited in its Implementation, Mostly Regarding Shadows and Absorption. It All has to wait until Shadow Ray Code gets Redone
 
 Check changelog.txt for more info<br/>

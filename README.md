@@ -2,6 +2,7 @@
 ## V0.9.0
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Project<br/>
 SAMPLE PROJECT: https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file
+### Note: The Sample Project does not contain any Raytracing code. Only a Test Scene with Various Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>
 ![alt text](yay/logo.png)
 
 I have always been fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, especially focusing on Complex Reflection and Translucency, which I miss in other Raytraced Games. With that, I decided to find a way to implement my own Raytracer into the engine that would suit what I need for my Game Project<br/>

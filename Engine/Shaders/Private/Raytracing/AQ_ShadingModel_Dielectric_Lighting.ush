@@ -14,7 +14,6 @@ else
 
 	if (EnableShadowOpacity == 1)
 	{
-		[unroll]
 		for (int i = 0; i < 4; ++i)
 		{
 			ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
@@ -28,7 +27,7 @@ else
 			}
 
 			// Opaque
-			if (ShadowPayload.BlendingMode == 0 || ShadowPayload.Opacity > 0.5f)
+			if (ShadowPayload.BlendingMode == 0 || ShadowPayload.Opacity > 0.5f || ShadowPayload.ShadingModelID == 2)
 			{
 				Lit = false;
 				break;

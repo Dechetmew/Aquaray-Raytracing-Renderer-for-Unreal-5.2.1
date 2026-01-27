@@ -2,22 +2,22 @@
 
 struct RaySample
 {
-	float3 Color;                         //BaseColor of the last hit matte Surface or sky. Alpha is for Opacity Blending
-	float  Metallic;                      //Used for Specular Calculation
-	float  Specular;                      //Amount of Specular to apply
-	float  Roughness;                     //Maybe will be used for specular
-	float  Opacity;						  //Opacity
-	int    ShadingModel;				  //Shading Model of the Hit Surface
+	float3	Color;                         //BaseColor of the last hit matte Surface or sky. Alpha is for Opacity Blending
+	float	Specular;                      //Amount of Specular to apply
+	float	Roughness;                     //Maybe will be used for specular
+	float	Opacity;					   //Opacity
+	int		ShadingModel;				   //Shading Model of the Hit Surface
 	
-	float3 LightColor;                    //Color of the primary light
-	float3 PointLightColor;               //Color of all Point Lights
-	float3 IndirectLightColor;            //Color of Indirect Light on this pixel
-	float3 IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
-	float  RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
-	float  NdotV;                         //How much the surface faces the Incident Ray
+	float3	LightColor;                    //Color of the primary light
+	float3	PointLightColor;               //Color of all Point Lights
+	float3	IndirectLightColor;            //Color of Indirect Light on this pixel
+	float3	IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
+	float	RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
+	float	NdotV;                         //How much the surface faces the Incident Ray
 	
-	bool   ForceBloom;                    //Forces strong bloom to the Pixel, for Mirror Surfaces
-	bool   ForceBloomPoint;               //ForceBloom for Point Lighting
+	bool	ForceBloom;                    //Forces strong bloom to the Pixel, for Mirror Surfaces
+	bool	ForceBloomPoint;               //ForceBloom for Point Lighting
+	bool	BackFace;                      //True when a Backface is hit
 };
 
 struct DiffuseKernel
@@ -58,7 +58,13 @@ struct Fog
 	float Transmittance;
 };
 
-static const float Kernel5[5] = { 0.06136, 0.24477, 0.38774, 0.24477, 0.06136 };
+struct Water
+{
+	float Level; //World Space Water Height
+	float Opacity; //Zero Opacity Disables Water
+	float3 Color;
+	float3 Transmittance;
+};
 
 static const uint ErrorTex[11] = //32x11
 {

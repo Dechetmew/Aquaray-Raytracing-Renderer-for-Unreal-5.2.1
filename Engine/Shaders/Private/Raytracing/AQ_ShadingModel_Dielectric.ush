@@ -1,8 +1,6 @@
 //Shading Model: Dielectric
 
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
-Raysample[SampleIndex].Metallic = Payload.Metallic;
-Raysample[SampleIndex].Roughness = 1;
 Raysample[SampleIndex].ShadingModel = 1;
 	
 #include "AQ_ShortRangeAO.ush"

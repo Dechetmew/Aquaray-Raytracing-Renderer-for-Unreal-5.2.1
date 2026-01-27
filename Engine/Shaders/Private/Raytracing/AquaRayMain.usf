@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.8.4
+// AQUARAY RAYTRACER - v0.9.0
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -13,8 +13,8 @@
 float4 ColorInput1; //Ambient/Indirect Light Color
 float4 ColorInput2; //Fog Color
 float4 ColorInput3; //R=Fog Bottom Height, G=Fog Top Height, B=Fog Amount Top, A=Fog Amount Bottom
-float4 ColorInput4;
-float4 ColorInput5;
+float4 ColorInput4; //Water Color
+float4 ColorInput5; //Sun Light Color
 float4 ColorInput6;
 float4 ColorInput7;
 float4 ColorInput8;
@@ -61,6 +61,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
 		SurfaceHit.IncidentVector = Ray.Direction;
+		SurfaceHit.StartPos = Ray.Origin;
 			
 		//Debug stuff here
 		//ColorOutput[DispatchThreadId] = float4(CameraPositionWS, 1.0f);
@@ -71,13 +72,15 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		if (Payload.IsHit())
 		{
 			SurfaceHit.Distance = Payload.HitT;
-			SurfaceHit.StartPos = Ray.Origin;
-			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
+			SurfaceHit.ReflectionVector = Creflect(Ray.Direction, Payload.WorldNormal);
 			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
-			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f;
+			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
 			
 			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
+			
+			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
+			if (pootis.z < Water.Level) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);}
 		
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{
@@ -91,9 +94,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				#include "AQ_ShadingModel_Mirror.ush"
 			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2 && Payload.IsTwoSided())
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
 			{	
 				#include "AQ_ShadingModel_Translucent.ush"
+			}
+			else if (Payload.ShadingModelID == 2 && Payload.BlendingMode == 2)
+			{	
+				#include "AQ_ShadingModel_Water.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && ((Payload.BlendingMode == 0) || (Payload.BlendingMode == 2)))
 			{	
@@ -130,11 +137,16 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else if (Raysample[i].ShadingModel == 1)
 		{
 			//Shading Model Dielectric
-			Final = Raysample[i].Color * (Raysample[i].LightColor + (Raysample[i].IndirectLightColor * Raysample[i].RTAO));
-			Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
-			Final = Final + Raysample[i].Specular;
-			Final = Final + Raysample[i].IndirectEmissive;
+			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
+			float3 Point = Raysample[i].Color * Raysample[i].PointLightColor;
+			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+			float3 Emissive = Raysample[i].Color * Raysample[i].IndirectEmissive;
 			
+			Final = max(Direct, Point);
+			Final = max(Final, Indirect);
+			Final = max(Final, Emissive);
+			
+			Final += Raysample[i].Specular;
 			FinalOpacity = 1;
 		}
 		else if (Raysample[i].ShadingModel == 2)
@@ -160,7 +172,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
 			Final += 2000.0f * Raysample[i].Color * BloomLight;
 			
-			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders
+			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders (TODO: Make this a Function?)
 			if (Raysample[i].Roughness > 0.02f && !all(Raysample[i].LightColor > float3(2,2,2)))
 			{
 				float metallic_A = max(max(Raysample[i].LightColor.r, Raysample[i].LightColor.g), Raysample[i].LightColor.b);
@@ -219,10 +231,14 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}
-			else
+		}
+		else if (Raysample[i].ShadingModel == 8)
+		{
+			//Shading Model Water
+			if (!Raysample[i].BackFace)
 			{
-				//Invisible
-				continue;
+				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
+				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel);
 			}
 		}
 		else
@@ -235,10 +251,14 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
 	Final = lerp(sky, Final, FinalOpacity); //Apply sky to Incomplete pixels
+	
 	if (Fog.Density > 0.00001f)
 	{
 		Final = lerp(Final, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
 	}
+	
+	Final *= Water.Transmittance; //Apply Water
+
 	
 	//Debug Viewmodes
 	switch(DebugMode)
@@ -251,7 +271,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		default: break;
 	}
 	
-	// NaN check to prevent my beloved D3D crashes (reduces crashes from Uninitialized Values by 1%)
+	// NaN check to prevent my beloved D3D crashes
 	if (any(isnan(Final)) || any(isinf(Final)))
 	{
 		Final = Error(UV);

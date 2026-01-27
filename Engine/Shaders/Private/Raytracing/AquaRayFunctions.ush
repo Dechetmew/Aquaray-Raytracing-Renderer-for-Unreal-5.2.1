@@ -71,13 +71,13 @@ float3 GetSkyRadianceSun(float3 Direction, float Roughness, float3 SunDirection)
 	}
 }
 
-//Applies Lambert Lighting. If you are inputing the Vector Towards the Light Source, Please Reverse it
+//A very fancy dot()
 float Lambert(float3 LightVector, float3 SurfaceNormal)
 {
-	return saturate(1.0f * max(0.0f, dot(SurfaceNormal, LightVector)));
+	return saturate(dot(SurfaceNormal, LightVector));
 }
 
-//Amount of how much the Surface is Facing the Incident Vector
+//A very fancy NdotV
 float NdotV(float3 Normal, float3 IncidentVector)
 {
     return saturate(dot(Normal, -IncidentVector));
@@ -172,16 +172,16 @@ float3 HeatColor(float t)
 	return col;
 }
 
-//Renders annoying Error Text Across the Affected Pixels
+//Renders annoying Error Text Across Affected Pixels
 float3 Error(float2 UVpos)
 {
 	UVpos = frac(UVpos * 32);
 
-    uint x = (uint)floor(UVpos.x * 32.0);
-    uint y = (uint)floor(UVpos.y * 32.0);
+	uint x = (uint)floor(UVpos.x * 32.0);
+	uint y = (uint)floor(UVpos.y * 32.0);
 
-    x = min(x, 31u);
-    y = min(y, 31u);
+	x = min(x, 31u);
+	y = min(y, 31u);
 	
 	if (y >= 11u)
 	{
@@ -191,7 +191,7 @@ float3 Error(float2 UVpos)
 	//flip x axis
 	x = 31u - x;
 
-    bool bit = (ErrorTex[y] >> x) & 1;
+	bool bit = (ErrorTex[y] >> x) & 1;
 	
 	if (bit)
 	{
@@ -207,11 +207,11 @@ float3 Invalid(float2 UVpos)
 {
 	UVpos = frac(UVpos * 32);
 
-    uint x = (uint)floor(UVpos.x * 32.0);
-    uint y = (uint)floor(UVpos.y * 32.0);
+	uint x = (uint)floor(UVpos.x * 32.0);
+	uint y = (uint)floor(UVpos.y * 32.0);
 
-    x = min(x, 31u);
-    y = min(y, 31u);
+	x = min(x, 31u);
+	y = min(y, 31u);
 	
 	if (y >= 11u)
 	{
@@ -221,7 +221,7 @@ float3 Invalid(float2 UVpos)
 	//flip x axis
 	x = 31u - x;
 
-    bool bit = (InvalidTex[y] >> x) & 1;
+	bool bit = (InvalidTex[y] >> x) & 1;
 	
 	if (bit)
 	{
@@ -230,5 +230,34 @@ float3 Invalid(float2 UVpos)
 	else
 	{
 		return float3(1, 0.6, 0);
+	}
+}
+
+//Returns Water Absorption or Transmission whatever
+float3 WaterAbsorb(float3 HitPosWS, float WaterOpacity, float3 WaterColor, float WaterLevelWS, float additionalDist)
+{
+	float3 Waterpos = float3(HitPosWS.xy, WaterLevelWS);
+	float dist = distance(HitPosWS, Waterpos) + (additionalDist * 0.1f); //I kinda wanted to combine distance absorption with depth absorption here
+	
+	WaterColor = lerp(float3(1,1,1), WaterColor, WaterOpacity * 0.01);
+	WaterColor = WaterColor * -1 + 1;
+
+	return exp(-WaterColor * dist);
+}
+
+//This is my attempt to fix a reflection issue where certain Rays just nopes out going wrong ways. This only reduces it mostly.
+//It might be related to the fact that its using World Normal instead of the Vertex Normal (which is not available in the Payload)
+float3 Creflect(float3 Direction, float3 WorldNormal)
+{
+    float3 Reflection = reflect(Direction, WorldNormal);
+	float dhot = dot(Reflection, WorldNormal);
+	
+	if (dhot < 0.0)
+	{
+		return float3(0,0,1);
+	}
+	else
+	{
+		return Reflection;
 	}
 }

@@ -1,0 +1,43 @@
+// Shading Model: Water
+
+Raysample[SampleIndex].ShadingModel = 8;
+Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
+
+#include "AQ_ShadingModel_Translucent_Lighting.ush"
+#include "AQ_ShadingModel_Translucent_LightingPoint.ush"
+
+if (Payload.IsFrontFace())
+{
+	////////////////// Just like in Tranlucency, but Inverse. It Retrieves the color via Refraction path
+	VisibilityRay.Origin = SurfaceHit.HitPosTranslucency;
+	VisibilityRay.Direction = SurfaceHit.RefractionVector;
+	VisibilityRay.TMin = 0.0;
+	VisibilityRay.TMax = MetersToCenti(500.0f);
+
+	ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
+
+	if (ShadowPayload.IsHit())
+	{
+		float3 HitPosWS = (VisibilityRay.Origin + VisibilityRay.Direction * ShadowPayload.HitT) + CameraPositionWS;
+		Raysample[SampleIndex].Color = ShadowPayload.BaseColor * WaterAbsorb(HitPosWS, Payload.Opacity, Payload.BaseColor, SurfaceHit.HitPos.z + CameraPositionWS.z, ShadowPayload.HitT);
+	}
+	else
+	{
+		// You get... Nothing!
+		Raysample[SampleIndex].Color = float3(0,0,0);
+	}
+	//////////////
+
+	Raysample[SampleIndex].Color += Payload.Radiance * 50.0f; //quickly add emissive
+
+	// Advance Ray
+	Ray.Direction = SurfaceHit.ReflectionVector;
+	Ray.Origin = SurfaceHit.HitPos;
+}
+else
+{
+	// Hit from under
+	Raysample[SampleIndex].BackFace = true;
+	Ray.Direction = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
+	Ray.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f; //Like HitPosTranslucency
+}

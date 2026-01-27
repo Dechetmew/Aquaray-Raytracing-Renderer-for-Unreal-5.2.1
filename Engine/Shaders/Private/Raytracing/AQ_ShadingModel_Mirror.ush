@@ -1,11 +1,8 @@
-// Shading Model: Metallic Mirror
-
+// Shading Model: Mirror
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
-Raysample[SampleIndex].Metallic = Payload.Metallic;
 Raysample[SampleIndex].Roughness = Payload.Roughness;
-if (Payload.Metallic > 0.5f) {Raysample[SampleIndex].ShadingModel = 3;} else {Raysample[SampleIndex].ShadingModel = 2;}
+if (Payload.Metallic > 0.5f) {Raysample[SampleIndex].ShadingModel = 3;} else {Raysample[SampleIndex].ShadingModel = 2;} //Switches between Metallic and Dielectric Reflective
 Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
-
 Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 
 #include "AQ_ShadingModel_Mirror_Lighting.ush"

@@ -1,10 +1,8 @@
 // Shading Model: Translucent
-
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
-Raysample[SampleIndex].Metallic = Payload.Metallic;
 Raysample[SampleIndex].ShadingModel = 4;
-Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
 
+//Only for Retrieving ForceBloom
 #include "AQ_ShadingModel_Translucent_Lighting.ush"
 #include "AQ_ShadingModel_Translucent_LightingPoint.ush"
 
@@ -54,7 +52,8 @@ if (RefractionPayload.IsHit() && !RefractionPayload.IsFrontFace())
 	float3 Absorption = sigma * (1.0f - Payload.BaseColor);
 	Raysample[SampleIndex].Color = exp(-Absorption * RefractionPayload.HitT); //For large Glass stuff, Use very low Opacity
 	
-	Raysample[SampleIndex].Color = Raysample[SampleIndex].Color * dot(-Payload.WorldNormal, SurfaceHit.IncidentVector);
+	float darken = dot(-Payload.WorldNormal, SurfaceHit.IncidentVector) + 0.5 * 0.5; //should be parametrized
+	Raysample[SampleIndex].Color = Raysample[SampleIndex].Color * darken;
 	
 	Raysample[SampleIndex].Color += ReflectionColor;
 	
@@ -67,7 +66,5 @@ else
 	//Prepare Next Ray
 	//Ray Direction Stays Unchanged
 	Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
-	
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
-
 }

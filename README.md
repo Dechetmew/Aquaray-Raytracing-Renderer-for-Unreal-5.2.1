@@ -25,7 +25,7 @@ It should work in Unreal 5.2.1, I'm not sure about other versions (But you can t
 Currently, this version of AquaRay won't support any kind of Path Tracing. This is only a Proof of Concept.<br/>
 After this, I'm planning to make a Rebuilt Version which will be a combination of Standard Path Traced Lighting, and the Whitted Style Reflections/Translucency code from this Version.<br/>
 
-Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my Geforce RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
+Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 
 ## Major Update V0.9.0
 - Many Structural Changes and Optimization<br/>

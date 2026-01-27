@@ -1,7 +1,7 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
 ## V0.9.0
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Project<br/>
-SAMPLE PROJECT: https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file
+SAMPLE PROJECT: [Download (MediaFire)](https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file)<br/>
 __Note: The Sample Project does not contain any Raytracing code. Only a Test Scene with Various Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>__
 ![alt text](yay/logo.png)
 

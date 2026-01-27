@@ -19,6 +19,7 @@ It should work in Unreal 5.2.1, I'm not sure about other versions (But you can t
 - Simplified Reflective/Refractive Caustics<br/>
 - Simple Fog<br/>
 - Water<br/>
+- Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 (also some silly lighting hacks, not too important)<br/>
 
 Currently, this version of AquaRay won't support any kind of Path Tracing. This is only a Proof of Concept.<br/>

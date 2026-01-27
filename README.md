@@ -45,7 +45,7 @@ Check changelog.txt for more info<br/>
 Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile
 https://www.unrealengine.com/en-US/ue-on-github<br/>
 https://dev.epicgames.com/documentation/en-us/unreal-engine/building-unreal-engine-from-source<br/>
-2. Compile a Vannila Build of 5.2.1 and test if its all working<br/>
+2. Compile an Umodified Build of 5.2.1 and test if its all working<br/>
 https://github.com/EpicGames/UnrealEngine/tree/5.2.1-release<br/>
 3. Replace/add files from this repository to your Engine Source<br/>
 NOTE: For RayTracingDebug.cpp you must find the if statement for enabling the PrimaryRays viewmode in your source, and Replace it with the version on this Repository. Similiar for DeferredShadingRenderer.h<br/>

@@ -8,11 +8,11 @@
 
 struct FRTLightingData
 {
-	uint Type;						//type of light (see LIGHT_TYPEs)
+	uint Type;							//type of light (see LIGHT_TYPEs)
 	float IESAtlasIndex;
 	float RectLightAtlasMaxLevel;
 	uint LightMissShaderIndex;
-	float3 TranslatedLightPosition;				//position relative to the camera
+	float3 TranslatedLightPosition;		//position relative to the camera
 	float InvRadius;					//1.0 / Radius
 	float3 Direction;					//direction for rect/spot lights
 	float FalloffExponent;
@@ -91,5 +91,6 @@ struct FMaterialClosestHitPayload
 	bool HasAnisotropy()
 	float3 GetRayDirection()
 };
+
 
 

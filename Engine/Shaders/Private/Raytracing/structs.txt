@@ -1,7 +1,7 @@
 //Structs Reference
 
 //light types
-#define LIGHT_TYPE_DIRECTIONAL			0 //sun or moon
+#define LIGHT_TYPE_DIRECTIONAL		0 //sun or moon
 #define LIGHT_TYPE_POINT			1 //sphere
 #define LIGHT_TYPE_SPOT				2 //cone light
 #define LIGHT_TYPE_RECT				3 //rectangle light
@@ -59,7 +59,7 @@ struct FMinimalPayload
 	bool IsHit()
 };
 
-struct FMaterialClosestHitPayload : FMinimalPayload
+struct FMaterialClosestHitPayload
 {
 	float HitT
 	float3 Radiance;
@@ -91,4 +91,5 @@ struct FMaterialClosestHitPayload : FMinimalPayload
 	bool HasAnisotropy()
 	float3 GetRayDirection()
 };
+
 

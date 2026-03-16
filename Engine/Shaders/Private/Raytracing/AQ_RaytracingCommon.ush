@@ -1,5 +1,4 @@
 
-
 FMaterialClosestHitPayload TraceMatRay(in RaytracingAccelerationStructure TLAS, in FRayDesc Ray, bool TraceTranslucent)
 {
 	FPackedMaterialClosestHitPayload PackedPayload = (FPackedMaterialClosestHitPayload)0;

@@ -2,13 +2,22 @@
 Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].ShadingModel = 4;
 
-//Only for Retrieving ForceBloom
-#include "AQ_ShadingModel_Translucent_Lighting.ush"
-#include "AQ_ShadingModel_Translucent_LightingPoint.ush"
+lighting Lighting = (lighting)0;
+Lighting.GlareSize = 0.997f; //TODO Parametrize
+Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
+Lighting.TraceDistance = ShadowTraceDist;
+Lighting.PrimaryLightDirection = SunDirection;
+Lighting.PrimaryLightColor = SunLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
 
+#include "AQ_Lighting.ush" //TODO: It might be a nice idea to make this optional in some shading models
+
+Raysample[SampleIndex].Glare = Lighting.Glare;
+
+////////////////// Reflect Sky. Before you ask, Yes I tried coding a Full Raytraced Reflection. And yes, that went Horribly.
 float3 ReflectionColor;
-
-////////////////// Reflect Sky. Before you ask, I tried coding a Full Raytraced Reflection, but that went Horribly
 VisibilityRay.Origin = SurfaceHit.HitPos;
 VisibilityRay.TMax = MetersToCenti(100.0f);
 VisibilityRay.Direction = SurfaceHit.ReflectionVector;
@@ -55,7 +64,7 @@ if (RefractionPayload.IsHit() && !RefractionPayload.IsFrontFace())
 	float darken = dot(-Payload.WorldNormal, SurfaceHit.IncidentVector) + 0.5 * 0.5; //should be parametrized
 	Raysample[SampleIndex].Color = Raysample[SampleIndex].Color * darken;
 	
-	Raysample[SampleIndex].Color += ReflectionColor;
+	Raysample[SampleIndex].Color = lerp(Raysample[SampleIndex].Color, ReflectionColor, FresnelSchlick(NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector), 0.05f));
 	
 	//Prepare Next Ray
 	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector

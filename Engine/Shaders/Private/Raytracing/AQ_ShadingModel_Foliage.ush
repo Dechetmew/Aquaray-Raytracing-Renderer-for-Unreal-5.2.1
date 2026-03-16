@@ -7,10 +7,23 @@ if (Payload.Opacity > 0.5f)
 	Raysample[SampleIndex].Color = Payload.BaseColor + Payload.Radiance;
 	Raysample[SampleIndex].Opacity = 1;
 	
-	Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
+	lighting Lighting = (lighting)0;
+	Lighting.GlareSize = 1;
+	Lighting.GlarePower = float3(0,0,0);
+	Lighting.TraceDistance = ShadowTraceDist;
+	Lighting.PrimaryLightDirection = SunDirection;
+	Lighting.PrimaryLightColor = SunLightColor;
+	Lighting.WorldNormal = float3(0,0,1);
+	Lighting.SamplingPos = SurfaceHit.HitPos;
+	Lighting.IncidentVector = SurfaceHit.IncidentVector;
+	Lighting.SpecularAmount = 0;
+	Lighting.isFoliage = true;
+
+	#include "AQ_Lighting.ush"
+
+	Raysample[SampleIndex].LightColor = Lighting.Light;
+	Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
 	
-	#include "AQ_ShadingModel_Foliage_Lighting.ush"
-	#include "AQ_ShadingModel_Foliage_LightingPoint.usf"
 	break;
 }
 else

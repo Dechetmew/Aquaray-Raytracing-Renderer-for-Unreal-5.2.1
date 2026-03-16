@@ -5,8 +5,8 @@
 #include "RayTracingCommon.ush"
 #include "RayTracingDeferredShadingCommon.ush"
 #include "RayTracingLightingCommon.ush"
-#include "AquaRayStructs.ush"
-#include "AquarayFunctions.ush"
+#include "AQ_Structs.ush"
+#include "AQ_Functions.ush"
 #include "AQ_RaytracingCommon.ush"
 
 // SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
@@ -155,43 +155,19 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
 			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor + Raysample[i].PointLightColor);
 
-			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f);
-			
-			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
-			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
-			Final += 2000.0f * Raysample[i].Color * BloomLight;
+			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare;
 		}
 		else if (Raysample[i].ShadingModel == 3)
 		{
 			//Shading Model Metallic Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
 			Final = lerp(Final * Raysample[i].Color, Final, Fresnel);
-			Final = Final + Raysample[i].Specular;
-			
-			//This fixes a common issue that the Sun bloom or similiar is not Visible in Reflections. I just force it manually
-			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
-			Final += 2000.0f * Raysample[i].Color * BloomLight;
-			
-			//Adds slight Lambert Shading so the Mirror Surface looks like from the old renders (TODO: Make this a Function?)
-			if (Raysample[i].Roughness > 0.02f && !all(Raysample[i].LightColor > float3(2,2,2)))
-			{
-				float metallic_A = max(max(Raysample[i].LightColor.r, Raysample[i].LightColor.g), Raysample[i].LightColor.b);
-				float3 metallic_C = lerp(Final * IndirectLightColor, Final * Raysample[i].LightColor, metallic_A);
-				
-				float metallic_B = max(max(Raysample[i].PointLightColor.r, Raysample[i].PointLightColor.g), Raysample[i].PointLightColor.b);
-				float3 metallic_D = lerp(Final * IndirectLightColor, Final * Raysample[i].PointLightColor, metallic_B);
-				
-				Final = metallic_C + metallic_D;
-			}
+			Final = Final + Raysample[i].Specular + Raysample[i].Glare;
 		}
 		else if (Raysample[i].ShadingModel == 4)
 		{	
 			// Shading Model Translucent
-			Final = Final * Raysample[i].Color;
-			
-			float3 BloomLight = (Raysample[i].ForceBloom ? SunLightColor : 0.0f) + (Raysample[i].ForceBloomPoint ? Raysample[i].PointLightColor * 10.0f : 0.0f);
-			Final += 2000.0f * Raysample[i].Color * BloomLight;
-			
+			Final = (Final * Raysample[i].Color) + Raysample[i].Glare;
 			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}
 		else if (Raysample[i].ShadingModel == 5)
@@ -238,7 +214,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (!Raysample[i].BackFace)
 			{
 				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel);
+				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;;
 			}
 		}
 		else

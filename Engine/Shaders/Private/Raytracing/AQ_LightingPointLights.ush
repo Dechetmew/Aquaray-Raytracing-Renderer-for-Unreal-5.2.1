@@ -1,0 +1,42 @@
+
+for (uint b = 0; b < 10; ++b)
+{
+	if (i == 9) {Transmittance = float3(0,0,0); break;}
+
+	LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
+		
+	Stats.RaysPerPixel += 1;
+
+	if (LightingPayload.IsHit())
+	{
+		if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 0)
+		{
+			// Fully Opaque
+			Valid = false; 
+			PointTransmittance = float3(0,0,0);
+			break;
+		}
+		else if (LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2)
+		{
+			// Unlit Transparent
+			if (LightingPayload.Opacity > 0.999f)
+			{
+				Valid = false; 
+				PointTransmittance = float3(0,0,0);
+				break; 
+			}
+			
+			Transmittance *= -LightingPayload.Opacity + 1;
+			
+			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + (LightingPayload.WorldNormal * 0.001f);
+			LightingRay.TMax = dist - LightingPayload.HitT;
+		}
+		else
+		{
+			// Unspecified (Force Shadow)
+			Valid = false;
+			PointTransmittance = float3(0,0,0);
+			break;
+		}
+	}
+}

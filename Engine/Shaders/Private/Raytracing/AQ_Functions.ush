@@ -1,0 +1,275 @@
+//AQUARAY RAYTRACER FUNCTIONS
+
+#include "../DeferredLightingCommon.ush"
+#include "RayTracingCommon.ush"
+#include "RayTracingDeferredShadingCommon.ush"
+#include "RayTracingLightingCommon.ush"
+
+/////////////////////////////////////////////////// FUNCTIONS
+
+//Does exactly what it says on the can
+float3x3 BuildTangentBasis(float3 N)
+{
+    float3 up = abs(N.z) < 0.999f ? float3(0, 0, 1) : float3(1, 0, 0);
+
+    float3 T = normalize(cross(up, N)); // Tangent
+    float3 B = normalize(cross(N, T));  // Bitangent
+
+    return float3x3(T, B, N);
+}
+
+//Hash
+float Hash(float3 p)
+{
+    p = frac(p * 0.3183099f + float3(0.1f, 0.2f, 0.3f));
+    p *= 17.0f;
+    return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+//Generates a Random Value From Hit Geometry Data (worldpos and distance)
+float GeometryRand(float3 HitPos, float RayDist)
+{
+    // Combine HitPos and RayDist into a single float3 input
+    float3 seed = HitPos * 0.05f + RayDist;
+    return Hash(seed);
+}
+
+//Same as GeometryRand, but outputs as vec3 instead
+float3 GeometryRandVec3(float3 HitPos, float RayDist)
+{
+    float3 base = HitPos * 0.05f + RayDist;
+
+    return float3(
+        Hash(base + float3(17.0f, 0.0f, 0.0f)),
+        Hash(base + float3(0.0f, 31.0f, 0.0f)),
+        Hash(base + float3(0.0f, 0.0f, 47.0f))
+    );
+}
+
+//Gets Skylight Color at Provided Direction
+float3 GetSkyRadiance(float3 Direction, float Roughness)
+{
+	float SkyAverageBrightness = 1.0f;
+	return GetSkyLightReflection(Direction, Roughness, SkyAverageBrightness);
+}
+
+// Like GetSkyRadiance(), but manually adds a sun
+float3 GetSkyRadianceSun(float3 Direction, float Roughness, float3 SunDirection)
+{
+	float SunValue = dot(Direction, SunDirection);
+	float SkyAverageBrightness = 1.0f;
+
+	if (SunValue < 0.99995)
+	{
+		//Sky
+		return GetSkyLightReflection(Direction, Roughness, SkyAverageBrightness);
+	}
+	else
+	{
+		//Sun
+		return float3(1000,1000,1000);
+	}
+}
+
+//A very fancy dot()
+float Lambert(float3 LightVector, float3 SurfaceNormal)
+{
+	return saturate(dot(SurfaceNormal, LightVector));
+}
+
+//A very fancy NdotV
+float NdotV(float3 Normal, float3 IncidentVector)
+{
+    return saturate(dot(Normal, -IncidentVector));
+}
+
+float3 FresnelSchlick(float NdotV, float3 F0)
+{
+    return F0 + (1.0f - F0) * pow(1.0f - NdotV, 5.0f);
+}
+
+//Converts Distance From Meters to Centimeters
+float MetersToCenti(float DistanceInMeters)
+{
+	return DistanceInMeters * 100.0f;
+}
+
+//Returns a Yep when a Surface can be Possibly lit by this Light Source, a Nope when it cant
+bool CanBeLit(float3 WorldNormal, float3 LightVector)
+{
+    return dot(WorldNormal, LightVector) > 0.0f;
+}
+
+//Applies Specular for Metallic Surfaces
+float MetallicSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
+{
+	float Power = Lambert(LightVector, SurfaceNormal);
+	float3 A = IncidentVector * -1.0f;
+	float3 B = LightVector + A;
+	float3 C = normalize(B);
+	float D = dot(C, SurfaceNormal);
+	float E = saturate(D);
+	float F = pow(E, 50.0f);
+	
+	return F * Power * Specular;
+}
+
+//Applies Specular for Dielectric Surfaces
+float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
+{
+	float Power = Lambert(LightVector, SurfaceNormal);
+	float3 A = reflect(LightVector, SurfaceNormal);
+	float C = dot(A, IncidentVector);
+	float D = saturate(C);
+	float E = pow(D, 8.0f);
+
+	return E * Power * Specular;
+}
+
+//Specular. Assumes Infinite Distance from Light Source with no Width
+float Specular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
+{
+	float A = dot(reflect(IncidentVector, SurfaceNormal), LightVector);
+	float B = A + -Specular;
+	float C = 1 / (1 + min(-Specular, 0.0f));
+	float D = saturate(B * C);
+	float E = pow(D,5);
+	float F = dot(SurfaceNormal, LightVector);
+	return E * F * Specular * 0.5;
+}
+
+//Gets fog
+float GetFogAmount(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPos, float3 endPos)
+{
+	float distMeters = distance(startPos, endPos) * 0.01;
+	float z = endPos.z;
+	float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+	float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+
+	// Beer Lambert
+	float fog = 1.0 - exp(-(density * heightFactor) * distMeters);
+
+	return saturate(fog);
+}
+
+// Gets fog at a single world position. Used for sky
+float GetFogAtPoint(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 posWS)
+{
+	float z = posWS.z;
+	float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
+	float heightFactor = bottomValue * pow(topValue / bottomValue, t);
+
+	return saturate(density * heightFactor) * 2.5f; //Magic number yaay
+}
+
+//Measures Pixel Temperature /s
+float3 HeatColor(float t)
+{
+	t = t * 0.1;
+	t = saturate(t) * 4.0;
+
+	float3 c0 = float3(0,0,0);
+	float3 c1 = float3(0,0,1);
+	float3 c2 = float3(0,1,0);
+	float3 c3 = float3(1,1,0);
+	float3 c4 = float3(1,0,0);
+
+	float3 col = c0;
+
+	col = lerp(col, c1, saturate(t - 0.0));
+	col = lerp(col, c2, saturate(t - 1.0));
+	col = lerp(col, c3, saturate(t - 2.0));
+	col = lerp(col, c4, saturate(t - 3.0));
+
+	return col;
+}
+
+//Renders annoying Error Text Across Affected Pixels
+float3 Error(float2 UVpos)
+{
+	UVpos = frac(UVpos * 32);
+
+	uint x = (uint)floor(UVpos.x * 32.0);
+	uint y = (uint)floor(UVpos.y * 32.0);
+
+	x = min(x, 31u);
+	y = min(y, 31u);
+	
+	if (y >= 11u)
+	{
+		return float3(1, 0, 1);
+	}
+	
+	//flip x axis
+	x = 31u - x;
+
+	bool bit = (ErrorTex[y] >> x) & 1;
+	
+	if (bit)
+	{
+		return float3(0, 0, 0); 
+	}
+	else
+	{
+		return float3(1, 0, 1);
+	}
+}
+
+float3 Invalid(float2 UVpos)
+{
+	UVpos = frac(UVpos * 32);
+
+	uint x = (uint)floor(UVpos.x * 32.0);
+	uint y = (uint)floor(UVpos.y * 32.0);
+
+	x = min(x, 31u);
+	y = min(y, 31u);
+	
+	if (y >= 11u)
+	{
+		return float3(1, 0.6, 0);
+	}
+	
+	//flip x axis
+	x = 31u - x;
+
+	bool bit = (InvalidTex[y] >> x) & 1;
+	
+	if (bit)
+	{
+		return float3(0, 0, 0); 
+	}
+	else
+	{
+		return float3(1, 0.6, 0);
+	}
+}
+
+//Returns Water Absorption or Transmission whatever
+float3 WaterAbsorb(float3 HitPosWS, float WaterOpacity, float3 WaterColor, float WaterLevelWS, float additionalDist)
+{
+	float3 Waterpos = float3(HitPosWS.xy, WaterLevelWS);
+	float dist = distance(HitPosWS, Waterpos) + (additionalDist * 0.1f); //I kinda wanted to combine distance absorption with depth absorption here
+	
+	WaterColor = lerp(float3(1,1,1), WaterColor, WaterOpacity * 0.01);
+	WaterColor = WaterColor * -1 + 1;
+
+	return exp(-WaterColor * dist);
+}
+
+//This is my attempt to fix a reflection issue where certain Rays just nopes out going wrong ways. This only reduces it mostly.
+//It might be related to the fact that its using World Normal instead of the Vertex Normal (which is not available in the Payload)
+float3 Creflect(float3 Direction, float3 WorldNormal)
+{
+    float3 Reflection = reflect(Direction, WorldNormal);
+	float dhot = dot(Reflection, WorldNormal);
+	
+	if (dhot < 0.0)
+	{
+		return float3(0,0,1);
+	}
+	else
+	{
+		return Reflection;
+	}
+}

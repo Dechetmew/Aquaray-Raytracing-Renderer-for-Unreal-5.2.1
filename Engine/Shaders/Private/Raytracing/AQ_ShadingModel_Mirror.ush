@@ -3,10 +3,23 @@ Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].Roughness = Payload.Roughness;
 if (Payload.Metallic > 0.5f) {Raysample[SampleIndex].ShadingModel = 3;} else {Raysample[SampleIndex].ShadingModel = 2;} //Switches between Metallic and Dielectric Reflective
 Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
-Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 
-#include "AQ_ShadingModel_Mirror_Lighting.ush"
-#include "AQ_ShadingModel_Mirror_LightingPoint.ush"
+lighting Lighting = (lighting)0;
+Lighting.GlareSize = 0.997f; //TODO Parametrize
+Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
+Lighting.TraceDistance = ShadowTraceDist;
+Lighting.PrimaryLightDirection = SunDirection;
+Lighting.PrimaryLightColor = SunLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+Lighting.SpecularAmount = 0.0f; //TODO: What to do with Specular here?
+
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].LightColor = Lighting.Light;
+Raysample[SampleIndex].Glare = Lighting.Glare;
+Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
 
 // Advance Ray
 Ray.Direction = SurfaceHit.ReflectionVector;

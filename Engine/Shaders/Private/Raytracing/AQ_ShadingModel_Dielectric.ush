@@ -5,10 +5,21 @@ Raysample[SampleIndex].ShadingModel = 1;
 	
 #include "AQ_ShortRangeAO.ush"
 
-float indirect = saturate(dot(Payload.WorldNormal, normalize(float3(1.0f, 1.0f, 1.0f))) + 1) * 0.3 + 0.7;
-Raysample[SampleIndex].IndirectLightColor = indirect * IndirectLightColor;
+lighting Lighting = (lighting)0;
+Lighting.GlareSize = 1;
+Lighting.GlarePower = float3(0,0,0);
+Lighting.TraceDistance = ShadowTraceDist;
+Lighting.PrimaryLightDirection = SunDirection;
+Lighting.PrimaryLightColor = SunLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+Lighting.SpecularAmount = Payload.Specular;
 
-#include "AQ_ShadingModel_Dielectric_Lighting.ush"
-#include "AQ_ShadingModel_Dielectric_LightingPoint.ush"
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].LightColor = Lighting.Light;
+Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
+Raysample[SampleIndex].Specular = Lighting.Specular; //spec is already multiplied by transmittance in the light sampler
 
 break;

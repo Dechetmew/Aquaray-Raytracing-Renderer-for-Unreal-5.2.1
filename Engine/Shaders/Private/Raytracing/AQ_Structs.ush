@@ -1,0 +1,117 @@
+// AQUARAY RAYTRACER STRUCTS
+
+struct RaySample
+{
+	float3	Color;                         //BaseColor of the last hit matte Surface or sky
+	float	Specular;                      //Amount of Specular to apply TODOOOOOOOOOOOOOOOOOOOOOOOOOO convert to float3 for technical reasons dont ask
+	float	Roughness;                     //Used for some Color Mixing
+	float	Opacity;					   //Opacity
+	int		ShadingModel;				   //Shading Model of the Hit Surface
+	
+	float3	LightColor;                    //Color of the primary light
+	float3	PointLightColor;               //Color of all Point Lights TODO: Remove
+	float3	Glare;                         //Glare Effect
+	float3	IndirectLightColor;            //Color of Indirect Light on this pixel
+	float3	IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
+	float	RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
+	float	NdotV;                         //How much the surface faces the Incident Ray
+	
+	bool	BackFace;                      //True when a Backface is hit
+};
+
+struct lighting
+{
+	//In
+	float  GlareSize; //How big the Glare spot in on the surface, Larger number means smaller size
+	float3 GlarePower; //Should match Light Source Power
+	float  TraceDistance; //Shadows Trace Dist
+	float3 PrimaryLightDirection; //World Light Direction
+	float3 PrimaryLightColor; //World Light Tint/Strenght
+	float3 WorldNormal; //Surface Normal
+	float3 SamplingPos; //Position for which to sample the light for
+	float3 IncidentVector; //Camera Pixel Vector
+	float  SpecularAmount; //Specular Material Graph Input
+	bool   isFoliage; //Toggles Lighting foliage
+	
+	//Out
+	float3 Light;
+	float3 IndirectLight;
+	float3 Glare;
+	float3 Specular;
+};	
+
+struct DiffuseKernel
+{
+	float3 Offset;       //Stores which direction diffuse rays fire
+	float3 Color;        //Base Color of Sampled Surfaces
+	float3 Radiance;     //Emissive of Sampled Surfaces
+	float3 Position;     //Hit Position of Sampled Surfaces
+	float  Distance;     //Distance to closest surface
+	float3 Normal;       //WorldNormal of Sampled Surfaces
+};
+
+struct stats
+{	
+	uint RaysPerPixel;
+	uint Steps;
+};
+	
+struct SurfaceHit
+{
+	float3 StartPos;
+	float3 HitPos;
+	float3 HitPosTranslucency; //Pushes the HitPos Through the polygon
+	float  Distance;
+	float3 IncidentVector;
+	float3 ReflectionVector;
+	float3 RefractionVector;
+};
+
+struct Fog
+{	
+	float3 Color;
+	float Density;
+	float BottomHeight;
+	float TopHeight;
+	float AmountBottom;
+	float AmountTop;
+	float Transmittance;
+};
+
+struct Water
+{
+	float Level; //World Space Water Height
+	float Opacity; //Zero Opacity Disables Water
+	float3 Color;
+	float3 Transmittance;
+};
+
+static const uint ErrorTex[11] = //32x11
+{
+    0b01110101011101100111011100000000, // row 0
+    0b01000101010101010100010100000000, // row 1
+    0b01110111011101010111011000000000, // row 2
+    0b00010101010101010100010100000000, // row 3
+    0b01110101010101100111010100000000, // row 4
+    0b00000000000000000000000000000000, // row 5
+    0b00011101110111001001110000000000, // row 6
+    0b00010001010101010101010000000000, // row 7
+    0b00011101100110010101100000000000, // row 8
+    0b00010001010101010101010000000000, // row 9
+    0b00011101010101001001010000000000  // row 10
+};
+
+static const uint InvalidTex[11] = //32x11
+{
+    0b00111011001010010010001110110000, // row 0
+    0b00010010101010101010000100101000, // row 1
+    0b00010010101010111010000100101000, // row 2
+    0b00010010101010101010000100101000, // row 3
+    0b00111010100100101011101110110000, // row 4
+    0b00000000000000000000000000000000, // row 5
+    0b00000000001010010011100000000000, // row 6
+    0b00000000001110101001000000000000, // row 7
+    0b00000000001010111001000000000000, // row 8
+    0b00000000001010101001000000000000, // row 9
+    0b00000000001010101001000000000000  // row 10
+};

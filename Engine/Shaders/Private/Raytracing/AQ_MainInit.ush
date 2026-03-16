@@ -14,16 +14,18 @@ FCulledLightList LightsCulled; //LightData, but lights that cant affect this pix
 
 DiffuseKernel Diffusekernel[10];
 SurfaceHit SurfaceHit; //struct with data for positional/directional calculations
-Stats Stats;
+stats Stats = (stats)0;
 Fog Fog;
 Water Water;
 
+// SCENE SETUP
 ///////////// Translate Inputs
 float SkyVisualBrightness = clamp(FloatInput1, 0, 99);
 Fog.Density               = saturate(FloatInput2);
 Fog.AmountBottom          = saturate(FloatInput3);
 Water.Level               = FloatInput4;
 Water.Opacity             = saturate(FloatInput5);
+float ShadowTraceDist     = 500;
 float RenderingDistance   = clamp(FloatInput6, 100, 9999);
 
 int MAX_STEPS                        = clamp(IntInput1, 5, 10);
@@ -42,7 +44,6 @@ float3 SunLightColor      = ColorInput5.rgb;
 float3 CameraPositionWS   = ColorInput9.xyz;
 //////////////
 
-// SCENE SETUP
 //For many Versions of this Shader I was complaining about having no way of knowing what View Values do and Dont exist... Well guess what is inside SceneView.h
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
@@ -61,8 +62,6 @@ bool TraceTranslucent = true;
 // STRUCT SETUPS
 Fog.Transmittance = 0.0f;
 Water.Transmittance = float3(1,1,1);
-Stats.RaysPerPixel = 0;
-Stats.Steps = 0;
 
 //Init the whole thing to zero
 for (int i = 0; i < 5; ++i)

@@ -1,16 +1,10 @@
-# __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
+# __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
 ## V0.9.1
-A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Project<br/>
+A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 SAMPLE UPROJECT: [Download (MediaFire)](https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file)<br/>
 __Note: The Sample Project does not contain any Raytracing code. Only a Test Scene with Example Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>__
 Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5.2.1/wiki) when you finish Installation<br/>
 ![alt text](yay/logo.png)
-
-I have always been fascinated by Raytracing for a long time, wanting to make my own Raytracer for Games with all that sweet lighting, especially focusing on Complex Reflection and Translucency, which I miss in other Raytraced Games. With that, I decided to find a way to implement my own Raytracer into the engine that would suit what I need for my Game Project<br/>
-
-After YEARS of brute forcing a solution, I came up with this.... hack. It uses Unreal Engine's Raytracing Debug System to sneak in Custom Raytracing Passes, running them using Console Commands.<br/>
-
-It should work in Unreal 5.2.1, I'm not sure about other versions (But you can try :D)<br/>
 
 ## Scope of Project
 - Whitted Style Raytracing<br/>
@@ -23,10 +17,16 @@ It should work in Unreal 5.2.1, I'm not sure about other versions (But you can t
 - Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 (also some silly lighting hacks, not too important)<br/>
 
+I have always been fascinated by Raytracing for a long time, wanting to make my own Raytracer with all that sweet lighting, especially focusing on Complex Reflection and Translucency. With that, I decided to find a way to implement my own Raytracing Code into the engine that would suit what I need for my Ideas<br/>
+
+After YEARS of brute forcing a solution, I came up with this.... hack. Right now Its using Unreal Engine's Raytracing Debug code to sneak in Custom Raytracing Passes, running them using Console Commands. But dont worry, I am planning to move this code Out of the Debug Section <br/>
+
+It should work in Unreal 5.2.1, I'm not sure about other versions (But you can try :D)<br/>
+
 Currently, this version of AquaRay won't support any kind of Path Tracing. This is only a Proof of Concept.<br/>
 After this, I'm planning to make a Rebuilt Version which will be a combination of Standard Path Traced Lighting, and the Whitted Style Reflections/Translucency code from this Version.<br/>
 
-Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
+Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that Cringe Looking AO Sampler I made in the past)<br/>
 
 ## Update V0.9.1
 - Re-centralized Light Sampling code, Which should Improve Lighting and Fix Inconsistency that Accumulated in Shading Models During Development<br/>

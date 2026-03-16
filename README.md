@@ -1,5 +1,5 @@
 # __AquaRay Raytracer for Unreal Engine 5.2.1 (WIP)__
-## V0.9.0
+## V0.9.1
 A Custom Hacked-In Hardware Accelerated Realtime Raytracer for Unreal Engine 5.2.1 Built for my Upcoming Project<br/>
 SAMPLE UPROJECT: [Download (MediaFire)](https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file)<br/>
 __Note: The Sample Project does not contain any Raytracing code. Only a Test Scene with Example Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>__
@@ -28,16 +28,9 @@ After this, I'm planning to make a Rebuilt Version which will be a combination o
 
 Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050 (The Framerate is mostly based on how much is on the screen.)<br/>
 
-## Major Update V0.9.0
-- Many Structural Changes and Optimization<br/>
-- The Code now uses its own TraceRay() Wrapper<br/>
-- Changes to Lighting and Shadows<br/>
-- Added A Heatmap into Debug Vis so you can see where the GPU is getting Toasty<br/>
-- NaN and Invalid Pixels now render Annoying tiled text<br/>
-- Added The Water Shading Model along with a Simple Adjustable Water Plane<br/>
-- Old GI Shader code Removed<br/>
-
-Water is currently somewhat Limited in its Implementation, Mostly Regarding Shadows and Absorption. It All has to wait until Shadow Ray Code gets Redone
+## Update V0.9.1
+- Re-centralized Light Sampling code, Which should Improve Lighting and Fix Inconsistency that Accumulated in Shading Models During Development<br/>
+- Probably some other undocumented changes<br/>
 
 Check changelog.txt for more info<br/>
 

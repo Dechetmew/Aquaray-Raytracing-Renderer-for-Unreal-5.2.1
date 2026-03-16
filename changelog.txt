@@ -101,3 +101,7 @@ v0.9.0
 - NaN and Invalid Pixels now render Annoying tiled text
 - Added The Water Shading Model along with a Simple Adjustable Water Plane
 - Old GI Shader code Removed
+
+v0.9.1
+- Re-centralized Light Sampling code, Which should Improve Lighting and Fix Inconsistency that Accumulated in Shading Models During Development
+- Probably some other undocumented changes

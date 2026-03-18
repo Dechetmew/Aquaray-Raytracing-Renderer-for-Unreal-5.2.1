@@ -70,7 +70,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection))
 		}
 	}
 	
-	Lighting.Specular = Specular(Lighting.PrimaryLightDirection, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
+	Lighting.Specular = Specular(Lighting.PrimaryLightDirection, Lighting.PrimaryLightColor, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
 	Transmittance = Transmittance * (Lighting.PrimaryLightColor * Lambert(Lighting.PrimaryLightDirection, Lighting.WorldNormal));
 }
 else
@@ -163,14 +163,14 @@ for (uint a = 0; a < LightCount; ++a)
 		
 		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * spotAtten * 0.001;
 		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(toLightfromSurfDir, Lighting.WorldNormal) * PointTransmittance;
-		Lighting.Specular += Specular(toLightfromSurfDir, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * (atten * 100000.0f) * PointTransmittance;
+		Lighting.Specular += Specular(toLightfromSurfDir, (atten * 100000.0f) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
 		//Sun Glare
 		float dotvalue = dot(reflection, normalize(toLightfromSurfDir));
 		if (dotvalue > Lighting.GlareSize)
 		{
-			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
-			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance;
+			float gDist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
+			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * gDist * PointTransmittance;
 		}
 	}
 	else if (Light.Type == LIGHT_TYPE_POINT)
@@ -212,16 +212,19 @@ for (uint a = 0; a < LightCount; ++a)
 		
 		if (!Valid) {continue;}
 		
-		float atten = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * 0.001;
-		AccumulatedPointLightColor += Light.LightColor * atten * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
-		Lighting.Specular += Specular(LightDir, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * (atten * 5000.0f) * PointTransmittance;
+		float r = max(radius, 2.0);
+		float denom = dist * dist;
+		float3 lightAmount = (Light.LightColor * 0.1) / denom;
+		
+		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
+		Lighting.Specular += Specular(LightDir, lightAmount * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
 		//Sun Glare
 		float dotvalue = dot(reflection, LightDir);
 		if (dotvalue > Lighting.GlareSize)
 		{
-			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
-			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance;
+			float gDist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
+			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * gDist * PointTransmittance;
 		}
 	}
 	else

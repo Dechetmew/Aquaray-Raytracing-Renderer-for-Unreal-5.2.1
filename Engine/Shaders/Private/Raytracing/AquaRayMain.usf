@@ -30,9 +30,9 @@ float FloatInput8;
 float FloatInput9;
 int IntInput1; //MAX_STEPS
 int IntInput2; //Detail Lighting Mode (0=OFF 1=AO 2=AO+GLOW)
-int IntInput3; //Debug View Mode (0=OFF 1-15=Debug Viewmodes)
-int IntInput4; //Enable Shadow Opacity for Nonrefractive
-int IntInput5; //Enable Shadows for Point Lights on Foliage
+int IntInput3; //Debug View Modes
+int IntInput4;
+int IntInput5;
 int IntInput6;
 int IntInput7;
 int IntInput8;
@@ -138,13 +138,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		{
 			//Shading Model Dielectric
 			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
-			float3 Point = Raysample[i].Color * Raysample[i].PointLightColor;
 			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
 			float3 Emissive = Raysample[i].Color * Raysample[i].IndirectEmissive;
 			
-			Final = max(Direct, Point);
-			Final = max(Final, Indirect);
-			Final = max(Final, Emissive);
+			Final = Direct + Indirect + Emissive;
 			
 			Final += Raysample[i].Specular;
 			FinalOpacity = 1;
@@ -153,7 +150,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		{
 			//Shading Model Dielectric Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor + Raysample[i].PointLightColor);
+			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
 
 			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare;
 		}
@@ -204,7 +201,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				//Opaque
 				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
-				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}
 		}

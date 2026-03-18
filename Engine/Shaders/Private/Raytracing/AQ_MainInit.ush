@@ -31,8 +31,6 @@ float RenderingDistance   = clamp(FloatInput6, 100, 9999);
 int MAX_STEPS                        = clamp(IntInput1, 5, 10);
 int DetailLightingMode               = clamp(IntInput2, 0, 5);
 int DebugMode                        = IntInput3;
-int EnableShadowOpacity              = saturate(IntInput4);
-int EnablePointLightsShadowFoliage   = saturate(IntInput5);
 
 float3 IndirectLightColor = ColorInput1.rgb;
 Fog.Color                 = saturate(ColorInput2.rgb);

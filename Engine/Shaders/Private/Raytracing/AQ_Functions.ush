@@ -10,39 +10,39 @@
 //Does exactly what it says on the can
 float3x3 BuildTangentBasis(float3 N)
 {
-    float3 up = abs(N.z) < 0.999f ? float3(0, 0, 1) : float3(1, 0, 0);
+	float3 up = abs(N.z) < 0.999f ? float3(0, 0, 1) : float3(1, 0, 0);
 
-    float3 T = normalize(cross(up, N)); // Tangent
-    float3 B = normalize(cross(N, T));  // Bitangent
+	float3 T = normalize(cross(up, N)); // Tangent
+	float3 B = normalize(cross(N, T));  // Bitangent
 
-    return float3x3(T, B, N);
+	return float3x3(T, B, N);
 }
 
 //Hash
 float Hash(float3 p)
 {
-    p = frac(p * 0.3183099f + float3(0.1f, 0.2f, 0.3f));
-    p *= 17.0f;
-    return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
+	p = frac(p * 0.3183099f + float3(0.1f, 0.2f, 0.3f));
+	p *= 17.0f;
+	return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
 
 //Generates a Random Value From Hit Geometry Data (worldpos and distance)
 float GeometryRand(float3 HitPos, float RayDist)
 {
-    // Combine HitPos and RayDist into a single float3 input
-    float3 seed = HitPos * 0.05f + RayDist;
-    return Hash(seed);
+	// Combine HitPos and RayDist into a single float3 input
+	float3 seed = HitPos * 0.05f + RayDist;
+	return Hash(seed);
 }
 
 //Same as GeometryRand, but outputs as vec3 instead
 float3 GeometryRandVec3(float3 HitPos, float RayDist)
 {
-    float3 base = HitPos * 0.05f + RayDist;
+	float3 base = HitPos * 0.05f + RayDist;
 
-    return float3(
-        Hash(base + float3(17.0f, 0.0f, 0.0f)),
-        Hash(base + float3(0.0f, 31.0f, 0.0f)),
-        Hash(base + float3(0.0f, 0.0f, 47.0f))
+	return float3(
+		Hash(base + float3(17.0f, 0.0f, 0.0f)),
+		Hash(base + float3(0.0f, 31.0f, 0.0f)),
+		Hash(base + float3(0.0f, 0.0f, 47.0f))
     );
 }
 
@@ -127,7 +127,7 @@ float DielectricSpecular(float3 LightVector, float3 SurfaceNormal, float3 Incide
 }
 
 //Specular. Assumes Infinite Distance from Light Source with no Width
-float Specular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, float Specular)
+float3 Specular(float3 LightVector, float3 Light, float3 SurfaceNormal, float3 IncidentVector, float Specular)
 {
 	float A = dot(reflect(IncidentVector, SurfaceNormal), LightVector);
 	float B = A + -Specular;
@@ -135,7 +135,7 @@ float Specular(float3 LightVector, float3 SurfaceNormal, float3 IncidentVector, 
 	float D = saturate(B * C);
 	float E = pow(D,5);
 	float F = dot(SurfaceNormal, LightVector);
-	return E * F * Specular * 0.5;
+	return E * F * Specular * 0.5 * Light;
 }
 
 //Gets fog
@@ -245,7 +245,7 @@ float3 Invalid(float2 UVpos)
 	}
 }
 
-//Returns Water Absorption or Transmission whatever
+//Returns Water Transmission
 float3 WaterAbsorb(float3 HitPosWS, float WaterOpacity, float3 WaterColor, float WaterLevelWS, float additionalDist)
 {
 	float3 Waterpos = float3(HitPosWS.xy, WaterLevelWS);

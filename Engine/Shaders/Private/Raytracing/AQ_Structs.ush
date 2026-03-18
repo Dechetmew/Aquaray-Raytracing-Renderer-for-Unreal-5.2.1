@@ -3,13 +3,12 @@
 struct RaySample
 {
 	float3	Color;                         //BaseColor of the last hit matte Surface or sky
-	float	Specular;                      //Amount of Specular to apply TODOOOOOOOOOOOOOOOOOOOOOOOOOO convert to float3 for technical reasons dont ask
+	float3	Specular;                      //Amount of Specular to apply TODOOOOOOOOOOOOOOOOOOOOOOOOOO convert to float3 for technical reasons dont ask
 	float	Roughness;                     //Used for some Color Mixing
 	float	Opacity;					   //Opacity
 	int		ShadingModel;				   //Shading Model of the Hit Surface
 	
 	float3	LightColor;                    //Color of the primary light
-	float3	PointLightColor;               //Color of all Point Lights TODO: Remove
 	float3	Glare;                         //Glare Effect
 	float3	IndirectLightColor;            //Color of Indirect Light on this pixel
 	float3	IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces

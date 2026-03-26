@@ -1,5 +1,5 @@
 # __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
-## V0.9.1
+## V0.9.2
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 SAMPLE UPROJECT: [Download (MediaFire)](https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file)<br/>
 __Note: The Sample Project does not contain any Raytracing code. Its only a Test Scene with Example Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>__
@@ -28,9 +28,9 @@ After this, I'm planning to make a Rebuilt Version which will be a combination o
 
 Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that Cringe Looking AO Sampler I made in the past)<br/>
 
-## Update V0.9.1
-- Re-centralized Light Sampling code, Which should Improve Lighting and Fix Inconsistency that Accumulated in Shading Models During Development<br/>
-- Probably some other undocumented changes<br/>
+## Update V0.9.2
+- Pixel Color range now is 1.0f = 100 Kilolux<br/>
+- Reversed the Custom Reflect Function as It was doing more damage than help<br/>
 
 Check changelog.txt for more info<br/>
 

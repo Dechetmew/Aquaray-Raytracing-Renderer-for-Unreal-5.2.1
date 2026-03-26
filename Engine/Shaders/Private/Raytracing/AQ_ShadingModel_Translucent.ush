@@ -3,8 +3,8 @@ Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
 Raysample[SampleIndex].ShadingModel = 4;
 
 lighting Lighting = (lighting)0;
-Lighting.GlareSize = 0.997f; //TODO Parametrize
-Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
+Lighting.GlareSize = 0.997f;
+Lighting.GlarePower = float3(300.0f,300.0f,300.0f);
 Lighting.TraceDistance = ShadowTraceDist;
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;

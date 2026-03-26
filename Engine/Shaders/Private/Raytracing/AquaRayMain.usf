@@ -30,9 +30,9 @@ float FloatInput8;
 float FloatInput9;
 int IntInput1; //MAX_STEPS
 int IntInput2; //Detail Lighting Mode (0=OFF 1=AO 2=AO+GLOW)
-int IntInput3; //Debug View Mode (0=OFF 1-15=Debug Viewmodes)
-int IntInput4; //Enable Shadow Opacity for Nonrefractive
-int IntInput5; //Enable Shadows for Point Lights on Foliage
+int IntInput3; //Debug View Modes
+int IntInput4;
+int IntInput5;
 int IntInput6;
 int IntInput7;
 int IntInput8;
@@ -72,7 +72,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		if (Payload.IsHit())
 		{
 			SurfaceHit.Distance = Payload.HitT;
-			SurfaceHit.ReflectionVector = Creflect(Ray.Direction, Payload.WorldNormal);
+			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
 			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
@@ -138,13 +138,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		{
 			//Shading Model Dielectric
 			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
-			float3 Point = Raysample[i].Color * Raysample[i].PointLightColor;
 			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
 			float3 Emissive = Raysample[i].Color * Raysample[i].IndirectEmissive;
 			
-			Final = max(Direct, Point);
-			Final = max(Final, Indirect);
-			Final = max(Final, Emissive);
+			Final = Direct + Indirect + Emissive;
 			
 			Final += Raysample[i].Specular;
 			FinalOpacity = 1;
@@ -153,7 +150,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		{
 			//Shading Model Dielectric Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor + Raysample[i].PointLightColor);
+			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
 
 			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare;
 		}
@@ -162,12 +159,12 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			//Shading Model Metallic Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
 			Final = lerp(Final * Raysample[i].Color, Final, Fresnel);
-			Final = Final + Raysample[i].Specular + Raysample[i].Glare;
+			Final += Raysample[i].Specular + Raysample[i].Glare;
 		}
 		else if (Raysample[i].ShadingModel == 4)
 		{	
 			// Shading Model Translucent
-			Final = (Final * Raysample[i].Color) + Raysample[i].Glare;
+			Final = Final * Raysample[i].Color + Raysample[i].Glare;
 			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}
 		else if (Raysample[i].ShadingModel == 5)
@@ -204,7 +201,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				//Opaque
 				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
-				Final = Final + (Raysample[i].Color * Raysample[i].PointLightColor);
 				FinalOpacity = 1;
 			}
 		}
@@ -214,7 +210,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (!Raysample[i].BackFace)
 			{
 				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;;
+				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;
 			}
 		}
 		else
@@ -254,6 +250,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	}
 	
 	// Main Output
-	ColorOutput[DispatchThreadId] = float4(Final, 1.0f);
+	ColorOutput[DispatchThreadId] = float4(Final, 1.0f); 
 
 } //A Happy Ending of The Raygen Shader

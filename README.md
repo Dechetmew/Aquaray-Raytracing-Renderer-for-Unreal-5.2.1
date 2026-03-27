@@ -31,6 +31,7 @@ Right now the Shader is running as a Debug Layer, I will move the code Directly 
 ## Update V0.9.2
 - Pixel Color range now is 1.0f = 100 Kilolux<br/>
 - Reversed the Custom Reflect Function as It was doing more damage than help<br/>
+- Removed Edge blurring from Spot lights to match Sphere Light Lighting<br/>
 
 Check changelog.txt for more info<br/>
 

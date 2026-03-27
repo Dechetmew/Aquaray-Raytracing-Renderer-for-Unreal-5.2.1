@@ -17,16 +17,16 @@ Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5
 - Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 (also some silly lighting hacks, not too important)<br/>
 
-I have always been fascinated by Raytracing for a long time, wanting to make my own Raytracer with all that sweet lighting, especially focusing on Complex Reflection and Translucency. With that, I decided to find a way to implement my own Raytracing Code into the engine that would suit what I need for my Ideas<br/>
+This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I have decided to split this project into two Stages:<br/>
+- Aquaray 1 - Single Shader Whitted style Raytracing, Resemblant of Bryce 3D visuals<br/>
+- Aquaray 2 - Will include more Standard features like Proper Indirect Lighting, and other features needed for Making games or Advanced Renders<br/>
 
-After YEARS of brute forcing a solution, I came up with this.... hack. Right now Its using Unreal Engine's Raytracing Debug code to sneak in Custom Raytracing Passes, running them using Console Commands. But dont worry, I am planning to move this code Out of the Debug Section <br/>
+GPU Requirements:<br/>
+- DirectX 16 Support<br/>
+- Hardware Raytracing Support<br/>
 
-It should work in Unreal 5.2.1, I'm not sure about other versions (But you can try :D)<br/>
-
-Currently, this version of AquaRay won't support any kind of Path Tracing. This is only a Proof of Concept.<br/>
-After this, I'm planning to make a Rebuilt Version which will be a combination of Standard Path Traced Lighting, and the Whitted Style Reflections/Translucency code from this Version.<br/>
-
-Make sure you have a DirectX 16 SM6 Capable GPU with Hardware Acceleration support for Raytracing. The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that Cringe Looking AO Sampler I made in the past)<br/>
+The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that AO Sampler thing I made in the past)<br/>
+Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
 
 ## Update V0.9.2
 - Pixel Color range now is 1.0f = 100 Kilolux<br/>

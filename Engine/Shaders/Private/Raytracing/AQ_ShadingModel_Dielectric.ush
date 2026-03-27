@@ -6,9 +6,9 @@ Raysample[SampleIndex].ShadingModel = 1;
 #include "AQ_ShortRangeAO.ush"
 
 lighting Lighting = (lighting)0;
-//Lighting.GlareSize = 1;
-//Lighting.GlarePower = float3(0,0,0);
-Lighting.TraceDistance = ShadowTraceDist;
+Lighting.GlareSize = 1;
+Lighting.GlarePower = float3(0,0,0);
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
@@ -18,7 +18,7 @@ Lighting.SpecularAmount = Payload.Specular;
 
 #include "AQ_Lighting.ush"
 
-Raysample[SampleIndex].LightColor = Lighting.Light;
+Raysample[SampleIndex].LightColor = Lighting.Light + IndirectEmissive;
 Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
 Raysample[SampleIndex].Specular = Lighting.Specular; //spec is already multiplied by transmittance in the light sampler
 

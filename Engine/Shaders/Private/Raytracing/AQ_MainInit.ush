@@ -7,11 +7,13 @@ float2 UV = (float2(GetPixelCoord(DispatchThreadId, UpscaleFactor)) + 0.5) * Vie
 FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
 FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
 FMaterialClosestHitPayload Payload; //main payload
-FMaterialClosestHitPayload RefractionPayload; //Refraction payload
-
+FMaterialClosestHitPayload DetailPayload; //for misc stuff like the kernel, reflected light and glass reflection
+FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camera Position and Direction
+FRayDesc VisibilityRay; //For Shadow Checks
+FRayDesc DetailRay; //for misc stuff like the kernel, reflected light and glass reflection
+FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unused
 FRTLightingData Light; //Point,Rect,Spot Lights in scene
 FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
-
 DiffuseKernel Diffusekernel[10];
 SurfaceHit SurfaceHit; //struct with data for positional/directional calculations
 stats Stats = (stats)0;
@@ -25,8 +27,8 @@ Fog.Density               = saturate(FloatInput2);
 Fog.AmountBottom          = saturate(FloatInput3);
 Water.Level               = FloatInput4;
 Water.Opacity             = saturate(FloatInput5);
-float ShadowTraceDist     = 500;
 float RenderingDistance   = clamp(FloatInput6, 100, 9999);
+float ShadowTraceDist     = clamp(FloatInput7, 1, 9999);
 
 int MAX_STEPS                        = clamp(IntInput1, 5, 10);
 int DetailLightingMode               = clamp(IntInput2, 0, 5);
@@ -45,19 +47,14 @@ float3 CameraPositionWS   = ColorInput9.xyz;
 //For many Versions of this Shader I was complaining about having no way of knowing what View Values do and Dont exist... Well guess what is inside SceneView.h
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
-// INITIAL RAY SETUP
-// RayTMax accepts values in centimeters
-FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camera Position and Direction
-FRayDesc VisibilityRay; //For Shadow Checks
-FRayDesc RefractionRay;
-FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unused
+//Initial Ray Setup
 Ray.TMin = 0.0f;
 Ray.TMax = MetersToCenti(RenderingDistance);
 VisibilityRay.TMin = 0.0f;
-VisibilityRay.TMax = MetersToCenti(100.0f);
+VisibilityRay.TMax = MetersToCenti(ShadowTraceDist);
 bool TraceTranslucent = true;
 
-// STRUCT SETUPS
+//Struct Setup
 Fog.Transmittance = 0.0f;
 Water.Transmittance = float3(1,1,1);
 

@@ -3,14 +3,15 @@ FRayDesc LightingRay;
 LightingRay.TMin = 0.0f;
 FMaterialClosestHitPayload LightingPayload;
 float3 Transmittance = float3(1,1,1);
+float3 Direct = float3(0,0,0);
 float3 Glare = float3(0,0,0);
 
 float3 reflection = reflect(Ray.Direction, Payload.WorldNormal); //for glare
 
-if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection))
+if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World Light should be Toggleable
 {
 	LightingRay.Origin = Lighting.SamplingPos;
-	LightingRay.TMax = MetersToCenti(Lighting.TraceDistance);
+	LightingRay.TMax = Lighting.TraceDistance;
 	LightingRay.Direction = Lighting.PrimaryLightDirection;
 
 	for (int i = 0; i < 10; ++i)
@@ -39,13 +40,9 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection))
 				
 				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 			}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f)
-			//{
-			//	Reserved for Reflective Caustics
-			//}
 			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
 			//{	
-			//	Reserved for Refractive Caustics (dont forgor about water too)
+			//	Reserved for Refractive Direct Light (dont forgor about water too)
 			//}
 			else if (LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2)
 			{
@@ -71,7 +68,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection))
 	}
 	
 	Lighting.Specular = Specular(Lighting.PrimaryLightDirection, Lighting.PrimaryLightColor, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
-	Transmittance = Transmittance * (Lighting.PrimaryLightColor * Lambert(Lighting.PrimaryLightDirection, Lighting.WorldNormal));
+	Transmittance *= Lighting.PrimaryLightColor * Lambert(Lighting.PrimaryLightDirection, Lighting.WorldNormal);
 }
 else
 {
@@ -142,7 +139,6 @@ for (uint a = 0; a < LightCount; ++a)
 			continue;
 		}
 
-		//float spotAtten = (innerCos - outerCos <= 1e-5) ? 1.0 : saturate((cosAngle - outerCos) / (innerCos - outerCos));
 		float spotAtten = 1;
 		if (spotAtten <= 0.0)
 		{
@@ -162,9 +158,6 @@ for (uint a = 0; a < LightCount; ++a)
 		
 		if (!Valid) {continue;}
 		
-		//float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.00002);
-		//float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0);
-		//float3 lightAmount = 1;
 		float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.000017);
 		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
 		Lighting.Specular += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);

@@ -1,6 +1,5 @@
-FMaterialClosestHitPayload DiffusePayload; //detail lighting payload
-FRayDesc DetailRay; //detail ray
 
+float3 IndirectEmissive = float3(0,0,0);
 
 if (DetailLightingMode > 0)
 {
@@ -42,17 +41,17 @@ if (DetailLightingMode > 0)
 	{			
 		DetailRay.Direction = normalize(Payload.WorldNormal + Diffusekernel[i].Offset);
 
-		DiffusePayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
+		DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
 		
 		Stats.RaysPerPixel += 1;
 		
-		if(DiffusePayload.IsHit() && DiffusePayload.ShadingModelID != 6)
+		if(DetailPayload.IsHit() && DetailPayload.ShadingModelID != 6)
 		{
 			//We hit A Surface
-			Diffusekernel[i].Radiance  = DiffusePayload.Radiance * (-(DiffusePayload.HitT / 100) + 1.0f);
-			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DiffusePayload.HitT + Payload.WorldNormal * 0.001f;
-			Diffusekernel[i].Normal = DiffusePayload.WorldNormal;
-			Diffusekernel[i].Distance = clamp((DiffusePayload.HitT / 100), 0.0f , 1.0f);
+			Diffusekernel[i].Radiance  = DetailPayload.Radiance * (-(DetailPayload.HitT / 100) + 1.0f);
+			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + Payload.WorldNormal * 0.001f;
+			Diffusekernel[i].Normal = DetailPayload.WorldNormal;
+			Diffusekernel[i].Distance = clamp((DetailPayload.HitT / 100), 0.0f , 1.0f);
 		}
 		else
 		{
@@ -82,7 +81,6 @@ if (DetailLightingMode > 0)
 		{
 			accumulatedColor += Diffusekernel[i].Radiance;
 		}
-		Raysample[SampleIndex].IndirectEmissive = accumulatedColor / 5.0f;
-		Raysample[SampleIndex].IndirectEmissive = Raysample[SampleIndex].IndirectEmissive * 0.15f;
+		IndirectEmissive = (accumulatedColor / 5.0f) * 0.15f;
 	}
 }

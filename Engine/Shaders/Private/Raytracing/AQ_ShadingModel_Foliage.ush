@@ -8,9 +8,9 @@ if (Payload.Opacity > 0.5f)
 	Raysample[SampleIndex].Opacity = 1;
 	
 	lighting Lighting = (lighting)0;
-	//Lighting.GlareSize = 1;
-	//Lighting.GlarePower = float3(0,0,0);
-	Lighting.TraceDistance = ShadowTraceDist;
+	Lighting.GlareSize = 1;
+	Lighting.GlarePower = float3(0,0,0);
+	Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 	Lighting.PrimaryLightDirection = SunDirection;
 	Lighting.PrimaryLightColor = SunLightColor;
 	Lighting.WorldNormal = float3(0,0,1);

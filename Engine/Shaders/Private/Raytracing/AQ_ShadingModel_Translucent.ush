@@ -5,7 +5,7 @@ Raysample[SampleIndex].ShadingModel = 4;
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 0.997f;
 Lighting.GlarePower = float3(300.0f,300.0f,300.0f);
-Lighting.TraceDistance = ShadowTraceDist;
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
@@ -40,26 +40,26 @@ else
 //////////////////
 
 //Init Refraction Ray
-RefractionRay.Origin = SurfaceHit.HitPosTranslucency;
-RefractionRay.Direction = SurfaceHit.RefractionVector;
-RefractionRay.TMin = 0;
-RefractionRay.TMax = MetersToCenti(100.0f);
+DetailRay.Origin = SurfaceHit.HitPosTranslucency;
+DetailRay.Direction = SurfaceHit.RefractionVector;
+DetailRay.TMin = 0;
+DetailRay.TMax = MetersToCenti(100.0f);
 
 //Dont forget to Enable Two Sided Geometry in the Material for Proper Glass Rendering
 //If the Ray doesnt hit a Backside, It will assume the Material is Thin Translucent
 
-RefractionPayload = TraceMatRay(TLAS, RefractionRay, TraceTranslucent);
+DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
 	
 Stats.RaysPerPixel += 1;
 	
-if (RefractionPayload.IsHit() && !RefractionPayload.IsFrontFace())
+if (DetailPayload.IsHit() && !DetailPayload.IsFrontFace())
 {
 	//Volumetric Translucent
-	Raysample[SampleIndex].Opacity = saturate(Payload.Opacity * RefractionPayload.HitT);
+	Raysample[SampleIndex].Opacity = saturate(Payload.Opacity * DetailPayload.HitT);
 
 	float sigma = -log(max(1.0f - Payload.Opacity, 1e-6));
 	float3 Absorption = sigma * (1.0f - Payload.BaseColor);
-	Raysample[SampleIndex].Color = exp(-Absorption * RefractionPayload.HitT); //For large Glass stuff, Use very low Opacity
+	Raysample[SampleIndex].Color = exp(-Absorption * DetailPayload.HitT); //For large Glass stuff, Use very low Opacity
 	
 	float darken = dot(-Payload.WorldNormal, SurfaceHit.IncidentVector) + 0.5 * 0.5; //should be parametrized
 	Raysample[SampleIndex].Color = Raysample[SampleIndex].Color * darken;
@@ -67,8 +67,8 @@ if (RefractionPayload.IsHit() && !RefractionPayload.IsFrontFace())
 	Raysample[SampleIndex].Color = lerp(Raysample[SampleIndex].Color, ReflectionColor, FresnelSchlick(NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector), 0.05f));
 	
 	//Prepare Next Ray
-	Ray.Direction = refract(RefractionRay.Direction, RefractionPayload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
-	Ray.Origin = RefractionRay.Origin + RefractionRay.Direction * RefractionPayload.HitT + RefractionRay.Direction * 0.001f; //Like HitPosTranslucency
+	Ray.Direction = refract(DetailRay.Direction, DetailPayload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
+	Ray.Origin = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + DetailRay.Direction * 0.001f; //Like HitPosTranslucency
 }
 else
 {

@@ -21,11 +21,11 @@ float4 ColorInput8;
 float4 ColorInput9; //CameraPositionWS
 float FloatInput1; //Sky Visual Brightness
 float FloatInput2; //Fog Density
-float FloatInput3;
-float FloatInput4;
-float FloatInput5;
-float FloatInput6;
-float FloatInput7;
+float FloatInput3; //Fog Amount Bottom
+float FloatInput4; //Water Level
+float FloatInput5; //Water Opacity
+float FloatInput6; //Rendering Distance
+float FloatInput7; //Shadow Trace Distance
 float FloatInput8;
 float FloatInput9;
 int IntInput1; //MAX_STEPS
@@ -80,7 +80,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 			
 			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
-			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);}
+			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);} //TODO bug: color made by this not matching color made by the water shading model
 		
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{
@@ -139,9 +139,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			//Shading Model Dielectric
 			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
 			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
-			float3 Emissive = Raysample[i].Color * Raysample[i].IndirectEmissive;
 			
-			Final = Direct + Indirect + Emissive;
+			Final = Direct + Indirect;
 			
 			Final += Raysample[i].Specular;
 			FinalOpacity = 1;
@@ -210,7 +209,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (!Raysample[i].BackFace)
 			{
 				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-				Final = Final * Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;
+				Final *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;
 			}
 		}
 		else

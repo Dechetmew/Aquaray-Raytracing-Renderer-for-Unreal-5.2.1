@@ -11,7 +11,6 @@ struct RaySample
 	float3	LightColor;                    //Color of the primary light
 	float3	Glare;                         //Glare Effect
 	float3	IndirectLightColor;            //Color of Indirect Light on this pixel
-	float3	IndirectEmissive;              //(Detail Ligthing) Glow from Emissive Surfaces
 	float	RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float	NdotV;                         //How much the surface faces the Incident Ray
 	
@@ -59,7 +58,7 @@ struct SurfaceHit
 {
 	float3 StartPos;
 	float3 HitPos;
-	float3 HitPosTranslucency; //Pushes the HitPos Through the polygon
+	float3 HitPosTranslucency; //Pushes the HitPos Through the Surface
 	float  Distance;
 	float3 IncidentVector;
 	float3 ReflectionVector;

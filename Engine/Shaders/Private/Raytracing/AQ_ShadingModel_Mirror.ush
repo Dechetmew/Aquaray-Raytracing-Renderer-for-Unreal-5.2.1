@@ -7,13 +7,13 @@ Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVec
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 0.997f; //TODO Parametrize
 Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
-Lighting.TraceDistance = ShadowTraceDist;
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
 Lighting.SamplingPos = SurfaceHit.HitPos;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
-Lighting.SpecularAmount = 0.0f; //TODO: What to do with Specular here?
+Lighting.SpecularAmount = 0.0f;
 
 #include "AQ_Lighting.ush"
 

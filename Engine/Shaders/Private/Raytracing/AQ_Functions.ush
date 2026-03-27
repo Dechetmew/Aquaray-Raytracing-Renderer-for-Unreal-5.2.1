@@ -181,7 +181,7 @@ float3 HeatColor(float t)
 	col = lerp(col, c3, saturate(t - 2.0));
 	col = lerp(col, c4, saturate(t - 3.0));
 
-	return col;
+	return col; //Goes full red at 8 or more steps
 }
 
 //Renders annoying Error Text Across Affected Pixels
@@ -248,6 +248,7 @@ float3 Invalid(float2 UVpos)
 //Returns Water Transmission
 float3 WaterAbsorb(float3 HitPosWS, float WaterOpacity, float3 WaterColor, float WaterLevelWS, float additionalDist)
 {
+	//TODO Water Absorbtion should be Calculated only Outside the Shading Model. Water Only sets the Ray path
 	float3 Waterpos = float3(HitPosWS.xy, WaterLevelWS);
 	float dist = distance(HitPosWS, Waterpos) + (additionalDist * 0.1f); //I kinda wanted to combine distance absorption with depth absorption here
 	

@@ -109,3 +109,4 @@ v0.9.1
 v0.9.2
 - Pixel Color range now is 1.0f = 100 Kilolux
 - Reversed the Custom Reflect Function as It was doing more damage than help
+- Removed Edge blurring from Spot lights to match Sphere Light Lighting

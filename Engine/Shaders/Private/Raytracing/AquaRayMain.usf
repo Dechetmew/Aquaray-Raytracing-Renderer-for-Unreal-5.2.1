@@ -51,6 +51,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 {
 	#include "AQ_MainInit.ush"
 
+	float3 Debug = View.ViewForward;
+
 	// Raypath Loop
     for (int i = 0; i < MAX_STEPS; i++)
 	{
@@ -233,6 +235,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		case 2: Final = HeatColor(Stats.RaysPerPixel); break;
         case 3: Final = Raysample[1].Color; break;
 		case 4: Final = saturate(Fog.Transmittance); break;
+		case 5: Final = Debug;
 		
 		default: break;
 	}

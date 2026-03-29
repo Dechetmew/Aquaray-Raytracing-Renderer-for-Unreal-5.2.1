@@ -132,7 +132,7 @@ for (uint a = 0; a < LightCount; ++a)
 
 		float cosAngle = dot(normalize(Light.Direction), LightDir);
 		float innerCos = max(Light.SpotAngles.x, Light.SpotAngles.y);
-		float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y);
+		float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y) - 0.17 * (saturate((1.0 - min(Light.SpotAngles.x, Light.SpotAngles.y)) * 1.25));
 		if (cosAngle < outerCos)
 		{
 			//Not Inside the Cone

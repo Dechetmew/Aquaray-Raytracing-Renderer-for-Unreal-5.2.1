@@ -1,4 +1,4 @@
-// AQUARAY RAYTRACER - v0.9.0
+// AQUARAY RAYTRACER - v0.10.0
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -62,11 +62,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		Stats.RaysPerPixel += 1;
 		SurfaceHit.IncidentVector = Ray.Direction;
 		SurfaceHit.StartPos = Ray.Origin;
-			
-		//Debug stuff here
-		//ColorOutput[DispatchThreadId] = float4(CameraPositionWS, 1.0f);
-		//break;
-		//Also disable output at the bottom when debuging
 
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())

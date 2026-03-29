@@ -111,7 +111,11 @@ v0.9.2
 - Reversed the Custom Reflect Function as It was doing more damage than help
 - Removed Edge blurring from Spot lights to match Sphere Light Lighting
 
-v0.9.3
-Fixed a Catastrophic Point Light bug
-Shadow Trace Distance now Works
-Various small Improvements, Fixes and Changes
+v0.10.0
+- Recentralized Light Sampling code to fix Lighting Issues
+- Also Other Lighting Improvements
+- All Color units now are in Kilolux (1.0f = 100 Kilolux)
+- Spot Lights can now be use as Half Sphere Lights, as now the code translates the range from 1-80 degrees to 1-90 degrees
+- Fixed a Catastrophic Point Light bug
+- Shadow Trace Distance now Works
+- Various small Improvements, Fixes and Changes

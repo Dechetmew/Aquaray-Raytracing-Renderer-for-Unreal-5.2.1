@@ -31,7 +31,7 @@ Right now the Shader is running as a Debug Layer, I will move the code Directly 
 - Recentralized Light Sampling code to fix Lighting Issues<br/>
 - Also Other Lighting Improvements<br/>
 - All Color units now are in Kilolux (1.0f = 100 Kilolux)<br/>
-- Spot Lights can now be use as Half Sphere Lights, as now the code translates the range from 1-80 degrees to 1-90 degrees<br/>
+- Spot Lights now have Unlimited angle to almost 180 degrees<br/>
 
 Check changelog.txt for more info<br/>
 

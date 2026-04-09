@@ -11,6 +11,7 @@ Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5
 - Direct Lighting With Point Light Support<br/>
 - Simple One-Raypath Shadows<br/>
 - Reflections & Translucency up to 10 steps<br/>
+- Reflected Direct Lighting<br/>
 - Simple Fog<br/>
 - Water<br/>
 - Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>

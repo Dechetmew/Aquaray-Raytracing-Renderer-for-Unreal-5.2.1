@@ -30,9 +30,9 @@ Water.Opacity             = saturate(FloatInput5);
 float RenderingDistance   = clamp(FloatInput6, 100, 9999);
 float ShadowTraceDist     = clamp(FloatInput7, 1, 9999);
 
-int MAX_STEPS                        = clamp(IntInput1, 5, 10);
-int DetailLightingMode               = clamp(IntInput2, 0, 5);
-int DebugMode                        = IntInput3;
+int  MAX_STEPS                        = clamp(IntInput1, 5, 10);
+bool DetailLightingMode = false;      if (IntInput2 > 0) {DetailLightingMode = true;}
+int  DebugMode                        = IntInput3;
 
 float3 IndirectLightColor = ColorInput1.rgb;
 Fog.Color                 = saturate(ColorInput2.rgb);

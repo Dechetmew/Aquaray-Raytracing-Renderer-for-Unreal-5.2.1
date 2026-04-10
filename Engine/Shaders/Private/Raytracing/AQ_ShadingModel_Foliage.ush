@@ -4,7 +4,8 @@ Raysample[SampleIndex].ShadingModel = 7;
 if (Payload.Opacity > 0.5f)
 {
 	//Opaque
-	Raysample[SampleIndex].Color = Payload.BaseColor + Payload.Radiance;
+	Raysample[SampleIndex].Color = Payload.BaseColor;
+	Raysample[SampleIndex].Radiance = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = 1;
 	
 	lighting Lighting = (lighting)0;

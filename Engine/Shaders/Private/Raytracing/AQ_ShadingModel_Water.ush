@@ -1,6 +1,7 @@
 // Shading Model: Water
 
 Raysample[SampleIndex].ShadingModel = 8;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
 
 lighting Lighting = (lighting)0;
@@ -39,8 +40,6 @@ if (Payload.IsFrontFace())
 		Raysample[SampleIndex].Color = float3(0,0,0);
 	}
 	//////////////
-
-	Raysample[SampleIndex].Color += Payload.Radiance * 50.0f; //quickly add emissive
 
 	// Advance Ray
 	Ray.Direction = SurfaceHit.ReflectionVector;

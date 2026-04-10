@@ -1,5 +1,6 @@
 // Shading Model: Translucent
-Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
+Raysample[SampleIndex].Color = Payload.BaseColor;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].ShadingModel = 4;
 
 lighting Lighting = (lighting)0;

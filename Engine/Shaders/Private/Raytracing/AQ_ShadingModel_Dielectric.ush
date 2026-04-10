@@ -1,9 +1,11 @@
 //Shading Model: Dielectric
 
-Raysample[SampleIndex].Color = Payload.BaseColor + (Payload.Radiance * 50.0f);
+Raysample[SampleIndex].Color = Payload.BaseColor;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].ShadingModel = 1;
 	
-#include "AQ_ShortRangeAO.ush"
+#include "AQ_AmbientOcclusion.ush"
+//#include "AQ_ReflectedDirectLighting.ush"
 
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 1;
@@ -18,7 +20,7 @@ Lighting.SpecularAmount = Payload.Specular;
 
 #include "AQ_Lighting.ush"
 
-Raysample[SampleIndex].LightColor = Lighting.Light + IndirectEmissive;
+Raysample[SampleIndex].LightColor = Lighting.Light;// + ReflectedDirectLight;
 Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
 Raysample[SampleIndex].Specular = Lighting.Specular; //spec is already multiplied by transmittance in the light sampler
 

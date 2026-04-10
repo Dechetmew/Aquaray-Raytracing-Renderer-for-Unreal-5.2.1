@@ -1,4 +1,5 @@
-// AQUARAY RAYTRACER - v0.10.0
+// Aquray Raytracing Renderer
+// https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1
 
 // INCLUDES
 #include "../DeferredLightingCommon.ush"
@@ -29,7 +30,7 @@ float FloatInput7; //Shadow Trace Distance
 float FloatInput8;
 float FloatInput9;
 int IntInput1; //MAX_STEPS
-int IntInput2; //Detail Lighting Mode (0=OFF 1=AO 2=AO+GLOW)
+int IntInput2; //Ambient Occlusion
 int IntInput3; //Debug View Modes
 int IntInput4;
 int IntInput5;
@@ -51,7 +52,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 {
 	#include "AQ_MainInit.ush"
 
-	float3 Debug = View.ViewForward;
+	float3 Debug = float3(0,0,0);
 
 	// Raypath Loop
     for (int i = 0; i < MAX_STEPS; i++)
@@ -137,7 +138,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
 			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
 			
-			Final = Direct + Indirect;
+			Final = Direct + Indirect + Raysample[i].Radiance;
 			
 			Final += Raysample[i].Specular;
 			FinalOpacity = 1;
@@ -148,19 +149,19 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
 			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
 
-			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare;
+			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare + Raysample[i].Radiance;
 		}
 		else if (Raysample[i].ShadingModel == 3)
 		{
 			//Shading Model Metallic Mirror
 			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
 			Final = lerp(Final * Raysample[i].Color, Final, Fresnel);
-			Final += Raysample[i].Specular + Raysample[i].Glare;
+			Final += Raysample[i].Specular + Raysample[i].Glare + Raysample[i].Radiance;
 		}
 		else if (Raysample[i].ShadingModel == 4)
 		{	
 			// Shading Model Translucent
-			Final = Final * Raysample[i].Color + Raysample[i].Glare;
+			Final = Final * Raysample[i].Color + Raysample[i].Glare + Raysample[i].Radiance;
 			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
 		}
 		else if (Raysample[i].ShadingModel == 5)
@@ -196,7 +197,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (Raysample[i].Opacity == 1)
 			{
 				//Opaque
-				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
+				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor) + Raysample[i].Radiance;
 				FinalOpacity = 1;
 			}
 		}
@@ -206,7 +207,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			if (!Raysample[i].BackFace)
 			{
 				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-				Final *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare;
+				Final *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare + Raysample[i].Radiance;
 			}
 		}
 		else

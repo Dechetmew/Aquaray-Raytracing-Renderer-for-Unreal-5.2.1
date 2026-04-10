@@ -3,6 +3,7 @@
 struct RaySample
 {
 	float3	Color;                         //BaseColor of the last hit matte Surface or sky
+	float3  Radiance;                      //Light Emmited by the surface
 	float3	Specular;                      //Amount of Specular to apply
 	float	Roughness;                     //Used for some Color Mixing
 	float	Opacity;					   //Opacity
@@ -42,7 +43,6 @@ struct DiffuseKernel
 {
 	float3 Offset;       //Stores which direction diffuse rays fire
 	float3 Color;        //Base Color of Sampled Surfaces
-	float3 Radiance;     //Emissive of Sampled Surfaces
 	float3 Position;     //Hit Position of Sampled Surfaces
 	float  Distance;     //Distance to closest surface
 	float3 Normal;       //WorldNormal of Sampled Surfaces

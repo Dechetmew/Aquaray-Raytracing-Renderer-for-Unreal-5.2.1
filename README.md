@@ -28,7 +28,7 @@ GPU Requirements:<br/>
 The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that AO Sampler thing I made in the past)<br/>
 Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
 
-## Update V0.10.1
+## Update 0.10.1
 - Fixed Emissive/Radiance<br/>
 - Removed Radiance from AO Sampler<br/>
 

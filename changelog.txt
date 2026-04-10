@@ -119,3 +119,7 @@ v0.10.0 (mistakenly numbered as v0.9.3)
 - Fixed a Catastrophic Point Light bug
 - Shadow Trace Distance now Works
 - Various small Improvements, Fixes and Changes
+
+v0.10.1
+- Fixed Emissive/Radiance
+- Removed Radiance from AO Sampler

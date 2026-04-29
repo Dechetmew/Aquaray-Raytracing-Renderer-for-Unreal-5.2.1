@@ -8,6 +8,8 @@ float3 Glare = float3(0,0,0);
 
 float3 reflection = reflect(Ray.Direction, Payload.WorldNormal); //for glare
 
+//1: World Light
+
 if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World Light should be Toggleable
 {
 	LightingRay.Origin = Lighting.SamplingPos;
@@ -82,11 +84,13 @@ if (dotvalue > Lighting.GlareSize)
 	Lighting.Glare += Lighting.PrimaryLightColor * Lighting.GlarePower * Transmittance;
 }
 
-// now the Point Lights
+//2: Point Lights
 
 uint LightCount;
 float3 AccumulatedPointLightColor = float3(0,0,0);
 float3 PointTransmittance = float3(1,1,1);
+float3 ReflectedDirectLight = float3(0,0,0); // Dependency for ReflectedDirectLighting.ush
+float3 ReflectedDirectPointLight = float3(0,0,0); // Dependency for ReflectedDirectPointLighting.ush
 
 FCulledLightList LightsCulled = FCulledLightList::Create(Lighting.SamplingPos);
 LightCount = LightsCulled.NumLights();
@@ -122,6 +126,11 @@ for (uint a = 0; a < LightCount; ++a)
 		{
 			//Invalid Radius
 			continue;
+		}
+		
+		if (RDPL) 
+		{
+			#include "AQ_ReflectedDirectPointLighting.ush"
 		}
 
 		if (dist > radius) 
@@ -173,7 +182,7 @@ for (uint a = 0; a < LightCount; ++a)
 	else if (Light.Type == LIGHT_TYPE_POINT)
 	{
 		//Point Light (Sphere)
-		float3 L = Light.TranslatedLightPosition - Lighting.SamplingPos; //direction and distance
+		float3 L = Light.TranslatedLightPosition - Lighting.SamplingPos; //direction with distance
 		float dist = length(L); //only distance
 		float3 LightDir = normalize(L); //only direction, from surf to lightsource
 		float radius = 1.0 / Light.InvRadius;
@@ -183,6 +192,11 @@ for (uint a = 0; a < LightCount; ++a)
 		{
 			//Invalid Radius
 			continue;
+		}
+		
+		if (RDPL) 
+		{
+			#include "AQ_ReflectedDirectPointLighting.ush"
 		}
 		
 		if (dist > radius)
@@ -228,6 +242,12 @@ for (uint a = 0; a < LightCount; ++a)
 	}
 }
 
+//Reflected Direct Light
+if (RDL) 
+{
+	#include "AQ_ReflectedDirectLighting.ush"
+}
+
 // Output the accumulated color
-Lighting.Light = Transmittance + AccumulatedPointLightColor;
+Lighting.Light = Transmittance + AccumulatedPointLightColor + ReflectedDirectLight + ReflectedDirectPointLight;
 Lighting.IndirectLight = IndirectLightColor * (saturate(dot(Payload.WorldNormal, float3(0.0f, 0.0f, 1.0f)) + 1) * 0.3 + 0.7);

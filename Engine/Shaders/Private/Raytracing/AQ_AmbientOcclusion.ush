@@ -6,7 +6,7 @@ if (DetailLightingMode)
 	// SHORT RANGE AO
 	//It Traces Rays in a 5-way Pattern on Every Valid Surface Pixel
 	//for Detail lighting like Ambient Occlusion
-	//EDIT: I really think this sucks, I hope I will end up replacing this mess with proper Raytraced Lighting in the future
+	//EDIT: I really think this sucks, I hope I will end up replacing this mess with proper Indirect Lighting in the future
 
 	//Jitter Up Vectors a little
 	for (int i = 0; i < 5; ++i)
@@ -50,7 +50,7 @@ if (DetailLightingMode)
 			//We hit A Surface
 			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + Payload.WorldNormal * 0.001f;
 			Diffusekernel[i].Normal = DetailPayload.WorldNormal;
-			Diffusekernel[i].Distance = clamp((DetailPayload.HitT / 100), 0.0f , 1.0f);
+			Diffusekernel[i].Distance = saturate(DetailPayload.HitT / 100);
 		}
 		else
 		{

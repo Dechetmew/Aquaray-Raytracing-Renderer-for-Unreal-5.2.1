@@ -33,6 +33,8 @@ float ShadowTraceDist     = clamp(FloatInput7, 1, 9999);
 int  MAX_STEPS                        = clamp(IntInput1, 5, 10);
 bool DetailLightingMode = false;      if (IntInput2 > 0) {DetailLightingMode = true;}
 int  DebugMode                        = IntInput3;
+bool RDL = false;                    if (IntInput4 > 0) {RDL = true;}
+bool RDPL = false;                   if (IntInput5 > 0) {RDPL = true;}
 
 float3 IndirectLightColor = ColorInput1.rgb;
 Fog.Color                 = saturate(ColorInput2.rgb);
@@ -78,7 +80,7 @@ int SampleIndex = -1;
 //////////// Raysample Struct Init
 RaySample Raysample[10];
 
-for (int i = 0; i < 10; ++i)
+for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
 {
     Raysample[i] = (RaySample)0;
     Raysample[i].Roughness = 1.0;

@@ -5,7 +5,6 @@ Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].ShadingModel = 1;
 	
 #include "AQ_AmbientOcclusion.ush"
-//#include "AQ_ReflectedDirectLighting.ush"
 
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 1;
@@ -20,8 +19,8 @@ Lighting.SpecularAmount = Payload.Specular;
 
 #include "AQ_Lighting.ush"
 
-Raysample[SampleIndex].LightColor = Lighting.Light;// + ReflectedDirectLight;
+Raysample[SampleIndex].LightColor = Lighting.Light;
 Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
-Raysample[SampleIndex].Specular = Lighting.Specular; //spec is already multiplied by transmittance in the light sampler
+Raysample[SampleIndex].Specular = Lighting.Specular;
 
 break;

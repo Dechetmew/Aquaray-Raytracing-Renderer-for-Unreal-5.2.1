@@ -1,0 +1,37 @@
+//DEPENDENCY: Variable must be declared before Point Light Loop - float3 ReflectedDirectLight = float3(0,0,0);
+
+float RDLtraceDist = 500.0f; //TODO parametrize
+
+DetailRay.Direction = reflect(-Lighting.PrimaryLightDirection, Lighting.WorldNormal);
+DetailRay.Origin = Lighting.SamplingPos;
+DetailRay.TMin = 0;
+DetailRay.TMax = RDLtraceDist;
+
+DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
+Stats.RaysPerPixel += 1;
+
+if (DetailPayload.IsHit())
+{
+	if (
+	(DetailPayload.ShadingModelID == 1 || DetailPayload.ShadingModelID == 2) && 
+	(DetailPayload.BlendingMode == 0 || DetailPayload.BlendingMode == 2) && 
+	(DetailPayload.Roughness < 0.5f)
+	)
+	{
+		//Surface is Reflective (Should be Glass, Water or Mirror)
+		VisibilityRay.Origin = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + (DetailPayload.WorldNormal * 0.001f);
+		VisibilityRay.Direction = Lighting.PrimaryLightDirection;
+		VisibilityRay.TMin = 0;
+		VisibilityRay.TMax = MetersToCenti(ShadowTraceDist);
+		
+		ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
+		Stats.RaysPerPixel += 1;
+
+		if (!ShadowMinimalPayload.IsHit())
+		{
+			//Clear
+			float atten = saturate(1.0 - (DetailPayload.HitT / RDLtraceDist));
+			ReflectedDirectLight = DetailPayload.BaseColor * Specular(Lighting.PrimaryLightDirection, float3(1,1,1), DetailPayload.WorldNormal, DetailRay.Direction, 0.5) * Lambert(DetailRay.Direction,Lighting.WorldNormal) * atten;
+		}
+	}
+}

@@ -32,8 +32,8 @@ float FloatInput9;
 int IntInput1; //MAX_STEPS
 int IntInput2; //Ambient Occlusion
 int IntInput3; //Debug View Modes
-int IntInput4;
-int IntInput5;
+int IntInput4; //Reflected Direct Lighting
+int IntInput5; //Reflected Direct Point Lighting
 int IntInput6;
 int IntInput7;
 int IntInput8;

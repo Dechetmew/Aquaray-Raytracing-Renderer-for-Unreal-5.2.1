@@ -123,3 +123,6 @@ v0.10.0 (mistakenly numbered as v0.9.3)
 v0.10.1
 - Fixed Emissive/Radiance
 - Removed Radiance from AO Sampler
+
+v0.10.2
+- Added Reflected Direct Lighting into the Light Sampler

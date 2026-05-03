@@ -126,3 +126,9 @@ v0.10.1
 
 v0.10.2
 - Added Reflected Direct Lighting into the Light Sampler
+
+v0.10.3
+- Fixed Sky Artifacts in Mirror Shading Model
+- Added Lit Transparent
+- Various Thresholds are now Standardised and even Configurable
+- Improved Ambient Occlusion (Again)

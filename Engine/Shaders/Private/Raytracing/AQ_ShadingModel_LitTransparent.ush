@@ -1,0 +1,71 @@
+//Shading Model: Lit Transparent
+
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+
+Raysample[SampleIndex].ShadingModel = 9;
+Raysample[SampleIndex].Color = Payload.BaseColor;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
+Raysample[SampleIndex].Opacity = Payload.Opacity;
+
+#include "AQ_AmbientOcclusion.ush" //TODO: Make AO toggleable here
+
+lighting Lighting = (lighting)0;
+Lighting.GlareSize = 1;
+Lighting.GlarePower = float3(0,0,0);
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
+Lighting.PrimaryLightDirection = SunDirection;
+Lighting.PrimaryLightColor = SunLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+Lighting.SpecularAmount = Payload.Specular;
+
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].LightColor = Lighting.Light;
+Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
+Raysample[SampleIndex].Specular = Lighting.Specular;
+
+if (Payload.Opacity > TOP_THRESHOLD) {break;}
+
+//Advance Ray
+Ray.Direction = SurfaceHit.IncidentVector;
+Ray.Origin = SurfaceHit.HitPosTranslucency;
+
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+if (Raysample[i].Opacity == 1)
+{
+	//Opaque
+	float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
+	float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+
+	CompositeColor = Direct + Indirect + Raysample[i].Radiance;
+
+	CompositeColor += Raysample[i].Specular;
+	CompositeOpacity = 1;
+}
+if (Raysample[i].Opacity == 0)
+{
+	//Invisible
+	continue;
+}
+else
+{
+	float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
+	float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+	
+	float3 idk = Direct + Indirect + Raysample[i].Radiance;
+	
+	//Transparent
+	CompositeColor = lerp(CompositeColor, idk, Raysample[i].Opacity);
+	CompositeOpacity = saturate(CompositeOpacity + Raysample[i].Opacity);
+}
+
+#endif
+///////////// COMPOSITING SETUP

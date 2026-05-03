@@ -1,22 +1,17 @@
-//Shading Model: Unlit Transparent
+//Shading Model: Unlit
 
-if ((Payload.Opacity > 0.99999f) || (Payload.BlendingMode == 0))
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+
+Raysample[SampleIndex].ShadingModel = 5;
+
+if ((Payload.Opacity > TOP_THRESHOLD) || (Payload.BlendingMode == 0))
 {
 	//Opaque
 	Raysample[SampleIndex].Color = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = 1;
-	Raysample[SampleIndex].ShadingModel = 5;
 	
 	break;
-}
-else if (Payload.Opacity < 0.00001f)
-{
-	//Fully Invisible
-	//No Action, Advance Ray
-	Ray.Direction = SurfaceHit.IncidentVector;
-	Ray.Origin = SurfaceHit.HitPosTranslucency;
-	Raysample[SampleIndex].Opacity = 0;
-	Raysample[SampleIndex].ShadingModel = 6;
 }
 else
 {
@@ -24,9 +19,35 @@ else
 	//Loop Again
 	Raysample[SampleIndex].Color = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
-	Raysample[SampleIndex].ShadingModel = 6;
 	
 	//Advance Ray
 	Ray.Direction = SurfaceHit.IncidentVector;
 	Ray.Origin = SurfaceHit.HitPosTranslucency;
 }
+
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+if (Raysample[i].Opacity == 1)
+{
+	//Opaque
+	CompositeColor = Raysample[i].Color;
+	CompositeOpacity = 1;
+}
+else if (Raysample[i].Opacity == 0)
+{
+	//Invisible
+	continue;
+}
+else
+{
+	//Transparent
+	CompositeColor = lerp(CompositeColor, Raysample[i].Color, Raysample[i].Opacity);
+	CompositeOpacity = saturate(CompositeOpacity + Raysample[i].Opacity);
+}
+			
+#endif
+///////////// COMPOSITING SETUP

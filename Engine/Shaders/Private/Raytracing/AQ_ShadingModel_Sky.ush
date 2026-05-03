@@ -1,6 +1,21 @@
 //Shading Model: Sky
 //Its possible to implement custom Sky Rendering Here
 
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+
 Raysample[SampleIndex].ShadingModel = 100;
 Raysample[SampleIndex].Color = GetSkyRadianceSun(SurfaceHit.IncidentVector, 0, SunDirection) * SkyVisualBrightness;
 break;
+
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+CompositeColor = Raysample[i].Color;
+CompositeOpacity = 1;
+			
+#endif
+///////////// COMPOSITING SETUP

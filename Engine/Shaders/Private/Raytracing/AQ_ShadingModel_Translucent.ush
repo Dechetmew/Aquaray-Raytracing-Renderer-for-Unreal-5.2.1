@@ -1,7 +1,11 @@
 // Shading Model: Translucent
+
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+
+Raysample[SampleIndex].ShadingModel = 4;
 Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
-Raysample[SampleIndex].ShadingModel = 4;
 
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 0.997f;
@@ -78,3 +82,15 @@ else
 	Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
 }
+
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+CompositeColor = CompositeColor * Raysample[i].Color + Raysample[i].Glare + Raysample[i].Radiance;
+CompositeOpacity = saturate(CompositeOpacity + Raysample[i].Opacity);
+
+#endif
+///////////// COMPOSITING SETUP

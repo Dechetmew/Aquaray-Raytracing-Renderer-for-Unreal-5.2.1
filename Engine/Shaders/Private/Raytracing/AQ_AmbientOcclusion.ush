@@ -50,7 +50,7 @@ if (DetailLightingMode)
 			//We hit A Surface
 			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + Payload.WorldNormal * 0.001f;
 			Diffusekernel[i].Normal = DetailPayload.WorldNormal;
-			Diffusekernel[i].Distance = saturate(DetailPayload.HitT / 100);
+			Diffusekernel[i].Distance = lerp(1.0f, saturate(DetailPayload.HitT / 100), DetailPayload.Opacity);
 		}
 		else
 		{
@@ -71,5 +71,5 @@ if (DetailLightingMode)
 		accumulatedFloat += Diffusekernel[i].Distance;
 	}
 	Raysample[SampleIndex].RTAO = accumulatedFloat / 5.0f;
-	Raysample[SampleIndex].RTAO = saturate(Raysample[SampleIndex].RTAO + 0.2);
+	Raysample[SampleIndex].RTAO = saturate(Raysample[SampleIndex].RTAO * 0.8f + 0.2f);
 }

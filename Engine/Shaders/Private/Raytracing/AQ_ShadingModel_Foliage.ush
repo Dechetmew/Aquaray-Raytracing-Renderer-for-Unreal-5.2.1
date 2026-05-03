@@ -1,6 +1,8 @@
 //Shading Model: Foliage
-Raysample[SampleIndex].ShadingModel = 7;
 
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+Raysample[SampleIndex].ShadingModel = 7;
 if (Payload.Opacity > 0.5f)
 {
 	//Opaque
@@ -37,3 +39,18 @@ else
 	//Disable Transparent Geometry after too much Foliage to reduce Artifacts
 	if (SampleIndex == (MAX_STEPS - 2)) {TraceTranslucent = false;}
 }
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+if (Raysample[i].Opacity == 1)
+{
+	//Opaque
+	CompositeColor = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor) + Raysample[i].Radiance;
+	CompositeOpacity = 1;
+}
+
+#endif
+///////////// COMPOSITING SETUP

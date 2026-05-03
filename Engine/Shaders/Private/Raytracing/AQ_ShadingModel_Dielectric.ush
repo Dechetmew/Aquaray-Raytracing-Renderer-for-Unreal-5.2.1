@@ -1,9 +1,12 @@
 //Shading Model: Dielectric
 
+///////////// RAYPATH AND SAMPLING SETUP
+#if RAYPATH
+
+Raysample[SampleIndex].ShadingModel = 1;
 Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
-Raysample[SampleIndex].ShadingModel = 1;
-	
+
 #include "AQ_AmbientOcclusion.ush"
 
 lighting Lighting = (lighting)0;
@@ -24,3 +27,20 @@ Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
 Raysample[SampleIndex].Specular = Lighting.Specular;
 
 break;
+
+#endif
+///////////// RAYPATH AND SAMPLING SETUP
+
+///////////// COMPOSITING SETUP
+#if COMPOSITE
+
+float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
+float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
+			
+CompositeColor = Direct + Indirect + Raysample[i].Radiance;
+			
+CompositeColor += Raysample[i].Specular;
+CompositeOpacity = 1;
+
+#endif
+///////////// COMPOSITING SETUP

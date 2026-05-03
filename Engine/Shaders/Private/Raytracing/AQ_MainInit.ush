@@ -35,6 +35,7 @@ bool DetailLightingMode = false;      if (IntInput2 > 0) {DetailLightingMode = t
 int  DebugMode                        = IntInput3;
 bool RDL = false;                    if (IntInput4 > 0) {RDL = true;}
 bool RDPL = false;                   if (IntInput5 > 0) {RDPL = true;}
+int  PrecisionLevel                  = IntInput6;
 
 float3 IndirectLightColor = ColorInput1.rgb;
 Fog.Color                 = saturate(ColorInput2.rgb);
@@ -85,4 +86,22 @@ for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
     Raysample[i] = (RaySample)0;
     Raysample[i].Roughness = 1.0;
     Raysample[i].RTAO = 1.0;
+}
+
+//Precision
+float TOP_THRESHOLD;
+float BOTTOM_THRESHOLD;
+
+if (PrecisionLevel == 3) {
+	TOP_THRESHOLD    = 0.999;
+	BOTTOM_THRESHOLD = 0.001;
+} else if (PrecisionLevel == 2) {
+	TOP_THRESHOLD    = 0.990;
+	BOTTOM_THRESHOLD = 0.010;
+} else if (PrecisionLevel == 1) {
+	TOP_THRESHOLD    = 0.980;
+	BOTTOM_THRESHOLD = 0.020;
+} else {
+	TOP_THRESHOLD    = 0.970;
+	BOTTOM_THRESHOLD = 0.030;
 }

@@ -34,7 +34,7 @@ int IntInput2; //Ambient Occlusion
 int IntInput3; //Debug View Modes
 int IntInput4; //Reflected Direct Lighting
 int IntInput5; //Reflected Direct Point Lighting
-int IntInput6;
+int IntInput6; //Precision Level
 int IntInput7;
 int IntInput8;
 int IntInput9;
@@ -55,6 +55,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	float3 Debug = float3(0,0,0);
 
 	// Raypath Loop
+	#define RAYPATH 1
     for (int i = 0; i < MAX_STEPS; i++)
 	{
 		SampleIndex += 1;
@@ -75,7 +76,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
 			
-			if (Fog.Density > 0.00001f) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
+			if (Fog.Density > BOTTOM_THRESHOLD) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 			
 			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
 			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);} //TODO bug: color made by this not matching color made by the water shading model
@@ -88,9 +89,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{	
 				#include "AQ_ShadingModel_Foliage.ush"
 			}
-			else if ((Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic < 0.5f) || (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f))
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic < 0.5f)
 			{
-				#include "AQ_ShadingModel_Mirror.ush"
+				#include "AQ_ShadingModel_DielectricMirror.ush"
+			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness < 0.5f && Payload.Metallic > 0.5f)
+			{
+				#include "AQ_ShadingModel_MetallicMirror.ush"
 			}
 			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
 			{	
@@ -104,6 +109,10 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{	
 				#include "AQ_ShadingModel_Unlit.ush"
 			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 3)
+			{	
+				#include "AQ_ShadingModel_LitTransparent.ush"
+			}
 			else
 			{
 				#include "AQ_ShadingModel_Invalid.ush"
@@ -116,138 +125,92 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
+	#undef RAYPATH
 	// Raypath Loop END
 	
 	//////////////////////////////////////
-	//Final Color Mixer, It works like Layers on Photoshop!
-	float3 Final = float3(0,0,0);
-	float FinalOpacity = 0;
+	//Color Mixer, It works like Layers on Photoshop!
+	float3 CompositeColor = float3(0,0,0);
+	float CompositeOpacity = 0;
 	
 	//The Mixing is done Back to Front
+	#define COMPOSITE 1
     for (int i = SampleIndex; i >= 0; i--)
 	{
 		if (Raysample[i].ShadingModel == 100)
 		{
-			//Shading Model Sky
-			Final = Raysample[i].Color;
-			FinalOpacity = 1;
+			#include "AQ_ShadingModel_Sky.ush"
 		}
 		else if (Raysample[i].ShadingModel == 1)
 		{
-			//Shading Model Dielectric
-			float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
-			float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
-			
-			Final = Direct + Indirect + Raysample[i].Radiance;
-			
-			Final += Raysample[i].Specular;
-			FinalOpacity = 1;
+			#include "AQ_ShadingModel_Dielectric.ush"
 		}
 		else if (Raysample[i].ShadingModel == 2)
 		{
-			//Shading Model Dielectric Mirror
-			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-			float3 Diffuse = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor);
-
-			Final = lerp(Diffuse + (Final * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare + Raysample[i].Radiance;
+			#include "AQ_ShadingModel_DielectricMirror.ush"
 		}
 		else if (Raysample[i].ShadingModel == 3)
 		{
-			//Shading Model Metallic Mirror
-			float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-			Final = lerp(Final * Raysample[i].Color, Final, Fresnel);
-			Final += Raysample[i].Specular + Raysample[i].Glare + Raysample[i].Radiance;
+			#include "AQ_ShadingModel_MetallicMirror.ush"
 		}
 		else if (Raysample[i].ShadingModel == 4)
 		{	
-			// Shading Model Translucent
-			Final = Final * Raysample[i].Color + Raysample[i].Glare + Raysample[i].Radiance;
-			FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
-		}
-		else if (Raysample[i].ShadingModel == 5)
-		{
-			//Shading Model Unlit Opaque
-			Final = Raysample[i].Color;
-			FinalOpacity = 1;
-		}
-		else if (Raysample[i].ShadingModel == 6)
-		{
-			//Shading Model Unlit Transparent
-			if (Raysample[i].Opacity == 1)
-			{
-				//Opaque
-				Final = Raysample[i].Color;
-				FinalOpacity = 1;
-			}
-			else if (Raysample[i].Opacity == 0)
-			{
-				//Invisible
-				continue;
-			}
-			else
-			{
-				//Transparent
-				Final = lerp(Final, Raysample[i].Color, Raysample[i].Opacity);
-				FinalOpacity = saturate(FinalOpacity + Raysample[i].Opacity);
-			}
+			#include "AQ_ShadingModel_Translucent.ush"
 		}
 		else if (Raysample[i].ShadingModel == 7)
 		{
-			//Shading Model Foliage
-			if (Raysample[i].Opacity == 1)
-			{
-				//Opaque
-				Final = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor) + Raysample[i].Radiance;
-				FinalOpacity = 1;
-			}
+			#include "AQ_ShadingModel_Foliage.ush"
 		}
 		else if (Raysample[i].ShadingModel == 8)
 		{
-			//Shading Model Water
-			if (!Raysample[i].BackFace)
-			{
-				float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-				Final *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare + Raysample[i].Radiance;
-			}
+			#include "AQ_ShadingModel_Water.ush"
+		}
+		else if (Raysample[i].ShadingModel == 5)
+		{
+			#include "AQ_ShadingModel_Unlit.ush"
+		}
+		else if (Raysample[i].ShadingModel == 9)
+		{
+			#include "AQ_ShadingModel_LitTransparent.ush"
 		}
 		else
 		{
-			//Shading Model Invalid
-			Final = Invalid(UV);
-			FinalOpacity = 1;
+			#include "AQ_ShadingModel_Invalid.ush"
 		}
 	}
+	#undef COMPOSITE
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
-	Final = lerp(sky, Final, FinalOpacity); //Apply sky to Incomplete pixels
+	CompositeColor = lerp(sky, CompositeColor, CompositeOpacity); //Apply sky to Incomplete pixels
 	
-	if (Fog.Density > 0.00001f)
+	if (Fog.Density > BOTTOM_THRESHOLD)
 	{
-		Final = lerp(Final, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
+		CompositeColor = lerp(CompositeColor, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
 	}
 	
-	Final *= Water.Transmittance; //Apply Water
+	CompositeColor *= Water.Transmittance; //Apply Water
 
 	
 	//Debug Viewmodes
 	switch(DebugMode)
 	{
-		case 1: Final = HeatColor(Stats.Steps); break;
-		case 2: Final = HeatColor(Stats.RaysPerPixel); break;
-        case 3: Final = Raysample[1].Color; break;
-		case 4: Final = saturate(Fog.Transmittance); break;
-		case 5: Final = Debug;
+		case 1: CompositeColor = HeatColor(Stats.Steps); break;
+		case 2: CompositeColor = HeatColor(Stats.RaysPerPixel); break;
+        case 3: CompositeColor = Raysample[1].Color; break;
+		case 4: CompositeColor = saturate(Fog.Transmittance); break;
+		case 5: CompositeColor = Raysample[0].NdotV; break;
+		case 6: CompositeColor = Debug;
 		
 		default: break;
 	}
 	
 	// NaN check to prevent my beloved D3D crashes
-	if (any(isnan(Final)) || any(isinf(Final)))
+	if (any(isnan(CompositeColor)) || any(isinf(CompositeColor)))
 	{
-		Final = Error(UV);
+		CompositeColor = Error(UV);
 	}
 	
 	// Main Output
-	ColorOutput[DispatchThreadId] = float4(Final, 1.0f); 
+	ColorOutput[DispatchThreadId] = float4(CompositeColor, 1.0f); 
 
 } //A Happy Ending of The Raygen Shader

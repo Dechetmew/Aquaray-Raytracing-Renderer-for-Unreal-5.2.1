@@ -1,9 +1,6 @@
 # __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
 ## Version 0.10.3
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
-SAMPLE UPROJECT: [Download (MediaFire)](https://www.mediafire.com/file/4nv9wtncbtahgmb/Aquaray_Demo.zip/file)<br/>
-__Note: The Sample Project does not contain any Raytracing code. Its only a Test Scene with Example Materials and Meshes, And a Controller Actor for Interacting with the Shader Settings. Please Refer to the Installation Section for Installing the Raytracer<br/>__
-Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5.2.1/wiki) when you finish Installation<br/>
 ![alt text](yay/logo.png)
 
 ## Scope of Project
@@ -51,6 +48,8 @@ Other files should be only Replace/Add<br/>
 6. If all stars Align, you should (hopefully) load into the project without any Explosions or Crashes<br/>
 Load into "emptytestmap" and Click the AquaRayController Actor in the Outliner<br/>
 In the Details Panel, Click "Apply Settings", and "Enable Aquaray"<br/>
+
+Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5.2.1/wiki) when you finish Installation<br/>
 
 After Clicking the button of Doom, you will be either Greeted by a "D3D Crashed" window, or a Fantastic Raytraced Scene in your Viewport<br/>
 

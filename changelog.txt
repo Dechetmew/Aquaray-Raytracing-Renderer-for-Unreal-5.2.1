@@ -132,3 +132,16 @@ v0.10.3
 - Added Lit Transparent
 - Various Thresholds are now Standardised and even Configurable
 - Improved Ambient Occlusion (Again)
+
+v0.11.0
+- Improved Emissive
+- Added Reflected Direct Lighting
+- Added Lit Transparent Shading Model
+- Added Precision settings controlling various Tresholds
+- Improvements and Fixes to Light Sampler
+- Foliage now uses Vertex Normal instead of Forcing 0,0,1
+- Foliage now uses Masked Blending Mode
+- Foliage Rendering Mysteriously Improved, It seems Unreal´s TraceRay() pipeline apparently Evaluates the Opacity mask on Geometry with Masked Blend Mode (This alone made my day)
+- Because of that Foliage now Always terminates the Raypath
+- Removed Useless Includes from AQ_Functions.ush
+The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)

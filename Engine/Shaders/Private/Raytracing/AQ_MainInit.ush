@@ -15,7 +15,7 @@ FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unus
 FRTLightingData Light; //Point,Rect,Spot Lights in scene
 FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
 DiffuseKernel Diffusekernel[10];
-SurfaceHit SurfaceHit; //struct with data for positional/directional calculations
+SurfaceHit SurfaceHit; //struct with data for positional/directional math
 stats Stats = (stats)0;
 Fog Fog;
 Water Water;
@@ -47,7 +47,7 @@ float3 SunLightColor      = ColorInput5.rgb;
 float3 CameraPositionWS   = ColorInput9.xyz;
 //////////////
 
-//For many Versions of this Shader I was complaining about having no way of knowing what View Values do and Dont exist... Well guess what is inside SceneView.h
+//For many Versions of this Shader, This comment was a complaint about having no way of knowing what View Values do and Dont exist... Well guess what is inside SceneView.h
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 //Initial Ray Setup
@@ -64,7 +64,7 @@ Water.Transmittance = float3(1,1,1);
 //Init the whole thing to zero
 for (int i = 0; i < 5; ++i)
 {
-    Diffusekernel[i] = (DiffuseKernel)0;
+	Diffusekernel[i] = (DiffuseKernel)0;
 }
 
 //https://academo.org/demos/3d-vector-plotter/ (this is handy)
@@ -83,9 +83,8 @@ RaySample Raysample[10];
 
 for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
 {
-    Raysample[i] = (RaySample)0;
-    Raysample[i].Roughness = 1.0;
-    Raysample[i].RTAO = 1.0;
+	Raysample[i] = (RaySample)0;
+	Raysample[i].Roughness = 1.0;
 }
 
 //Precision

@@ -15,6 +15,7 @@ Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
+Lighting.AmbientLight = IndirectLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
 Lighting.SamplingPos = SurfaceHit.HitPos;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
@@ -23,8 +24,7 @@ Lighting.SpecularAmount = 0.0f;
 #include "AQ_Lighting.ush"
 
 Raysample[SampleIndex].LightColor = Lighting.Light;
-Raysample[SampleIndex].Glare = Lighting.Glare;
-Raysample[SampleIndex].IndirectLightColor = IndirectLightColor;
+Raysample[SampleIndex].Glare = Lighting.Glare * Payload.BaseColor;
 
 // Advance Ray
 Ray.Direction = SurfaceHit.ReflectionVector;
@@ -37,8 +37,7 @@ Ray.Origin = SurfaceHit.HitPos;
 #if COMPOSITE
 
 float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-CompositeColor = lerp(CompositeColor * Raysample[i].Color, CompositeColor, Fresnel);
-CompositeColor += Raysample[i].Specular + Raysample[i].Glare + Raysample[i].Radiance;
+CompositeColor = lerp(CompositeColor * Raysample[i].Color, CompositeColor, Fresnel) + Raysample[i].Radiance + Raysample[i].Glare;
 CompositeOpacity = 1;
 
 #endif

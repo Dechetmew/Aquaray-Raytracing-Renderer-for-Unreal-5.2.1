@@ -1,5 +1,6 @@
 
 float3 IndirectEmissive = float3(0,0,0);
+float AmbientOcclusion;
 
 if (DetailLightingMode)
 {
@@ -70,6 +71,6 @@ if (DetailLightingMode)
 	{
 		accumulatedFloat += Diffusekernel[i].Distance;
 	}
-	Raysample[SampleIndex].RTAO = accumulatedFloat / 5.0f;
-	Raysample[SampleIndex].RTAO = saturate(Raysample[SampleIndex].RTAO * 0.8f + 0.2f);
+	AmbientOcclusion = accumulatedFloat / 5.0f;
+	AmbientOcclusion = saturate(AmbientOcclusion * 0.8f + 0.2f);
 }

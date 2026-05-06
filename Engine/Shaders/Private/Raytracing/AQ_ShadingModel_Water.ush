@@ -13,6 +13,7 @@ Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
+Lighting.AmbientLight = IndirectLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
 Lighting.SamplingPos = SurfaceHit.HitPos;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
@@ -65,7 +66,7 @@ else
 if (!Raysample[i].BackFace)
 {
 	float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-	CompositeColor *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Glare + Raysample[i].Radiance;
+	CompositeColor *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Radiance + Raysample[i].Glare;
 	//TODO add CompositeOpacity
 }
 

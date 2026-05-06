@@ -4,15 +4,12 @@ struct RaySample
 {
 	float3	Color;                         //BaseColor of the last hit matte Surface or sky
 	float3  Radiance;                      //Light Emmited by the surface
-	float3	Specular;                      //Amount of Specular to apply
 	float	Roughness;                     //Used for some Color Mixing
 	float	Opacity;					   //Opacity
 	int		ShadingModel;				   //Shading Model of the Hit Surface
 	
 	float3	LightColor;                    //Color of the primary light
 	float3	Glare;                         //Glare Effect
-	float3	IndirectLightColor;            //Color of Indirect Light on this pixel
-	float	RTAO;                          //(Detail Ligthing) Raytraced Ambient Occlusion
 	float	NdotV;                         //How much the surface faces the Incident Ray
 	
 	bool	BackFace;                      //True when a Backface is hit
@@ -21,22 +18,21 @@ struct RaySample
 struct lighting
 {
 	//In
-	float  GlareSize; //How big the Glare spot in on the surface, Larger number means smaller size
-	float3 GlarePower; //Should match Light Source Power
-	float  TraceDistance; //Shadows Trace Dist
+	float  GlareSize;             //How big the Glare spot in on the surface, Larger numbers = smaller size
+	float3 GlarePower;            //Should match Light Source Power
+	float  TraceDistance;         //Shadows Trace Dist
 	float3 PrimaryLightDirection; //World Light Direction
-	float3 PrimaryLightColor; //World Light Tint/Strenght
-	float3 WorldNormal; //Surface Normal
-	float3 SamplingPos; //Position for which to sample the light for
-	float3 IncidentVector; //Camera Pixel Vector
-	float  SpecularAmount; //Specular Material Graph Input
-	bool   isFoliage; //Toggles Lighting foliage
+	float3 PrimaryLightColor;     //World Light Tint/Strenght
+	float3 AmbientLight;          //Ambient Light Color
+	float3 WorldNormal;           //Surface Normal
+	float3 SamplingPos;           //Position for which to sample the light for
+	float3 IncidentVector;        //Camera Pixel Vector
+	float  SpecularAmount;        //Specular Material Graph Input
+	bool   isFoliage;             //Toggles Lighting foliage
 	
 	//Out
 	float3 Light;
-	float3 IndirectLight;
 	float3 Glare;
-	float3 Specular;
 };	
 
 struct DiffuseKernel

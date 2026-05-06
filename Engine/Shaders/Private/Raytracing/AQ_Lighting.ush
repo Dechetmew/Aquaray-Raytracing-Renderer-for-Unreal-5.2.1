@@ -5,6 +5,7 @@ FMaterialClosestHitPayload LightingPayload;
 float3 Transmittance = float3(1,1,1);
 float3 Direct = float3(0,0,0);
 float3 Glare = float3(0,0,0);
+float3 Spec = float3(0,0,0);
 
 float3 reflection = reflect(Ray.Direction, Payload.WorldNormal); //for glare
 
@@ -31,7 +32,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 				Transmittance = float3(0,0,0);
 				break;
 			}
-			else if (LightingPayload.ShadingModelID == 6 && LightingPayload.BlendingMode == 2)
+			else if (LightingPayload.ShadingModelID == 6)
 			{
 				//Foliage
 				if (LightingPayload.Opacity > 0.5f && !Lighting.isFoliage)
@@ -69,7 +70,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 		}
 	}
 	
-	Lighting.Specular = Specular(Lighting.PrimaryLightDirection, Lighting.PrimaryLightColor, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
+	Spec = Specular(Lighting.PrimaryLightDirection, Lighting.PrimaryLightColor, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
 	Transmittance *= Lighting.PrimaryLightColor * Lambert(Lighting.PrimaryLightDirection, Lighting.WorldNormal);
 }
 else
@@ -81,7 +82,7 @@ else
 float dotvalue = dot(reflection, normalize(Lighting.PrimaryLightDirection));
 if (dotvalue > Lighting.GlareSize)
 {
-	Lighting.Glare += Lighting.PrimaryLightColor * Lighting.GlarePower * Transmittance;
+	Glare += Lighting.PrimaryLightColor * Lighting.GlarePower * Transmittance;
 }
 
 //2: Point Lights
@@ -94,7 +95,7 @@ float3 ReflectedDirectPointLight = float3(0,0,0); // Dependency for ReflectedDir
 
 FCulledLightList LightsCulled = FCulledLightList::Create(Lighting.SamplingPos);
 LightCount = LightsCulled.NumLights();
-LightCount = clamp(LightCount, 0, 5);
+LightCount = clamp(LightCount, 0, 5 + 2); //5, Excluding Primary and Sky Light
 
 for (uint a = 0; a < LightCount; ++a)
 {
@@ -169,14 +170,14 @@ for (uint a = 0; a < LightCount; ++a)
 		
 		float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.000017);
 		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
-		Lighting.Specular += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
+		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
 		//Sun Glare
 		float dotvalue = dot(reflection, LightDir);
 		if (dotvalue > Lighting.GlareSize)
 		{
 			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
-			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
+			Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
 		}
 	}
 	else if (Light.Type == LIGHT_TYPE_POINT)
@@ -225,14 +226,14 @@ for (uint a = 0; a < LightCount; ++a)
 
 		float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.000017);
 		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
-		Lighting.Specular += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
+		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
 		//Sun Glare
 		float dotvalue = dot(reflection, LightDir);
 		if (dotvalue > Lighting.GlareSize)
 		{
 			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
-			Lighting.Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
+			Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
 		}
 	}
 	else
@@ -249,5 +250,5 @@ if (RDL)
 }
 
 // Output the accumulated color
-Lighting.Light = Transmittance + AccumulatedPointLightColor + ReflectedDirectLight + ReflectedDirectPointLight;
-Lighting.IndirectLight = IndirectLightColor * (saturate(dot(Payload.WorldNormal, float3(0.0f, 0.0f, 1.0f)) + 1) * 0.3 + 0.7);
+Lighting.Light = Transmittance + AccumulatedPointLightColor + Lighting.AmbientLight + Spec + Glare + ReflectedDirectLight + ReflectedDirectPointLight;
+Lighting.Glare = Glare;

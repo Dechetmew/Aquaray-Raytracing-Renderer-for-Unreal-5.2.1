@@ -4,31 +4,40 @@ for (uint b = 0; b < 10; ++b)
 	if (i == 9) {Transmittance = float3(0,0,0); break;}
 
 	LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
-		
 	Stats.RaysPerPixel += 1;
 
 	if (LightingPayload.IsHit())
 	{
 		if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 0)
 		{
-			// Fully Opaque
-			Valid = false; 
+			//Opaque 
 			PointTransmittance = float3(0,0,0);
+			Valid = false;
 			break;
 		}
-		else if (LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2)
+		else if (LightingPayload.ShadingModelID == 6)
 		{
-			// Unlit Transparent
-			if (LightingPayload.Opacity > TOP_THRESHOLD)
+			//Foliage
+			if (LightingPayload.Opacity > 0.5f && !Lighting.isFoliage)
 			{
-				Valid = false; 
 				PointTransmittance = float3(0,0,0);
-				break; 
+				Valid = false; 
+				break;
 			}
 			
-			Transmittance *= -LightingPayload.Opacity + 1;
+			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+		}
+		//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
+		//{	
+			//	Reserved for Refractive Direct Light (dont forgor about water too)
+		//}
+		else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
+		{
+			//Unlit Transparent or Lit Transparent
+			if (LightingPayload.Opacity > TOP_THRESHOLD) {PointTransmittance = float3(0,0,0); Valid = false; break;}
+			PointTransmittance *= -LightingPayload.Opacity + 1;
 			
-			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + (LightingPayload.WorldNormal * 0.001f);
+			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 			LightingRay.TMax = dist - LightingPayload.HitT;
 		}
 		else

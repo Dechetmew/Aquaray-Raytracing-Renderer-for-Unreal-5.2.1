@@ -16,6 +16,7 @@ Lighting.GlarePower = float3(0,0,0);
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
+Lighting.AmbientLight = IndirectLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
 Lighting.SamplingPos = SurfaceHit.HitPos;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
@@ -24,8 +25,6 @@ Lighting.SpecularAmount = Payload.Specular;
 #include "AQ_Lighting.ush"
 
 Raysample[SampleIndex].LightColor = Lighting.Light;
-Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
-Raysample[SampleIndex].Specular = Lighting.Specular;
 
 if (Payload.Opacity > TOP_THRESHOLD) {break;}
 
@@ -42,12 +41,7 @@ Ray.Origin = SurfaceHit.HitPosTranslucency;
 if (Raysample[i].Opacity == 1)
 {
 	//Opaque
-	float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
-	float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
-
-	CompositeColor = Direct + Indirect + Raysample[i].Radiance;
-
-	CompositeColor += Raysample[i].Specular;
+	CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
 	CompositeOpacity = 1;
 }
 if (Raysample[i].Opacity == 0)
@@ -57,12 +51,9 @@ if (Raysample[i].Opacity == 0)
 }
 else
 {
-	float3 Direct = Raysample[i].Color * Raysample[i].LightColor;
-	float3 Indirect = Raysample[i].Color * (Raysample[i].IndirectLightColor * Raysample[i].RTAO);
-	
-	float3 idk = Direct + Indirect + Raysample[i].Radiance;
-	
 	//Transparent
+	float3 idk = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
+	
 	CompositeColor = lerp(CompositeColor, idk, Raysample[i].Opacity);
 	CompositeOpacity = saturate(CompositeOpacity + Raysample[i].Opacity);
 }

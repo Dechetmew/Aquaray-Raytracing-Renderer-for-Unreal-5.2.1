@@ -2,55 +2,39 @@
 
 ///////////// RAYPATH AND SAMPLING SETUP
 #if RAYPATH
+
 Raysample[SampleIndex].ShadingModel = 7;
-if (Payload.Opacity > 0.5f)
-{
-	//Opaque
-	Raysample[SampleIndex].Color = Payload.BaseColor;
-	Raysample[SampleIndex].Radiance = Payload.Radiance;
-	Raysample[SampleIndex].Opacity = 1;
-	
-	lighting Lighting = (lighting)0;
-	Lighting.GlareSize = 1;
-	Lighting.GlarePower = float3(0,0,0);
-	Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
-	Lighting.PrimaryLightDirection = SunDirection;
-	Lighting.PrimaryLightColor = SunLightColor;
-	Lighting.WorldNormal = float3(0,0,1);
-	Lighting.SamplingPos = SurfaceHit.HitPos;
-	Lighting.IncidentVector = SurfaceHit.IncidentVector;
-	Lighting.SpecularAmount = 0;
-	Lighting.isFoliage = true;
+Raysample[SampleIndex].Color = Payload.BaseColor;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
+Raysample[SampleIndex].Opacity = 1;
 
-	#include "AQ_Lighting.ush"
+lighting Lighting = (lighting)0;
+Lighting.GlareSize = 1;
+Lighting.GlarePower = float3(0,0,0);
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
+Lighting.PrimaryLightDirection = SunDirection;
+Lighting.PrimaryLightColor = SunLightColor;
+Lighting.AmbientLight = IndirectLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+Lighting.SpecularAmount = 0;
+Lighting.isFoliage = true;
 
-	Raysample[SampleIndex].LightColor = Lighting.Light;
-	Raysample[SampleIndex].IndirectLightColor = Lighting.IndirectLight;
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].LightColor = Lighting.Light;
+
+break;
 	
-	break;
-}
-else
-{
-	//Fully Invisible
-	//No Action, Loop Again
-	Ray.Direction = SurfaceHit.IncidentVector;
-	Ray.Origin = SurfaceHit.HitPosTranslucency;
-	
-	//Disable Transparent Geometry after too much Foliage to reduce Artifacts
-	if (SampleIndex == (MAX_STEPS - 2)) {TraceTranslucent = false;}
-}
 #endif
 ///////////// RAYPATH AND SAMPLING SETUP
 
 ///////////// COMPOSITING SETUP
 #if COMPOSITE
 
-if (Raysample[i].Opacity == 1)
-{
-	//Opaque
-	CompositeColor = Raysample[i].Color * (Raysample[i].LightColor + Raysample[i].IndirectLightColor) + Raysample[i].Radiance;
-	CompositeOpacity = 1;
-}
+CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
+CompositeOpacity = 1;
 
 #endif
 ///////////// COMPOSITING SETUP

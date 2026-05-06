@@ -61,11 +61,14 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		SampleIndex += 1;
 		
 		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
+		
+		Debug = Payload.WorldNormal;
 			
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
 		SurfaceHit.IncidentVector = Ray.Direction;
 		SurfaceHit.StartPos = Ray.Origin;
+		SurfaceHit.HitPos = Ray.Origin; //for fog
 
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
@@ -76,7 +79,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
 			
-			if (Fog.Density > BOTTOM_THRESHOLD) {Fog.Transmittance += GetFogAmount(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
+			if (Fog.Density > BOTTOM_THRESHOLD) {Fog.Transmittance += GetFog(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 			
 			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
 			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);} //TODO bug: color made by this not matching color made by the water shading model
@@ -85,7 +88,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				#include "AQ_ShadingModel_Dielectric.ush"
 			}
-			else if (Payload.ShadingModelID == 6 && Payload.BlendingMode == 2)
+			else if (Payload.ShadingModelID == 6)
 			{	
 				#include "AQ_ShadingModel_Foliage.ush"
 			}
@@ -121,7 +124,11 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		else
 		{
 			//Also Bake Fog to the Sky Material as needed
-			if (Fog.Density > 0.00001f) {Fog.Transmittance = Fog.Transmittance + GetFogAtPoint(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, CameraPositionWS);}
+			if (Fog.Density > 0.00001f) 
+			{
+				Fog.Transmittance = Fog.Transmittance + GetFogAtPoint(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.HitPos + CameraPositionWS);
+			}
+			
 			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
@@ -129,7 +136,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	// Raypath Loop END
 	
 	//////////////////////////////////////
-	//Color Mixer, It works like Layers on Photoshop!
+	//Color Mixer
 	float3 CompositeColor = float3(0,0,0);
 	float CompositeOpacity = 0;
 	

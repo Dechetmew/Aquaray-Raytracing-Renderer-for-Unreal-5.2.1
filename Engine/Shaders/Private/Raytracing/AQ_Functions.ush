@@ -1,9 +1,6 @@
 //AQUARAY RAYTRACER FUNCTIONS
 
-#include "../DeferredLightingCommon.ush"
-#include "RayTracingCommon.ush"
 #include "RayTracingDeferredShadingCommon.ush"
-#include "RayTracingLightingCommon.ush"
 
 /////////////////////////////////////////////////// FUNCTIONS
 
@@ -139,10 +136,10 @@ float3 Specular(float3 LightVector, float3 Light, float3 SurfaceNormal, float3 I
 }
 
 //Gets fog
-float GetFogAmount(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPos, float3 endPos)
+float GetFog(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPosWS, float3 endPosWS)
 {
-	float distMeters = distance(startPos, endPos) * 0.01;
-	float z = endPos.z;
+	float distMeters = distance(startPosWS, endPosWS) * 0.01;
+	float z = endPosWS.z;
 	float t = saturate((z - bottomHeight) / (topHeight - bottomHeight));
 	float heightFactor = bottomValue * pow(topValue / bottomValue, t);
 

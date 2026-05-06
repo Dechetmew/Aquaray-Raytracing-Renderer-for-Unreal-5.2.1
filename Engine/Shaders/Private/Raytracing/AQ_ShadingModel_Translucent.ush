@@ -13,11 +13,12 @@ Lighting.GlarePower = float3(300.0f,300.0f,300.0f);
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
 Lighting.PrimaryLightDirection = SunDirection;
 Lighting.PrimaryLightColor = SunLightColor;
+Lighting.AmbientLight = IndirectLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
 Lighting.SamplingPos = SurfaceHit.HitPos;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
 
-#include "AQ_Lighting.ush" //TODO: It might be a nice idea to make this optional in some shading models
+#include "AQ_Lighting.ush"
 
 Raysample[SampleIndex].Glare = Lighting.Glare;
 
@@ -50,7 +51,7 @@ DetailRay.Direction = SurfaceHit.RefractionVector;
 DetailRay.TMin = 0;
 DetailRay.TMax = MetersToCenti(100.0f);
 
-//Dont forget to Enable Two Sided Geometry in the Material for Proper Glass Rendering
+//Dont forget to Enable Two Sided Geometry in the Material for Proper Volumetric Glass Rendering
 //If the Ray doesnt hit a Backside, It will assume the Material is Thin Translucent
 
 DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
@@ -89,7 +90,7 @@ else
 ///////////// COMPOSITING SETUP
 #if COMPOSITE
 
-CompositeColor = CompositeColor * Raysample[i].Color + Raysample[i].Glare + Raysample[i].Radiance;
+CompositeColor = CompositeColor * Raysample[i].Color + Raysample[i].Radiance + Raysample[i].Glare;
 CompositeOpacity = saturate(CompositeOpacity + Raysample[i].Opacity);
 
 #endif

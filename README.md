@@ -1,5 +1,5 @@
 # __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
-## Version 0.10.3
+## Version 0.11.0
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
@@ -25,11 +25,19 @@ GPU Requirements:<br/>
 The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that AO Sampler thing I made in the past)<br/>
 Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
 
-## Update 0.10.3
-- Fixed Sky Artifacts in Mirror Shading Model<br/>
-- Added Lit Transparent<br/>
-- Various Thresholds are now Standardised and even Configurable<br/>
-- Improved Ambient Occlusion (Again)<br/>
+## Update 0.11.0
+- Improved Emissive<br/>
+- Added Reflected Direct Lighting<br/>
+- Added Lit Transparent Shading Model<br/>
+- Added Precision settings controlling various Tresholds<br/>
+- Improvements and Fixes to Light Sampler<br/>
+- Foliage now uses Vertex Normal instead of Forcing 0,0,1<br/>
+- Foliage now uses Masked Blending Mode<br/>
+- Foliage Rendering Mysteriously Improved, It seems Unreal´s TraceRay() pipeline apparently Evaluates the Opacity mask on Geometry with Masked Blend Mode (This alone made my day)<br/>
+- Because of that Foliage now Always terminates the Raypath<br/>
+- Removed Useless Includes from AQ_Functions.ush<br/>
+- The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)<br/>
+
 
 Check changelog.txt for more info<br/>
 

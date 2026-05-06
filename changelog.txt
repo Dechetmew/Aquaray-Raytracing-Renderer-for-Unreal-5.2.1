@@ -144,4 +144,4 @@ v0.11.0
 - Foliage Rendering Mysteriously Improved, It seems Unreal´s TraceRay() pipeline apparently Evaluates the Opacity mask on Geometry with Masked Blend Mode (This alone made my day)
 - Because of that Foliage now Always terminates the Raypath
 - Removed Useless Includes from AQ_Functions.ush
-The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)
+- The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)

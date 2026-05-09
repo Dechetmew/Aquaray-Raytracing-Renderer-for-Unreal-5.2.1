@@ -12,7 +12,7 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 - Simple Fog<br/>
 - Water<br/>
 
-- Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
+__Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 
 This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I have decided to split this project into two Stages:<br/>
 - Aquaray 1 - Single Shader Whitted style Raytracing, Resemblant of Bryce 3D visuals<br/>

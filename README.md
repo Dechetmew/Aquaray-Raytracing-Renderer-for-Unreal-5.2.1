@@ -3,7 +3,7 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Scope of Project
+## Current Features
 - Whitted Style Raytracing<br/>
 - Direct Lighting With Point Light Support<br/>
 - Simple One-Raypath Shadows<br/>
@@ -11,8 +11,8 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 - Reflected Direct Lighting<br/>
 - Simple Fog<br/>
 - Water<br/>
+
 - Performance Target: 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
-(also some silly lighting hacks, not too important)<br/>
 
 This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I have decided to split this project into two Stages:<br/>
 - Aquaray 1 - Single Shader Whitted style Raytracing, Resemblant of Bryce 3D visuals<br/>

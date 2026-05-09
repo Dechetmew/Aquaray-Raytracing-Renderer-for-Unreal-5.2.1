@@ -37,6 +37,8 @@ Right now the Shader is running as a Debug Layer, I will move the code Directly 
 - Because of that Foliage now Always terminates the Raypath<br/>
 - Removed Useless Includes from AQ_Functions.ush<br/>
 - The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)<br/>
+- Fixed Dielectric Mirror missing Final Opacity<br/>
+- A Lot of Structural changes again<br/>
 
 
 Check changelog.txt for more info<br/>

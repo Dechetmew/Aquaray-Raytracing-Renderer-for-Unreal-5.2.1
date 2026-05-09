@@ -14,15 +14,13 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 
 __Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 
-This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I have decided to split this project into two Stages:<br/>
-- Aquaray 1 - Single Shader Whitted style Raytracing, Resemblant of Bryce 3D visuals<br/>
-- Aquaray 2 - Will include more Standard features like Proper Indirect Lighting, and other features needed for Making games or Advanced Renders<br/>
+Currently This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I will eventually add more advanced features like Indirect Lighting, full Roughness and Dedicated Post Processing Effects
 
-GPU Requirements:<br/>
+__GPU Requirements:<br/>__
 - DirectX 16 Support<br/>
 - Hardware Raytracing Support<br/>
 
-The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen. (Also avoid using that AO Sampler thing I made in the past)<br/>
+The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen<br/>
 Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
 
 ## Update 0.11.0

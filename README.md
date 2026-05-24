@@ -39,7 +39,7 @@ __Phase 1:__<br/>
 - One-Shader Implementation without Indirect Lighting<br/>
 
 __Phase 2:__<br/>
-- The following phase will be full push towards a full production ready Raytracing Renderer<br/>
+- The following phase will be full push towards a production ready Raytracing Renderer<br/>
 - New Unreal Engine fork repo with Renderer already embeded<br/>
 - Low Resolution Indirect Lighting pass<br/>
 - Translucency Reflection Juniction<br/>

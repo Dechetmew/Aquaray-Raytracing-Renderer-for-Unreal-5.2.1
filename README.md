@@ -27,15 +27,24 @@ Check changelog.txt for more info<br/>
 - Water<br/>
 
 __Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
-
-Currently This is a Simple Whitted Style Raytracing Renderer built into Unreal Engine, slowly developing into a Functional Tool to fuel my passion towards Raytraced Visuals and Art. I will eventually add more advanced features like Indirect Lighting, full Roughness and Dedicated Post Processing Effects
+__Current Performance Result:__ 70fps in Medium Complexity scenes. Shaders are currently compiled without optimization so the Final result may run faster<br/>
 
 __GPU Requirements:<br/>__
 - DirectX 16 Support<br/>
 - Hardware Raytracing Support<br/>
 
-The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen<br/>
-Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
+## Going Forward
+__Phase 1:__<br/>
+- This is phase one of this project, here Im experimenting with Raytracing, Rendering tricks and Identifying the needs for a full pipeline<br/>
+- One-Shader Implementation without Indirect Lighting<br/>
+__Phase 2:__<br/>
+- The following phase will be full push towards a full production ready Raytracing Renderer<br/>
+- New Unreal Engine fork repo with Renderer already embeded<br/>
+- Low Resolution Indirect Lighting pass<br/>
+- Translucency Reflection Juniction<br/>
+- Roughness Support<br/>
+- DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
+- Optional Checkerboard Rendering mode for devices below target spec<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

@@ -27,7 +27,7 @@ Check changelog.txt for more info<br/>
 - Water<br/>
 
 __Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
-__Current Performance Result:__ 70fps in Medium Complexity scenes. Shaders are currently compiled without optimization so the Final result may run faster<br/>
+__Current Performance Result:__ 75-80fps in Medium Complexity scenes. Shaders are currently compiled without optimization so the Final result may run faster<br/>
 
 __GPU Requirements:<br/>__
 - DirectX 16 Support<br/>

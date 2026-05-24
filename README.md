@@ -45,7 +45,7 @@ __Phase 2:__<br/>
 - Translucency Reflection Juniction<br/>
 - Roughness Support<br/>
 - DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
-- Optional Checkerboard Rendering mode for devices below target spec<br/>
+- Optional Checkerboard Rendering mode for GPUs below target spec<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

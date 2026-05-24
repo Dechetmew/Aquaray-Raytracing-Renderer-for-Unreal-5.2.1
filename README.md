@@ -37,6 +37,7 @@ __GPU Requirements:<br/>__
 __Phase 1:__<br/>
 - This is phase one of this project, here Im experimenting with Raytracing, Rendering tricks and Identifying the needs for a full pipeline<br/>
 - One-Shader Implementation without Indirect Lighting<br/>
+
 __Phase 2:__<br/>
 - The following phase will be full push towards a full production ready Raytracing Renderer<br/>
 - New Unreal Engine fork repo with Renderer already embeded<br/>

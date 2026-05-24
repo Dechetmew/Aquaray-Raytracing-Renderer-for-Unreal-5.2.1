@@ -51,9 +51,9 @@ float3 CameraPositionWS   = ColorInput9.xyz;
 float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
 
 //Initial Ray Setup
-Ray.TMin = 0.0f;
+Ray.TMin = 0.01f;
 Ray.TMax = MetersToCenti(RenderingDistance);
-VisibilityRay.TMin = 0.0f;
+VisibilityRay.TMin = 0.01f;
 VisibilityRay.TMax = MetersToCenti(ShadowTraceDist);
 bool TraceTranslucent = true;
 

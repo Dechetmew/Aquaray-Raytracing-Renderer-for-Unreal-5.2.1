@@ -1,13 +1,11 @@
 // Shading Model: Dielectric Mirror
 
-///////////// RAYPATH AND SAMPLING SETUP
-#if RAYPATH
-
 Raysample[SampleIndex].ShadingModel = 2;
 Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].Roughness = Payload.Roughness;
-Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
+Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
+Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
 
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 0.997f; //TODO Parametrize
@@ -29,17 +27,3 @@ Raysample[SampleIndex].Glare = Lighting.Glare * Payload.BaseColor;
 // Advance Ray
 Ray.Direction = SurfaceHit.ReflectionVector;
 Ray.Origin = SurfaceHit.HitPos;
-
-#endif
-///////////// RAYPATH AND SAMPLING SETUP
-
-///////////// COMPOSITING SETUP
-#if COMPOSITE
-
-float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.04, 0.04, 0.04));
-float3 Diffuse = Raysample[i].Color * Raysample[i].LightColor;
-CompositeColor = lerp(Diffuse + (CompositeColor * Fresnel), Diffuse, Raysample[i].Roughness * 0.9f) + Raysample[i].Glare;
-CompositeOpacity = 1;
-
-#endif
-///////////// COMPOSITING SETUP

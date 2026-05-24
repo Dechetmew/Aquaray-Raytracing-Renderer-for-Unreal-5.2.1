@@ -1,6 +1,6 @@
 
 FRayDesc LightingRay;
-LightingRay.TMin = 0.0f;
+LightingRay.TMin = 0.01f;
 FMaterialClosestHitPayload LightingPayload;
 float3 Transmittance = float3(1,1,1);
 float3 Direct = float3(0,0,0);
@@ -43,10 +43,44 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 				
 				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 			}
-			//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
-			//{	
-			//	Reserved for Refractive Direct Light (dont forgor about water too)
-			//}
+			else if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 2)
+			{	
+				//Glass
+				float3 dir = LightingRay.Direction;
+				float3 norm = LightingPayload.WorldNormal;
+				float3 color = LightingPayload.BaseColor;
+				float3 thinorigin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.01f;
+				LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
+				
+				LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
+				Stats.RaysPerPixel += 1;
+				
+				if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
+				{
+					//Volumetric Translucent
+					float entry = saturate(dot(norm, -dir));
+					float exit  = saturate(dot(-LightingPayload.WorldNormal, LightingRay.Direction));
+					
+					float3 a = 1.0f - color;
+					float3 thatheavyisaspy = exp(-a * LightingPayload.HitT);
+					
+					Transmittance *= entry * exit * thatheavyisaspy;
+					
+					LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior); //Like RefractionVector
+					LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
+				}
+			}
+			else if (LightingPayload.ShadingModelID == 11 && LightingPayload.BlendingMode == 2)
+			{
+				//Thin Translucent
+				float entry = saturate(dot(LightingPayload.WorldNormal, -LightingRay.Direction)) * 0.5 + 0.5;
+				Transmittance *= saturate(LightingPayload.BaseColor * LightingPayload.BaseColor) * entry;
+				
+				float3 hitpostrans = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+				float3 refractvect = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
+				LightingRay.Origin = hitpostrans + refractvect; // 1cm thickness
+			}
 			else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
 			{
 				//Unlit Transparent or Lit Transparent
@@ -172,7 +206,7 @@ for (uint a = 0; a < LightCount; ++a)
 		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
 		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
-		//Sun Glare
+		//Point Light Glare
 		float dotvalue = dot(reflection, LightDir);
 		if (dotvalue > Lighting.GlareSize)
 		{
@@ -228,7 +262,7 @@ for (uint a = 0; a < LightCount; ++a)
 		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
 		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
 		
-		//Sun Glare
+		//Point Light Glare
 		float dotvalue = dot(reflection, LightDir);
 		if (dotvalue > Lighting.GlareSize)
 		{

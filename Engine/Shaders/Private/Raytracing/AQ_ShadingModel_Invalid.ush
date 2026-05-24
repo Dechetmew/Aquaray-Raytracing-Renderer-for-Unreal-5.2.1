@@ -1,19 +1,4 @@
 //Shading Model: Invalid
 
-///////////// RAYPATH AND SAMPLING SETUP
-#if RAYPATH
-
 Raysample[SampleIndex].ShadingModel = 0;
 break;
-
-#endif
-///////////// RAYPATH AND SAMPLING SETUP
-
-///////////// COMPOSITING SETUP
-#if COMPOSITE
-
-CompositeColor = Invalid(UV);
-CompositeOpacity = 1;
-
-#endif
-///////////// COMPOSITING SETUP

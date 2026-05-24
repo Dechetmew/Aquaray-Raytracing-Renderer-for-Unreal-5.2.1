@@ -1,8 +1,5 @@
 //Shading Model: Foliage
 
-///////////// RAYPATH AND SAMPLING SETUP
-#if RAYPATH
-
 Raysample[SampleIndex].ShadingModel = 7;
 Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
@@ -26,15 +23,3 @@ Lighting.isFoliage = true;
 Raysample[SampleIndex].LightColor = Lighting.Light;
 
 break;
-	
-#endif
-///////////// RAYPATH AND SAMPLING SETUP
-
-///////////// COMPOSITING SETUP
-#if COMPOSITE
-
-CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
-CompositeOpacity = 1;
-
-#endif
-///////////// COMPOSITING SETUP

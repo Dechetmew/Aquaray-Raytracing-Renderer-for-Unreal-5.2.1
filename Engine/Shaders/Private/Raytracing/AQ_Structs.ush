@@ -2,7 +2,8 @@
 
 struct RaySample
 {
-	float3	Color;                         //BaseColor of the last hit matte Surface or sky
+	float3	Color;                         //Albedo
+	float3	CustomColor;                   //Used as Reflection Color in Glass/Refraction Color in Water
 	float3  Radiance;                      //Light Emmited by the surface
 	float	Roughness;                     //Used for some Color Mixing
 	float	Opacity;					   //Opacity
@@ -10,7 +11,9 @@ struct RaySample
 	
 	float3	LightColor;                    //Color of the primary light
 	float3	Glare;                         //Glare Effect
-	float	NdotV;                         //How much the surface faces the Incident Ray
+	
+	float3	IncidentVector;                //Incident Ray Vector
+	float3	WorldNormal;				   //Surface World Normal
 	
 	bool	BackFace;                      //True when a Backface is hit
 };

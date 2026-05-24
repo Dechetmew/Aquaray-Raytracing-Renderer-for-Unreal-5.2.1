@@ -1,11 +1,9 @@
 // Shading Model: Water
 
-///////////// RAYPATH AND SAMPLING SETUP
-#if RAYPATH
-
 Raysample[SampleIndex].ShadingModel = 8;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
-Raysample[SampleIndex].NdotV = NdotV(Payload.WorldNormal, SurfaceHit.IncidentVector);
+Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
+Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
 
 lighting Lighting = (lighting)0;
 Lighting.GlareSize = 0.999f; //TODO Parametrize
@@ -56,19 +54,3 @@ else
 	Ray.Direction = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
 	Ray.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f; //Like HitPosTranslucency
 }
-
-#endif
-///////////// RAYPATH AND SAMPLING SETUP
-
-///////////// COMPOSITING SETUP
-#if COMPOSITE
-
-if (!Raysample[i].BackFace)
-{
-	float3 Fresnel = FresnelSchlick(Raysample[i].NdotV, float3(0.02, 0.02, 0.02));
-	CompositeColor *= Fresnel + Raysample[i].Color * (1.0 - Fresnel) + Raysample[i].Radiance + Raysample[i].Glare;
-	//TODO add CompositeOpacity
-}
-
-#endif
-///////////// COMPOSITING SETUP

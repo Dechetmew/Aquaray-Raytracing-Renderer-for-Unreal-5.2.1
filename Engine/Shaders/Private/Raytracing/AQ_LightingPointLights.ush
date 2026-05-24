@@ -1,7 +1,7 @@
 
 for (uint b = 0; b < 10; ++b)
 {
-	if (i == 9) {Transmittance = float3(0,0,0); break;}
+	if (b == 9) {Transmittance = float3(0,0,0); Valid = false; break;}
 
 	LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
 	Stats.RaysPerPixel += 1;
@@ -27,10 +27,44 @@ for (uint b = 0; b < 10; ++b)
 			
 			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 		}
-		//else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
-		//{	
-			//	Reserved for Refractive Direct Light (dont forgor about water too)
-		//}
+		else if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 2)
+		{	
+			//Glass
+			float3 dir = LightingRay.Direction;
+			float3 norm = LightingPayload.WorldNormal;
+			float3 color = LightingPayload.BaseColor;
+			float  distydist = LightingPayload.HitT;
+			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.01f;
+			LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
+			
+			LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
+			Stats.RaysPerPixel += 1;
+			
+			if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
+			{
+				//Volumetric Translucent
+				float entry = saturate(dot(norm, -dir));
+				float exit  = saturate(dot(-LightingPayload.WorldNormal, -normalize(LightingRay.Origin - Light.TranslatedLightPosition)));
+				
+				float3 a = 1.0f - color;
+				float3 thatheavyisaspy = exp(-a * LightingPayload.HitT);
+				
+				PointTransmittance *= entry * exit * thatheavyisaspy;
+				//PointTransmittance *= thatheavyisaspy;
+				
+				LightingRay.Direction = normalize(Light.TranslatedLightPosition - LightingRay.Origin);
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
+				LightingRay.TMax = min(MetersToCenti(ShadowTraceDist), length(LightingRay.Origin - Light.TranslatedLightPosition));
+			}
+			else
+			{
+				//Thin Translucent
+				float entry = saturate(dot(norm, -dir));
+				PointTransmittance *= saturate(color * color) * entry; //Shadow color doesnt match window color. Not sure if its supposed to be like that. Will change if needed later
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * distydist + LightingRay.Direction * 0.005f;
+				LightingRay.TMax = dist - distydist;
+			}
+		}
 		else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
 		{
 			//Unlit Transparent or Lit Transparent

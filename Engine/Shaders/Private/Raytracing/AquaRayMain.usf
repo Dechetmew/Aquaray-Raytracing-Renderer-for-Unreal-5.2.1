@@ -1,4 +1,4 @@
-// Aquray Raytracing Renderer
+// AquaRay Raytracing Renderer
 // https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1
 
 // INCLUDES
@@ -55,14 +55,13 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	float3 Debug = float3(0,0,0);
 
 	// Raypath Loop
-	#define RAYPATH 1
     for (int i = 0; i < MAX_STEPS; i++)
 	{
 		SampleIndex += 1;
 		
 		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
 		
-		Debug = Payload.WorldNormal;
+		if (i == 0) {Debug = Payload.WorldNormal;}
 			
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
@@ -100,13 +99,17 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				#include "AQ_ShadingModel_MetallicMirror.ush"
 			}
-			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
+			else if (Payload.ShadingModelID == 11 && Payload.BlendingMode == 2)
 			{	
-				#include "AQ_ShadingModel_Translucent.ush"
+				#include "AQ_ShadingModel_ThinTranslucent.ush"
 			}
 			else if (Payload.ShadingModelID == 2 && Payload.BlendingMode == 2)
 			{	
 				#include "AQ_ShadingModel_Water.ush"
+			}
+			else if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 2)
+			{	
+				#include "AQ_ShadingModel_Translucent.ush"
 			}
 			else if (Payload.ShadingModelID == 0 && ((Payload.BlendingMode == 0) || (Payload.BlendingMode == 2)))
 			{	
@@ -132,63 +135,134 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			#include "AQ_ShadingModel_Sky.ush"
 		}
 	}
-	#undef RAYPATH
 	// Raypath Loop END
 	
 	//////////////////////////////////////
 	//Color Mixer
-	float3 CompositeColor = float3(0,0,0);
-	float CompositeOpacity = 0;
+	float3 CompositeColor = GetSkyRadiance(float3(0,0,1), 1.0f) * SkyVisualBrightness;
 	
 	//The Mixing is done Back to Front
-	#define COMPOSITE 1
     for (int i = SampleIndex; i >= 0; i--)
 	{
-		if (Raysample[i].ShadingModel == 100)
+		if (Raysample[i].ShadingModel == 100) //Sky
 		{
-			#include "AQ_ShadingModel_Sky.ush"
+			CompositeColor = Raysample[i].Color;
 		}
-		else if (Raysample[i].ShadingModel == 1)
+		else if (Raysample[i].ShadingModel == 1) //Dielectric
 		{
-			#include "AQ_ShadingModel_Dielectric.ush"
+			CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
 		}
-		else if (Raysample[i].ShadingModel == 2)
+		else if (Raysample[i].ShadingModel == 2) //Dielectric Mirror
 		{
-			#include "AQ_ShadingModel_DielectricMirror.ush"
+			float3 Diffuse = Raysample[i].Color * Raysample[i].LightColor;
+			CompositeColor = CompositeMaterial(
+				Raysample[i].Color,
+				float3(0.04, 0.04, 0.04),
+				0.0,
+				0.0,
+				Raysample[i].WorldNormal,
+				Raysample[i].IncidentVector,
+				CompositeColor,
+				Diffuse,
+				float3(0,0,0)
+			) + Raysample[i].Radiance + Raysample[i].Glare;
 		}
-		else if (Raysample[i].ShadingModel == 3)
+		else if (Raysample[i].ShadingModel == 3) //Metallic Mirror
 		{
-			#include "AQ_ShadingModel_MetallicMirror.ush"
+			CompositeColor = CompositeMaterial(
+				Raysample[i].Color,
+				float3(0.04, 0.04, 0.04),
+				1.0,
+				0.0,
+				Raysample[i].WorldNormal,
+				Raysample[i].IncidentVector,
+				CompositeColor,
+				float3(0,0,0),
+				float3(0,0,0)
+			) + Raysample[i].Radiance + Raysample[i].Glare;
 		}
-		else if (Raysample[i].ShadingModel == 4)
+		else if (Raysample[i].ShadingModel == 4) //Volumetric/Thin Glass
 		{	
-			#include "AQ_ShadingModel_Translucent.ush"
+			CompositeColor = CompositeMaterial(
+				float3(1,1,1),
+				float3(0.04, 0.04, 0.04),
+				0.0,
+				1.0,
+				Raysample[i].WorldNormal,
+				Raysample[i].IncidentVector,
+				Raysample[i].CustomColor,
+				float3(0,0,0),
+				CompositeColor * Raysample[i].Color
+			) + Raysample[i].Radiance + Raysample[i].Glare;
 		}
-		else if (Raysample[i].ShadingModel == 7)
+		else if (Raysample[i].ShadingModel == 7) //Foliage
 		{
-			#include "AQ_ShadingModel_Foliage.ush"
+			CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
 		}
-		else if (Raysample[i].ShadingModel == 8)
+		else if (Raysample[i].ShadingModel == 8) //Water
 		{
-			#include "AQ_ShadingModel_Water.ush"
+			if (!Raysample[i].BackFace)
+			{
+				CompositeColor = CompositeMaterial(
+					float3(1,1,1),
+					float3(0.04, 0.04, 0.04),
+					0.0,
+					1.0,
+					Raysample[i].WorldNormal,
+					Raysample[i].IncidentVector,
+					CompositeColor,
+					float3(0,0,0),
+					Raysample[i].Color
+				) + Raysample[i].Radiance + Raysample[i].Glare;
+			}
 		}
-		else if (Raysample[i].ShadingModel == 5)
+		else if (Raysample[i].ShadingModel == 5) //Unlit
 		{
-			#include "AQ_ShadingModel_Unlit.ush"
+			if (Raysample[i].Opacity == 1)
+			{
+				//Opaque
+				CompositeColor = Raysample[i].Color;
+			}
+			else if (Raysample[i].Opacity == 0)
+			{
+				//Invisible
+				continue;
+			}
+			else
+			{
+				//Transparent
+				CompositeColor = lerp(CompositeColor, Raysample[i].Color, Raysample[i].Opacity);
+			}
 		}
-		else if (Raysample[i].ShadingModel == 9)
+		else if (Raysample[i].ShadingModel == 9) //Lit Transparent
 		{
-			#include "AQ_ShadingModel_LitTransparent.ush"
+			if (Raysample[i].Opacity == 1)
+			{
+				//Opaque
+				CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
+			}
+			if (Raysample[i].Opacity == 0)
+			{
+				//Invisible
+				continue;
+			}
+			else
+			{
+				//Transparent
+				float3 idk = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
+				
+				CompositeColor = lerp(CompositeColor, idk, Raysample[i].Opacity);
+			}
 		}
-		else
+		else //Invalid
 		{
-			#include "AQ_ShadingModel_Invalid.ush"
+			CompositeColor = Invalid(UV);
 		}
 	}
-	#undef COMPOSITE
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
-	CompositeColor = lerp(sky, CompositeColor, CompositeOpacity); //Apply sky to Incomplete pixels
+	//CompositeColor = lerp(sky, CompositeColor, CompositeOpacity); //Apply sky to Incomplete pixels
+	//CompositeColor += sky * (-CompositeOpacityAbsorbtion + 1);
 	
 	if (Fog.Density > BOTTOM_THRESHOLD)
 	{
@@ -205,8 +279,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		case 2: CompositeColor = HeatColor(Stats.RaysPerPixel); break;
         case 3: CompositeColor = Raysample[1].Color; break;
 		case 4: CompositeColor = saturate(Fog.Transmittance); break;
-		case 5: CompositeColor = Raysample[0].NdotV; break;
-		case 6: CompositeColor = Debug;
+		case 5: CompositeColor = Debug;
 		
 		default: break;
 	}

@@ -1,5 +1,5 @@
 # __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
-## Version 0.11.0
+## Version 11.1
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
@@ -23,20 +23,18 @@ __GPU Requirements:<br/>__
 The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen<br/>
 Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
 
-## Update 0.11.0
-- Improved Emissive<br/>
-- Added Reflected Direct Lighting<br/>
-- Added Lit Transparent Shading Model<br/>
-- Added Precision settings controlling various Tresholds<br/>
-- Improvements and Fixes to Light Sampler<br/>
-- Foliage now uses Vertex Normal instead of Forcing 0,0,1<br/>
-- Foliage now uses Masked Blending Mode<br/>
-- Foliage Rendering Mysteriously Improved, It seems Unreal´s TraceRay() pipeline apparently Evaluates the Opacity mask on Geometry with Masked Blend Mode (This alone made my day)<br/>
-- Because of that Foliage now Always terminates the Raypath<br/>
-- Removed Useless Includes from AQ_Functions.ush<br/>
-- The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)<br/>
-- Fixed Dielectric Mirror missing Final Opacity<br/>
-- A Lot of Structural changes again<br/>
+## Update 11.1
+- New versioning<br/>
+- Improved sky fallback, Removing Composite Opacity<br/>
+- Fixed the Previously Fully messed up Fresnel Approach, Improving Lighting on Dielectric Mirror, Metallic Mirror, Water and Glass Shading Models<br/>
+- Water Absorbtion Removed From Shading Model, Water will be redone soon (Hopefully)<br/>
+- Volumetric Translucent absorption is now driven only by Base Color<br/>
+- Translucent Materials now casts colored Shadows<br/>
+- Split Volumetric Translucent and Thin Translucent<br/>
+- Reverted the Raypth/Composite structure due to large compilation times<br/>
+- Fixed glass sky reflection not respecting sky brightness<br/>
+- Fixed Thin Translucent Shadows not Working<br/>
+- Normal in Thin Translucent seems to be working now<br/>
 
 
 Check changelog.txt for more info<br/>

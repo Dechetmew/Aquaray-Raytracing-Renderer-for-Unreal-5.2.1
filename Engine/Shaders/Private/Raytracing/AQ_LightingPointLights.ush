@@ -29,7 +29,7 @@ for (uint b = 0; b < 10; ++b)
 		}
 		else if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 2)
 		{	
-			//Glass
+			//Volumetric Translucent
 			float3 dir = LightingRay.Direction;
 			float3 norm = LightingPayload.WorldNormal;
 			float3 color = LightingPayload.BaseColor;
@@ -42,7 +42,6 @@ for (uint b = 0; b < 10; ++b)
 			
 			if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
 			{
-				//Volumetric Translucent
 				float entry = saturate(dot(norm, -dir));
 				float exit  = saturate(dot(-LightingPayload.WorldNormal, -normalize(LightingRay.Origin - Light.TranslatedLightPosition)));
 				
@@ -56,14 +55,17 @@ for (uint b = 0; b < 10; ++b)
 				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
 				LightingRay.TMax = min(MetersToCenti(ShadowTraceDist), length(LightingRay.Origin - Light.TranslatedLightPosition));
 			}
-			else
-			{
-				//Thin Translucent
-				float entry = saturate(dot(norm, -dir));
-				PointTransmittance *= saturate(color * color) * entry; //Shadow color doesnt match window color. Not sure if its supposed to be like that. Will change if needed later
-				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * distydist + LightingRay.Direction * 0.005f;
-				LightingRay.TMax = dist - distydist;
-			}
+		}
+		else if (LightingPayload.ShadingModelID == 11 && LightingPayload.BlendingMode == 2)
+		{
+			//Thin Translucent
+			float entry = saturate(dot(LightingPayload.WorldNormal, -LightingRay.Direction)) * 0.5 + 0.5;
+			PointTransmittance *= saturate(LightingPayload.BaseColor * LightingPayload.BaseColor) * entry;
+			
+			float3 hitpostrans = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+			float3 refractvect = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
+			LightingRay.Origin = hitpostrans + refractvect; // 1cm thickness
+			LightingRay.TMax = dist - LightingPayload.HitT;
 		}
 		else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
 		{

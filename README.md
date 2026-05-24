@@ -69,8 +69,6 @@ In the Details Panel, Click "Apply Settings", and "Enable Aquaray"<br/>
 
 Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5.2.1/wiki) when you finish Installation<br/>
 
-After Clicking the button of Doom, you will be either Greeted by a "D3D Crashed" window, or a Fantastic Raytraced Scene in your Viewport<br/>
-
 ## __Credits__
 The Sample project uses:<br/>
 -Skyboxes from [PolyHaven](https://polyhaven.com/)<br/>

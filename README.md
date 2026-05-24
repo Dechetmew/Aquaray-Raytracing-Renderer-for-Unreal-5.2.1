@@ -47,6 +47,10 @@ __Phase 2:__<br/>
 - DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
 - Optional Checkerboard Rendering mode for GPUs below target spec<br/>
 
+QA:<br/>
+__Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible using a Plugin. Any Renderer of this scale must be done via Modifying Unreal Source<br/>
+__Can you Update the Renderer to a Higher Unreal Version?:__ I dont have a reason yet, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
+
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>
 Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile

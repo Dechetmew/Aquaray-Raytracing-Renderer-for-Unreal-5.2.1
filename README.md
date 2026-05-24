@@ -3,6 +3,21 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
+## Update 11.1
+- New versioning<br/>
+- Improved sky fallback, Removing Composite Opacity<br/>
+- Fixed the Previously Fully messed up Fresnel Approach, Improving Lighting on Dielectric Mirror, Metallic Mirror, Water and Glass Shading Models<br/>
+- Water Absorbtion Removed From Shading Model, Water will be redone soon (Hopefully)<br/>
+- Volumetric Translucent absorption is now driven only by Base Color<br/>
+- Translucent Materials now casts colored Shadows<br/>
+- Split Volumetric Translucent and Thin Translucent<br/>
+- Reverted the Raypth/Composite structure due to large compilation times<br/>
+- Fixed glass sky reflection not respecting sky brightness<br/>
+- Fixed Thin Translucent Shadows not Working<br/>
+- Normal in Thin Translucent seems to be working now<br/>
+
+Check changelog.txt for more info<br/>
+
 ## Current Features
 - Whitted Style Raytracing<br/>
 - Direct Lighting With Point Light Support<br/>
@@ -22,22 +37,6 @@ __GPU Requirements:<br/>__
 
 The sample project runs around 60-120 fps on my RTX 3050, The Framerate is mostly based on how much is on the screen<br/>
 Right now the Shader is running as a Debug Layer, I will move the code Directly into the Renderer somewhat soon<br/>
-
-## Update 11.1
-- New versioning<br/>
-- Improved sky fallback, Removing Composite Opacity<br/>
-- Fixed the Previously Fully messed up Fresnel Approach, Improving Lighting on Dielectric Mirror, Metallic Mirror, Water and Glass Shading Models<br/>
-- Water Absorbtion Removed From Shading Model, Water will be redone soon (Hopefully)<br/>
-- Volumetric Translucent absorption is now driven only by Base Color<br/>
-- Translucent Materials now casts colored Shadows<br/>
-- Split Volumetric Translucent and Thin Translucent<br/>
-- Reverted the Raypth/Composite structure due to large compilation times<br/>
-- Fixed glass sky reflection not respecting sky brightness<br/>
-- Fixed Thin Translucent Shadows not Working<br/>
-- Normal in Thin Translucent seems to be working now<br/>
-
-
-Check changelog.txt for more info<br/>
 
 ## __How to Install__
 1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>

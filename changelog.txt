@@ -143,6 +143,19 @@ v0.11.0
 - Foliage now uses Masked Blending Mode
 - Foliage Rendering Mysteriously Improved, It seems Unreal´s TraceRay() pipeline apparently Evaluates the Opacity mask on Geometry with Masked Blend Mode (This alone made my day)
 - Because of that Foliage now Always terminates the Raypath
+
+v11.1
+- New versioning
+- Improved sky fallback, Removing Composite Opacity
+- Fixed the Previously Fully messed up Fresnel Approach, Improving Lighting on Dielectric Mirror, Metallic Mirror, Water and Glass Shading Models
+- Water Absorbtion Removed From Shading Model, Water will be redone soon (Hopefully)
+- Volumetric Translucent absorption is now driven only by Base Color
+- Translucent Materials now casts colored Shadows
+- Split Volumetric Translucent and Thin Translucent
+- Reverted the Raypth/Composite structure due to large compilation times
+- Fixed glass sky reflection not respecting sky brightness
+- Fixed Thin Translucent Shadows not Working
+- Normal in Thin Translucent seems to be working now
 - Removed Useless Includes from AQ_Functions.ush
 - The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)
 - Fixed Dielectric Mirror missing Final Opacity

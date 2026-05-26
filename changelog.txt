@@ -164,4 +164,5 @@ v11.1
 v11.2
 - Removed Old check from Foliage Lighting
 - Changes to structs and inits
+- Water Material works Again, Improved Lighting
 - Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways

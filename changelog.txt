@@ -160,3 +160,8 @@ v11.1
 - The Point Lights per Pixel Limit is now actually 5 instead of 3 (forgot Unreal also includes Primary Light and Sky Light)
 - Fixed Dielectric Mirror missing Final Opacity
 - A Lot of Structural changes again
+
+v11.2
+- Removed Old check from Foliage Lighting
+- Changes to structs and inits
+- Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways

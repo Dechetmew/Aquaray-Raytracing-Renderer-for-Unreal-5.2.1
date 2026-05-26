@@ -1,7 +1,7 @@
 //Structs Reference
 
 //light types
-#define LIGHT_TYPE_DIRECTIONAL		0 //sun or moon
+#define LIGHT_TYPE_DIRECTIONAL		0 //world/primary light
 #define LIGHT_TYPE_POINT			1 //sphere
 #define LIGHT_TYPE_SPOT				2 //cone light
 #define LIGHT_TYPE_RECT				3 //rectangle light
@@ -19,7 +19,7 @@ struct FRTLightingData
 	float3 LightColor;					//color
 	float SpecularScale;
 	float3 Tangent;
-	float SourceRadius;					//radius
+	float SourceRadius;					//used as exclusion radius in my renderer
 	float2 SpotAngles;
 	float SourceLength;                   
 	float SoftSourceRadius;

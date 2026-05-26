@@ -5,6 +5,7 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 ## Update 11.2
 - Removed Old check from Foliage Lighting<br/>
 - Changes to structs and inits<br/>
+- Water Material works Again, Improved Lighting<br/>
 - Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways<br/>
 
 Check changelog.txt for previous versions<br/>

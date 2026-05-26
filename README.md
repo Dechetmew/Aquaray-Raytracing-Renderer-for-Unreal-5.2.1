@@ -15,7 +15,7 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 - Fixed Thin Translucent Shadows not Working<br/>
 - Normal in Thin Translucent seems to be working now<br/>
 
-Check changelog.txt for more info<br/>
+Check changelog.txt for previous versions<br/>
 
 ## Current Features
 - Whitted Style Raytracing<br/>

@@ -2,18 +2,10 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Update 11.1
-- New versioning<br/>
-- Improved sky fallback, Removing Composite Opacity<br/>
-- Fixed the Previously Fully messed up Fresnel Approach, Improving Lighting on Dielectric Mirror, Metallic Mirror, Water and Glass Shading Models<br/>
-- Water Absorbtion Removed From Shading Model, Water will be redone soon (Hopefully)<br/>
-- Volumetric Translucent absorption is now driven only by Base Color<br/>
-- Translucent Materials now casts colored Shadows<br/>
-- Split Volumetric Translucent and Thin Translucent<br/>
-- Reverted the Raypth/Composite structure due to large compilation times<br/>
-- Fixed glass sky reflection not respecting sky brightness<br/>
-- Fixed Thin Translucent Shadows not Working<br/>
-- Normal in Thin Translucent seems to be working now<br/>
+## Update 11.2
+- Removed Old check from Foliage Lighting<br/>
+- Changes to structs and inits<br/>
+- Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways<br/>
 
 Check changelog.txt for previous versions<br/>
 

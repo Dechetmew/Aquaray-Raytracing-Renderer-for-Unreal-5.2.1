@@ -154,7 +154,7 @@ float3 Specular(float3 LightVector, float3 Light, float3 SurfaceNormal, float3 I
 	return E * F * Specular * 0.5 * Light;
 }
 
-//Gets fog
+//For fog and Underwater
 float GetFog(float topValue, float bottomValue, float topHeight, float bottomHeight, float density, float3 startPosWS, float3 endPosWS)
 {
 	float distMeters = distance(startPosWS, endPosWS) * 0.01;
@@ -259,17 +259,4 @@ float3 Invalid(float2 UVpos)
 	{
 		return float3(1, 0.6, 0);
 	}
-}
-
-//Returns Water Transmission
-float3 WaterAbsorb(float3 HitPosWS, float WaterOpacity, float3 WaterColor, float WaterLevelWS, float additionalDist)
-{
-	//TODO Water Absorbtion should be Calculated only Outside the Shading Model. Water Only sets the Ray path
-	float3 Waterpos = float3(HitPosWS.xy, WaterLevelWS);
-	float dist = distance(HitPosWS, Waterpos) + (additionalDist * 0.1f); //I kinda wanted to combine distance absorption with depth absorption here
-	
-	WaterColor = lerp(float3(1,1,1), WaterColor, WaterOpacity * 0.01);
-	WaterColor = WaterColor * -1 + 1;
-
-	return exp(-WaterColor * dist);
 }

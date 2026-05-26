@@ -44,7 +44,7 @@ if (DetailPayload.IsHit() && !DetailPayload.IsFrontFace())
 	float3 Absorption = 1.0f - Payload.BaseColor;
 	Raysample[SampleIndex].Color = exp(-Absorption * DetailPayload.HitT); //For large Glass stuff, Use very low Opacity
 	
-	lighting Lighting = (lighting)0;
+	Lighting = (StructLighting)0;
 	Lighting.GlareSize = 0.997f;
 	Lighting.GlarePower = float3(300.0f,300.0f,300.0f);
 	Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);

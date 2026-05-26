@@ -1,7 +1,4 @@
 
-FRayDesc LightingRay;
-LightingRay.TMin = 0.01f;
-FMaterialClosestHitPayload LightingPayload;
 float3 Transmittance = float3(1,1,1);
 float3 Direct = float3(0,0,0);
 float3 Glare = float3(0,0,0);
@@ -35,7 +32,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 			else if (LightingPayload.ShadingModelID == 6)
 			{
 				//Foliage
-				if (LightingPayload.Opacity > 0.5f && !Lighting.isFoliage)
+				if (!Lighting.isFoliage)
 				{
 					Transmittance = float3(0,0,0);
 					break;
@@ -45,7 +42,7 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 			}
 			else if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 2)
 			{	
-				//Glass
+				//Volumetric Translucent
 				float3 dir = LightingRay.Direction;
 				float3 norm = LightingPayload.WorldNormal;
 				float3 color = LightingPayload.BaseColor;
@@ -58,7 +55,6 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World
 				
 				if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
 				{
-					//Volumetric Translucent
 					float entry = saturate(dot(norm, -dir));
 					float exit  = saturate(dot(-LightingPayload.WorldNormal, LightingRay.Direction));
 					

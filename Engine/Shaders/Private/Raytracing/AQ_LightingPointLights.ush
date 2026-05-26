@@ -18,7 +18,7 @@ for (uint b = 0; b < 10; ++b)
 		else if (LightingPayload.ShadingModelID == 6)
 		{
 			//Foliage
-			if (LightingPayload.Opacity > 0.5f && !Lighting.isFoliage)
+			if (!Lighting.isFoliage)
 			{
 				PointTransmittance = float3(0,0,0);
 				Valid = false; 

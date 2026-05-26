@@ -1,6 +1,6 @@
 // AQUARAY RAYTRACER STRUCTS
 
-struct RaySample
+struct StructRaySample
 {
 	float3	Color;                         //Albedo
 	float3	CustomColor;                   //Used as Reflection Color in Glass/Refraction Color in Water
@@ -18,7 +18,7 @@ struct RaySample
 	bool	BackFace;                      //True when a Backface is hit
 };
 
-struct lighting
+struct StructLighting
 {
 	//In
 	float  GlareSize;             //How big the Glare spot in on the surface, Larger numbers = smaller size
@@ -38,7 +38,7 @@ struct lighting
 	float3 Glare;
 };	
 
-struct DiffuseKernel
+struct StructDiffuseKernel
 {
 	float3 Offset;       //Stores which direction diffuse rays fire
 	float3 Color;        //Base Color of Sampled Surfaces
@@ -47,13 +47,13 @@ struct DiffuseKernel
 	float3 Normal;       //WorldNormal of Sampled Surfaces
 };
 
-struct stats
+struct StructStats
 {	
 	uint RaysPerPixel;
 	uint Steps;
 };
 	
-struct SurfaceHit
+struct StructSurfaceHit
 {
 	float3 StartPos;
 	float3 HitPos;
@@ -64,7 +64,7 @@ struct SurfaceHit
 	float3 RefractionVector;
 };
 
-struct Fog
+struct StructFog
 {	
 	float3 Color;
 	float Density;
@@ -73,14 +73,6 @@ struct Fog
 	float AmountBottom;
 	float AmountTop;
 	float Transmittance;
-};
-
-struct Water
-{
-	float Level; //World Space Water Height
-	float Opacity; //Zero Opacity Disables Water
-	float3 Color;
-	float3 Transmittance;
 };
 
 static const uint ErrorTex[11] = //32x11

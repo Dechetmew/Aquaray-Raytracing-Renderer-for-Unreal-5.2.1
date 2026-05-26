@@ -14,7 +14,7 @@
 float4 ColorInput1; //Ambient/Indirect Light Color
 float4 ColorInput2; //Fog Color
 float4 ColorInput3; //R=Fog Bottom Height, G=Fog Top Height, B=Fog Amount Top, A=Fog Amount Bottom
-float4 ColorInput4; //Water Color
+float4 ColorInput4;
 float4 ColorInput5; //Sun Light Color
 float4 ColorInput6;
 float4 ColorInput7;
@@ -23,8 +23,8 @@ float4 ColorInput9; //CameraPositionWS
 float FloatInput1; //Sky Visual Brightness
 float FloatInput2; //Fog Density
 float FloatInput3; //Fog Amount Bottom
-float FloatInput4; //Water Level
-float FloatInput5; //Water Opacity
+float FloatInput4;
+float FloatInput5;
 float FloatInput6; //Rendering Distance
 float FloatInput7; //Shadow Trace Distance
 float FloatInput8;
@@ -79,9 +79,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
 			
 			if (Fog.Density > BOTTOM_THRESHOLD) {Fog.Transmittance += GetFog(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
-			
-			float3 pootis = SurfaceHit.HitPos + CameraPositionWS; 
-			if (pootis.z < Water.Level  && !Water.Opacity == 0.0f) {Water.Transmittance *= WaterAbsorb(SurfaceHit.HitPos + CameraPositionWS, Water.Opacity, Water.Color, Water.Level, SurfaceHit.Distance);} //TODO bug: color made by this not matching color made by the water shading model
 		
 			if (Payload.ShadingModelID == 1 && Payload.BlendingMode == 0 && Payload.Roughness > 0.5f && Payload.Metallic < 0.5f)
 			{
@@ -139,7 +136,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	
 	//////////////////////////////////////
 	//Color Mixer
-	float3 CompositeColor = GetSkyRadiance(float3(0,0,1), 1.0f) * SkyVisualBrightness;
+	float3 CompositeColor = GetSkyRadiance(float3(0,0,1), 1.0f) * SkyVisualBrightness; //begin with sky, edge case
 	
 	//The Mixing is done Back to Front
     for (int i = SampleIndex; i >= 0; i--)
@@ -268,8 +265,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	{
 		CompositeColor = lerp(CompositeColor, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
 	}
-	
-	CompositeColor *= Water.Transmittance; //Apply Water
 
 	
 	//Debug Viewmodes

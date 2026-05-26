@@ -5,7 +5,7 @@ Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
 Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
 
-lighting Lighting = (lighting)0;
+Lighting = (StructLighting)0;
 Lighting.GlareSize = 0.999f; //TODO Parametrize
 Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
@@ -28,13 +28,13 @@ if (Payload.IsFrontFace())
 	VisibilityRay.TMin = 0.0;
 	VisibilityRay.TMax = MetersToCenti(500.0f);
 
-	ShadowPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
+	DetailPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
 	Stats.RaysPerPixel += 1;
 
-	if (ShadowPayload.IsHit())
+	if (DetailPayload.IsHit())
 	{
-		float3 HitPosWS = (VisibilityRay.Origin + VisibilityRay.Direction * ShadowPayload.HitT) + CameraPositionWS;
-		Raysample[SampleIndex].Color = ShadowPayload.BaseColor * WaterAbsorb(HitPosWS, Payload.Opacity, Payload.BaseColor, SurfaceHit.HitPos.z + CameraPositionWS.z, ShadowPayload.HitT);
+		float3 Absorption = 1.0f - Payload.BaseColor;
+		Raysample[SampleIndex].Color = DetailPayload.BaseColor * exp(-Absorption * DetailPayload.HitT);	
 	}
 	else
 	{

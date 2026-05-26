@@ -4,45 +4,46 @@ uint2 DispatchThreadId = DispatchRaysIndex().xy + View.ViewRectMin.xy;
 float2 UV = (float2(GetPixelCoord(DispatchThreadId, UpscaleFactor)) + 0.5) * View.BufferSizeAndInvSize.zw;
 
 // STRUCTS
-FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
-FMaterialClosestHitPayload ShadowPayload; //shadow test payload complex
 FMaterialClosestHitPayload Payload; //main payload
+FMaterialClosestHitPayload LightingPayload; //Used in Light Sampling
 FMaterialClosestHitPayload DetailPayload; //for misc stuff like the kernel, reflected light and glass reflection
+FMinimalPayload ShadowMinimalPayload; //shadow test payload simple
+
 FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camera Position and Direction
-FRayDesc VisibilityRay; //For Shadow Checks
+FRayDesc LightingRay; //Used in Light Sampling
 FRayDesc DetailRay; //for misc stuff like the kernel, reflected light and glass reflection
-FRayCone RayCone = (FRayCone)0; //Something Related to Conical Ray Tracing, Unused
+FRayDesc VisibilityRay; //For Shadow Checks
+
 FRTLightingData Light; //Point,Rect,Spot Lights in scene
 FCulledLightList LightsCulled; //LightData, but lights that cant affect this pixel are Culled
-DiffuseKernel Diffusekernel[10];
-SurfaceHit SurfaceHit; //struct with data for positional/directional math
-stats Stats = (stats)0;
-Fog Fog;
-Water Water;
+
+StructSurfaceHit SurfaceHit; //struct with data for positional/directional math
+StructStats Stats = (StructStats)0;
+StructFog Fog;
 
 // SCENE SETUP
 ///////////// Translate Inputs
-float SkyVisualBrightness = clamp(FloatInput1, 0, 99);
+float SkyVisualBrightness = clamp(FloatInput1, 0, 100);
 Fog.Density               = saturate(FloatInput2);
 Fog.AmountBottom          = saturate(FloatInput3);
-Water.Level               = FloatInput4;
-Water.Opacity             = saturate(FloatInput5);
-float RenderingDistance   = clamp(FloatInput6, 100, 9999);
-float ShadowTraceDist     = clamp(FloatInput7, 1, 9999);
+//                        = FloatInput4;
+//                        = saturate(FloatInput5);
+float RenderingDistance   = clamp(FloatInput6, 100, 10000);
+float ShadowTraceDist     = clamp(FloatInput7, 1, 10000);
 
-int  MAX_STEPS                        = clamp(IntInput1, 5, 10);
-bool DetailLightingMode = false;      if (IntInput2 > 0) {DetailLightingMode = true;}
-int  DebugMode                        = IntInput3;
+int  MAX_STEPS                       = clamp(IntInput1, 5, 10);
+bool DetailLightingMode = false;     if (IntInput2 > 0) {DetailLightingMode = true;}
+int  DebugMode                       = IntInput3;
 bool RDL = false;                    if (IntInput4 > 0) {RDL = true;}
 bool RDPL = false;                   if (IntInput5 > 0) {RDPL = true;}
-int  PrecisionLevel                  = IntInput6;
+int  PrecisionLevel                  = clamp(IntInput6, 0, 3);
 
 float3 IndirectLightColor = ColorInput1.rgb;
 Fog.Color                 = saturate(ColorInput2.rgb);
 Fog.BottomHeight          = ColorInput3.r;
 Fog.TopHeight             = ColorInput3.g;
 Fog.AmountTop             = saturate(ColorInput3.b);
-Water.Color               = saturate(ColorInput4.rgb);
+//                        = saturate(ColorInput4.rgb);
 float3 SunLightColor      = ColorInput5.rgb;
 float3 CameraPositionWS   = ColorInput9.xyz;
 //////////////
@@ -55,36 +56,22 @@ Ray.TMin = 0.01f;
 Ray.TMax = MetersToCenti(RenderingDistance);
 VisibilityRay.TMin = 0.01f;
 VisibilityRay.TMax = MetersToCenti(ShadowTraceDist);
+LightingRay.TMin = 0.01f;
 bool TraceTranslucent = true;
 
 //Struct Setup
+StructLighting Lighting;
 Fog.Transmittance = 0.0f;
-Water.Transmittance = float3(1,1,1);
-
-//Init the whole thing to zero
-for (int i = 0; i < 5; ++i)
-{
-	Diffusekernel[i] = (DiffuseKernel)0;
-}
-
-//https://academo.org/demos/3d-vector-plotter/ (this is handy)
-//assume x=1.0,y=1.0 is in top right corner, and z=1.0 is up
-//this is in TANGENT SPACE
-Diffusekernel[0].Offset = normalize(float3(0.0f, 1.0f, 1.0f)); //forward
-Diffusekernel[1].Offset = normalize(float3(1.0f, 0.0f, 1.0f)); //right
-Diffusekernel[2].Offset = normalize(float3(0.0f, -1.0f, 1.0f)); //backward
-Diffusekernel[3].Offset = normalize(float3(-1.0f, 0.0f, 1.0f)); //left
-Diffusekernel[4].Offset = normalize(float3(0.0f, 0.0f, 1.0f)); //up
 
 int SampleIndex = -1;
 
 //////////// Raysample Struct Init
-RaySample Raysample[10];
+StructRaySample Raysample[10];
 
 for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
 {
-	Raysample[i] = (RaySample)0;
-	Raysample[i].Roughness = 1.0;
+	Raysample[i] = (StructRaySample)0;
+	Raysample[i].Roughness = 1.0f;
 }
 
 //Precision

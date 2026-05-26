@@ -7,7 +7,7 @@ Raysample[SampleIndex].Opacity = Payload.Opacity;
 
 #include "AQ_AmbientOcclusion.ush" //TODO: Make AO toggleable here
 
-lighting Lighting = (lighting)0;
+Lighting = (StructLighting)0;
 Lighting.GlareSize = 1;
 Lighting.GlarePower = float3(0,0,0);
 Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);

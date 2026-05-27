@@ -2,11 +2,14 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Update 11.2
-- Removed Old check from Foliage Lighting<br/>
-- Changes to structs and inits<br/>
-- Water Material works Again, Improved Lighting<br/>
-- Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways<br/>
+## Update 12
+- Many Lighting Fixes and Improvements<br/>
+- Some bugs fixed and Structural Changes<br/>
+- Translucent Materials now can cast Colored Shadows<br/>
+- Removed Global Water Fog Effect<br/>
+- Now an Exclusion zone can be set around Point Lights using the "Source Radius" Value<br/>
+- World Light tracing now turns off when set to 0,0,0<br/>
+- Precision setting Removed<br/>
 
 Check changelog.txt for previous versions<br/>
 

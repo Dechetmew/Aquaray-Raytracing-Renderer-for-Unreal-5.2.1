@@ -34,8 +34,8 @@ int IntInput2; //Ambient Occlusion
 int IntInput3; //Debug View Modes
 int IntInput4; //Reflected Direct Lighting
 int IntInput5; //Reflected Direct Point Lighting
-int IntInput6; //Precision Level
-int IntInput7;
+int IntInput6;
+int IntInput7; 
 int IntInput8;
 int IntInput9;
 
@@ -50,7 +50,7 @@ RWTexture2D<float> RayHitDistanceOutput;
 
 RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 {
-	#include "AQ_MainInit.ush"
+	#include "AQ_InitBasic.ush"
 
 	float3 Debug = float3(0,0,0);
 
@@ -72,6 +72,8 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		//We Continue (or Terminate) Ray path based on what we hit
 		if (Payload.IsHit())
 		{
+			#include "AQ_InitComplex.ush"
+		
 			SurfaceHit.Distance = Payload.HitT;
 			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
 			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
@@ -258,8 +260,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 	}
 	
 	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
-	//CompositeColor = lerp(sky, CompositeColor, CompositeOpacity); //Apply sky to Incomplete pixels
-	//CompositeColor += sky * (-CompositeOpacityAbsorbtion + 1);
 	
 	if (Fog.Density > BOTTOM_THRESHOLD)
 	{

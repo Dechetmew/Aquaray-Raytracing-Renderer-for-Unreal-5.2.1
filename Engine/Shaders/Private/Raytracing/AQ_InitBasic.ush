@@ -1,0 +1,61 @@
+// Init Basic 
+// Only Initialize the Bare minimum for firing the First Raypath step. Then Initalize the rest on hit
+
+uint2 DispatchThreadId = DispatchRaysIndex().xy + View.ViewRectMin.xy;
+float2 UV = (float2(GetPixelCoord(DispatchThreadId, UpscaleFactor)) + 0.5) * View.BufferSizeAndInvSize.zw;
+
+// STRUCTS
+FMaterialClosestHitPayload Payload; //main payload
+FRayDesc Ray = CreatePrimaryRay(UV); //For Primary Rays. The Function Gets Camera Position and Direction
+StructSurfaceHit SurfaceHit; //struct with data for positional/directional math
+StructStats Stats = (StructStats)0;
+StructFog Fog;
+
+/////////////// SCENE SETUP //////////////
+
+///////////// Translate Inputs
+float SkyVisualBrightness = clamp(FloatInput1, 0, 100);
+Fog.Density               = saturate(FloatInput2);
+Fog.AmountBottom          = saturate(FloatInput3);
+//                        = FloatInput4;
+//                        = saturate(FloatInput5);
+float RenderingDistance   = clamp(FloatInput6, 100, 10000);
+float ShadowTraceDist     = clamp(FloatInput7, 1, 10000);
+
+int  MAX_STEPS                       = clamp(IntInput1, 5, 10);
+bool DetailLightingMode = false;     if (IntInput2 > 0) {DetailLightingMode = true;}
+int  DebugMode                       = IntInput3;
+bool RDL = false;                    if (IntInput4 > 0) {RDL = true;}
+bool RDPL = false;                   if (IntInput5 > 0) {RDPL = true;}
+
+float3 IndirectLightColor = ColorInput1.rgb;
+Fog.Color                 = saturate(ColorInput2.rgb);
+Fog.BottomHeight          = ColorInput3.r;
+Fog.TopHeight             = ColorInput3.g;
+Fog.AmountTop             = saturate(ColorInput3.b);
+//                        = saturate(ColorInput4.rgb);
+float3 SunLightColor      = ColorInput5.rgb;
+float3 CameraPositionWS   = ColorInput9.xyz;
+//////////////
+
+//For many Versions of this Shader, This comment was a complaint about having no way of knowing what View Values do and Dont exist... Well guess what is inside SceneView.h
+float3 SunDirection = View.AtmosphereLightDirection[0].xyz;
+
+//Initial Ray Setup
+Ray.TMin = 0.01f;
+Ray.TMax = MetersToCenti(RenderingDistance);
+bool TraceTranslucent = true;
+
+//Struct Setup
+Fog.Transmittance = 0.0f;
+int SampleIndex = -1;
+StructRaySample Raysample[10];
+for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
+{
+	Raysample[i] = (StructRaySample)0;
+	Raysample[i].Roughness = 1.0f;
+}
+
+//Precision
+float TOP_THRESHOLD    = 0.999;
+float BOTTOM_THRESHOLD = 0.001;

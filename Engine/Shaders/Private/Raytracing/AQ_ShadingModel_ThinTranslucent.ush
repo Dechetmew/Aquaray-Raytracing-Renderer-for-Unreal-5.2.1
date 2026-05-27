@@ -42,5 +42,4 @@ Raysample[SampleIndex].Glare = Lighting.Glare;
 
 //Prepare Next Ray
 Ray.Origin = SurfaceHit.HitPosTranslucency + SurfaceHit.RefractionVector; // 1cm thickness
-//Ray.Direction = SurfaceHit.RefractionVector;
 Ray.Direction = -Payload.WorldNormal;

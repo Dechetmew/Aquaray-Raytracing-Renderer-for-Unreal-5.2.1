@@ -5,7 +5,7 @@ Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
 Raysample[SampleIndex].Opacity = Payload.Opacity;
 
-#include "AQ_AmbientOcclusion.ush" //TODO: Make AO toggleable here
+#include "AQ_AmbientOcclusion.ush" //TODO: Make AO toggleable here?
 
 Lighting = (StructLighting)0;
 Lighting.GlareSize = 1;

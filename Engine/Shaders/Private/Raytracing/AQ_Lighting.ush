@@ -8,7 +8,7 @@ float3 reflection = reflect(Ray.Direction, Payload.WorldNormal); //for glare
 
 //1: World Light
 
-if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection)) //TODO World Light should be Toggleable
+if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection) && !all(Lighting.PrimaryLightColor < BOTTOM_THRESHOLD))
 {
 	LightingRay.Origin = Lighting.SamplingPos;
 	LightingRay.TMax = Lighting.TraceDistance;
@@ -191,7 +191,7 @@ for (uint a = 0; a < LightCount; ++a)
 		PointTransmittance = float3(1,1,1);
 		
 		LightingRay.Origin = Lighting.SamplingPos;
-		LightingRay.TMax = dist;
+		LightingRay.TMax = clamp(dist - Light.SourceRadius, 0, dist); //exclusion radius
 		LightingRay.Direction = LightDir;
 		
 		#include "AQ_LightingPointLights.ush"
@@ -247,7 +247,7 @@ for (uint a = 0; a < LightCount; ++a)
 		PointTransmittance = float3(1,1,1);
 		
 		LightingRay.Origin = Lighting.SamplingPos;
-		LightingRay.TMax = dist;
+		LightingRay.TMax = clamp(dist - Light.SourceRadius, 0, dist); //exclusion radius
 		LightingRay.Direction = LightDir;
 		
 		#include "AQ_LightingPointLights.ush"

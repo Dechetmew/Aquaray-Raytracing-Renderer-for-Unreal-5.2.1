@@ -166,3 +166,12 @@ v11.2
 - Changes to structs and inits
 - Water Material works Again, Improved Lighting
 - Decision is made to Remove Water fog as proper lighting for both Underwater and Reflection paths needs a full raypath juniction. Water will have a completely different implementation in the next phase anyways
+
+v12
+- Many Lighting Fixes and Improvements
+- Some bugs fixed and Structural Changes
+- Translucent Materials now can cast Colored Shadows
+- Removed Global Water Fog Effect
+- Now an Exclusion zone can be set around Point Lights using the "Source Radius" Value
+- World Light tracing now turns off when set to 0,0,0
+- Precision setting Removed

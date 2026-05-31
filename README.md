@@ -48,22 +48,10 @@ __Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible
 __Can you Update the Renderer to a Higher Unreal Version?:__ I dont have a reason yet, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
 
 ## __How to Install__
-1. Install Unreal Engine 5.2.1 Source  if you havent already<br/>
-Should be 110GB in size, make sure to install on a fast drive, or you will be waiting DAYS for it to compile
-https://www.unrealengine.com/en-US/ue-on-github<br/>
-https://dev.epicgames.com/documentation/en-us/unreal-engine/building-unreal-engine-from-source<br/>
-2. Compile an Umodified Build of 5.2.1 and test if its all working<br/>
-https://github.com/EpicGames/UnrealEngine/tree/5.2.1-release<br/>
-3. Replace/add files from this repository to your Engine Source<br/>
-NOTE: For RayTracingDebug.cpp you must find the if statement for enabling the PrimaryRays viewmode in your source, and Replace it with the version on this Repository. Similiar for DeferredShadingRenderer.h<br/>
-Other files should be only Replace/Add<br/>
-4. Recompile the Engine Again<br/>
-5. Download the AquaRay sample Project from this Repository and add it to your Unreal Projects folder<br/>
-6. If all stars Align, you should (hopefully) load into the project without any Explosions or Crashes<br/>
-Load into "emptytestmap" and Click the AquaRayController Actor in the Outliner<br/>
-In the Details Panel, Click "Apply Settings", and "Enable Aquaray"<br/>
-
-Also read the [Wiki](https://github.com/Dechetmew/Aquaray-Raytracer-for-Unreal-5.2.1/wiki) when you finish Installation<br/>
+Follow the wiki for Instalation<br/>
+[Install: Unreal Engine Source](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/2:-Install:-Unreal-Engine-Source)
+[Install: Fixing Existing Engine Issues](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/3:-Install:-Fixing-Existing-Engine-Issues)
+[Install: Installing AquaRay](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/4:-Install:-Installing-AquaRay)
 
 ## __Credits__
 The Sample project uses:<br/>

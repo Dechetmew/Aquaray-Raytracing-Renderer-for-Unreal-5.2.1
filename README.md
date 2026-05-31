@@ -48,7 +48,7 @@ __Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible
 __Can you Update the Renderer to a Higher Unreal Version?:__ I dont have a reason yet, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
 
 ## __How to Install__
-Follow the wiki for Instalation<br/>
+Follow the wiki for Installation<br/>
 [Install: Unreal Engine Source](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/2:-Install:-Unreal-Engine-Source)<br>
 [Install: Fixing Existing Engine Issues](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/3:-Install:-Fixing-Existing-Engine-Issues)<br>
 [Install: Installing AquaRay](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/4:-Install:-Installing-AquaRay)<br>

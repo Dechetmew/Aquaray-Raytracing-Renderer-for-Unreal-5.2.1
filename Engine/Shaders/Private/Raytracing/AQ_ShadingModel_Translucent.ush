@@ -58,7 +58,7 @@ if (DetailPayload.IsHit() && !DetailPayload.IsFrontFace())
 	Raysample[SampleIndex].Glare = Lighting.Glare;
 	
 	//Prepare Next Ray
-	Ray.Direction = refract(DetailRay.Direction, DetailPayload.WorldNormal, 1 / DetailPayload.Ior); //Like RefractionVector
+	Ray.Direction = refract(DetailRay.Direction, DetailPayload.WorldNormal, DetailPayload.Ior / 1); //Like RefractionVector
 	Ray.Origin = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + DetailRay.Direction * 0.001f; //Like HitPosTranslucency
 }
 else

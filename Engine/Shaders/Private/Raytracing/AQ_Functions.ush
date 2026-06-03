@@ -1,6 +1,7 @@
 //AQUARAY RAYTRACER FUNCTIONS
 
-#include "RayTracingDeferredShadingCommon.ush"
+//#include "RayTracingDeferredShadingCommon.ush"
+#include "/Engine/Private/RayTracing/RayTracingDeferredShadingCommon.ush"
 
 /////////////////////////////////////////////////// FUNCTIONS
 

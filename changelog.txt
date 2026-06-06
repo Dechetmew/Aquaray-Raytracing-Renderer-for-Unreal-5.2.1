@@ -31,7 +31,7 @@ v0.5.1
 v0.5.2
 -Fixed A Memory Leak + Some Mistakes
 
-v0.5.2
+v0.5.3
 (Patch Notes for this one were lost lol)
 
 v0.5.4

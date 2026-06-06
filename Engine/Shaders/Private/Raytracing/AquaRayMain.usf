@@ -2,13 +2,13 @@
 // https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1
 
 // INCLUDES
-#include "/Engine/Private/DeferredLightingCommon.ush"
-#include "/Engine/Private/RayTracing/RayTracingCommon.ush"
-#include "/Engine/Private/RayTracing/RayTracingDeferredShadingCommon.ush"
-#include "/Engine/Private/RayTracing/RayTracingLightingCommon.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_Structs.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_Functions.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_RaytracingCommon.ush"
+#include "../DeferredLightingCommon.ush"
+#include "RayTracingCommon.ush"
+#include "RayTracingDeferredShadingCommon.ush"
+#include "RayTracingLightingCommon.ush"
+#include "AQ_Structs.ush"
+#include "AQ_Functions.ush"
+#include "AQ_RaytracingCommon.ush"
 
 // SHADERS INPUTS/OUTPUTS
 float4 ColorInput1; //Ambient/Indirect Light Color
@@ -48,7 +48,7 @@ RWTexture2D<float> RayHitDistanceOutput;
 
 /////////////////////////////////////////////////// RAYGEN SHADER
 
-RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
+RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 {
 	#include "AQ_InitBasic.ush"
 

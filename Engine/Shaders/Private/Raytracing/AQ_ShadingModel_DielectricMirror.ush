@@ -7,6 +7,8 @@ Raysample[SampleIndex].Roughness = Payload.Roughness;
 Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
 Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
 
+SkyGlare = float3(0,0,0);
+
 Lighting = (StructLighting)0;
 Lighting.GlareSize = 0.997f; //TODO Parametrize
 Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize

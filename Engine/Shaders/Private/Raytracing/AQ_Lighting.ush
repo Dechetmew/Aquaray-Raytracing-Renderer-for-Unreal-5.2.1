@@ -4,7 +4,7 @@ float3 Direct = float3(0,0,0);
 float3 Glare = float3(0,0,0);
 float3 Spec = float3(0,0,0);
 
-float3 reflection = reflect(Ray.Direction, Payload.WorldNormal); //for glare
+float3 reflection = reflect(Ray.Direction, Payload.WorldNormal);
 
 //1: World Light
 
@@ -46,36 +46,33 @@ if (CanBeLit(Lighting.WorldNormal, Lighting.PrimaryLightDirection) && !all(Light
 				float3 dir = LightingRay.Direction;
 				float3 norm = LightingPayload.WorldNormal;
 				float3 color = LightingPayload.BaseColor;
-				float3 thinorigin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.01f;
-				LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
 				
 				LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
 				Stats.RaysPerPixel += 1;
 				
 				if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
 				{
-					float entry = saturate(dot(norm, -dir));
-					float exit  = saturate(dot(-LightingPayload.WorldNormal, LightingRay.Direction));
+					float idk = 5;
+					float entry = saturate(pow(dot(norm, -dir), idk));
+					float exit  = saturate(pow(dot(-LightingPayload.WorldNormal, LightingRay.Direction), idk));
 					
 					float3 a = 1.0f - color;
 					float3 thatheavyisaspy = exp(-a * LightingPayload.HitT);
 					
 					Transmittance *= entry * exit * thatheavyisaspy;
 					
-					LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior); //Like RefractionVector
 					LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
 				}
 			}
 			else if (LightingPayload.ShadingModelID == 11 && LightingPayload.BlendingMode == 2)
 			{
 				//Thin Translucent
-				float entry = saturate(dot(LightingPayload.WorldNormal, -LightingRay.Direction)) * 0.5 + 0.5;
+				float idk = 5;
+				float entry = saturate(pow(dot(LightingPayload.WorldNormal, -LightingRay.Direction), idk)) * 0.5 + 0.5;
 				Transmittance *= saturate(LightingPayload.BaseColor * LightingPayload.BaseColor) * entry;
 				
-				float3 hitpostrans = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
-				float3 refractvect = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
-				LightingRay.Origin = hitpostrans + refractvect; // 1cm thickness
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 			}
 			else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
 			{
@@ -109,7 +106,7 @@ else
 }
 
 //Sun Glare
-float dotvalue = dot(reflection, normalize(Lighting.PrimaryLightDirection));
+float dotvalue = dot(reflection, Lighting.PrimaryLightDirection);
 if (dotvalue > Lighting.GlareSize)
 {
 	Glare += Lighting.PrimaryLightColor * Lighting.GlarePower * Transmittance;

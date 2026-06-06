@@ -59,3 +59,5 @@ for (int i = 0; (i < MAX_STEPS) || (i < 10); ++i)
 //Precision
 float TOP_THRESHOLD    = 0.999;
 float BOTTOM_THRESHOLD = 0.001;
+
+float3 SkyGlare = float3(0,0,0);

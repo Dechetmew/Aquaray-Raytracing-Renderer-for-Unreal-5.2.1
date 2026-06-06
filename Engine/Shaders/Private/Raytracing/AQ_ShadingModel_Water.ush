@@ -34,7 +34,7 @@ if (Payload.IsFrontFace())
 	if (DetailPayload.IsHit())
 	{
 		float3 Absorption = 1.0f - Payload.BaseColor;
-		Raysample[SampleIndex].Color = DetailPayload.BaseColor * exp(-Absorption * DetailPayload.HitT);	
+		Raysample[SampleIndex].Color = DetailPayload.BaseColor * exp(-Absorption * DetailPayload.HitT) * GlassReflectanceInv(SurfaceHit.IncidentVector, Payload.WorldNormal, Payload.Ior);	
 	}
 	else
 	{
@@ -51,6 +51,5 @@ else
 {
 	// Hit from under
 	Raysample[SampleIndex].BackFace = true;
-	Ray.Direction = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
-	Ray.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f; //Like HitPosTranslucency
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
 }

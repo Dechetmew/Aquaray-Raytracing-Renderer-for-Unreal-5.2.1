@@ -35,23 +35,21 @@ for (uint b = 0; b < 10; ++b)
 			float3 color = LightingPayload.BaseColor;
 			float  distydist = LightingPayload.HitT;
 			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.01f;
-			LightingRay.Direction = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
 			
 			LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
 			Stats.RaysPerPixel += 1;
 			
 			if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
 			{
-				float entry = saturate(dot(norm, -dir));
-				float exit  = saturate(dot(-LightingPayload.WorldNormal, -normalize(LightingRay.Origin - Light.TranslatedLightPosition)));
+				float idk = 5;
+				float entry = saturate(pow(dot(norm, -dir), idk));
+				float exit  = saturate(pow(dot(-LightingPayload.WorldNormal, -normalize(LightingRay.Origin - Light.TranslatedLightPosition)), idk));
 				
 				float3 a = 1.0f - color;
 				float3 thatheavyisaspy = exp(-a * LightingPayload.HitT);
 				
 				PointTransmittance *= entry * exit * thatheavyisaspy;
-				//PointTransmittance *= thatheavyisaspy;
 				
-				LightingRay.Direction = normalize(Light.TranslatedLightPosition - LightingRay.Origin);
 				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
 				LightingRay.TMax = min(MetersToCenti(ShadowTraceDist), length(LightingRay.Origin - Light.TranslatedLightPosition));
 			}
@@ -59,12 +57,11 @@ for (uint b = 0; b < 10; ++b)
 		else if (LightingPayload.ShadingModelID == 11 && LightingPayload.BlendingMode == 2)
 		{
 			//Thin Translucent
-			float entry = saturate(dot(LightingPayload.WorldNormal, -LightingRay.Direction)) * 0.5 + 0.5;
+			float idk = 5;
+			float entry = saturate(pow(dot(LightingPayload.WorldNormal, -LightingRay.Direction), 0.5)) * 0.5 + 0.5;
 			PointTransmittance *= saturate(LightingPayload.BaseColor * LightingPayload.BaseColor) * entry;
 			
-			float3 hitpostrans = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
-			float3 refractvect = refract(LightingRay.Direction, LightingPayload.WorldNormal, 1 / LightingPayload.Ior);
-			LightingRay.Origin = hitpostrans + refractvect; // 1cm thickness
+			LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
 			LightingRay.TMax = dist - LightingPayload.HitT;
 		}
 		else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))

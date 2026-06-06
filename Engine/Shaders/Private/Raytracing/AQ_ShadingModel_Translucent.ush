@@ -2,27 +2,27 @@
 
 Raysample[SampleIndex].ShadingModel = 4;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
-Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
-Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
 
 ////////////////// Reflect Sky. Before you ask, Yes I tried coding a Full Raytraced Reflection. And yes, that went Horribly.
 VisibilityRay.Origin = SurfaceHit.HitPos;
 VisibilityRay.TMax = MetersToCenti(100.0f); //TODO reflection ray distance parametrize
 VisibilityRay.Direction = SurfaceHit.ReflectionVector;
+Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
+Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
+Raysample[SampleIndex].CustomColor.a = Payload.Ior;
 
 ShadowMinimalPayload = TraceVisRay(TLAS, VisibilityRay, TraceTranslucent);
 
 Stats.RaysPerPixel += 1;
 
+float3 sky = GetSkyRadianceSun(SurfaceHit.ReflectionVector, 0, SunDirection) * SkyVisualBrightness * GlassReflectance(Ray.Direction, Payload.WorldNormal, 1.45);
 if (ShadowMinimalPayload.IsHit())
 {
-	// No Reflection
-	Raysample[SampleIndex].CustomColor = float3(0.0f, 0.0f, 0.0f);
+	Raysample[SampleIndex].CustomColor.rgb = sky * 0.7;
 }
 else
 {
-	// Reflection
-	Raysample[SampleIndex].CustomColor = GetSkyRadianceSun(SurfaceHit.ReflectionVector, 0, SunDirection) * SkyVisualBrightness;
+	Raysample[SampleIndex].CustomColor.rgb = sky;
 }
 //////////////////
 
@@ -39,11 +39,7 @@ DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
 Stats.RaysPerPixel += 1;
 	
 if (DetailPayload.IsHit() && !DetailPayload.IsFrontFace())
-{
-	//Volumetric Translucent
-	float3 Absorption = 1.0f - Payload.BaseColor;
-	Raysample[SampleIndex].Color = exp(-Absorption * DetailPayload.HitT); //For large Glass stuff, Use very low Opacity
-	
+{	
 	Lighting = (StructLighting)0;
 	Lighting.GlareSize = 0.997f;
 	Lighting.GlarePower = float3(300.0f,300.0f,300.0f);
@@ -58,15 +54,20 @@ if (DetailPayload.IsHit() && !DetailPayload.IsFrontFace())
 	Raysample[SampleIndex].Glare = Lighting.Glare;
 	
 	//Prepare Next Ray
-	Ray.Direction = refract(DetailRay.Direction, DetailPayload.WorldNormal, 1 / DetailPayload.Ior); //Like RefractionVector
+	Ray.Direction = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior); 
 	Ray.Origin = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + DetailRay.Direction * 0.001f; //Like HitPosTranslucency
+	
+	float3 Absorption = 1.0f - Payload.BaseColor;
+	Raysample[SampleIndex].Color = exp(-Absorption * DetailPayload.HitT) * GlassReflectanceInv(SurfaceHit.IncidentVector, Payload.WorldNormal, Payload.Ior); //For large Glass stuff, Use very low Opacity
+	SkyGlare *= Raysample[SampleIndex].Color;
 }
 else
 {
 	float3 Absorption = 1.0f - Payload.BaseColor;
 	Raysample[SampleIndex].Color = exp(-Absorption * SurfaceHit.Distance); //For large Glass stuff, Use very low Opacity
+	SkyGlare *= Raysample[SampleIndex].Color;
 
 	//Prepare Next Ray
-	Ray.Direction = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior); //Like RefractionVector
+	Ray.Direction = SurfaceHit.RefractionVector;
 	Ray.Origin = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.001f; //Like HitPosTranslucency
 }

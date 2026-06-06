@@ -2,15 +2,15 @@
 // https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1
 
 // INCLUDES
-#include "../DeferredLightingCommon.ush"
-#include "RayTracingCommon.ush"
-#include "RayTracingDeferredShadingCommon.ush"
-#include "RayTracingLightingCommon.ush"
-#include "AQ_Structs.ush"
-#include "AQ_Functions.ush"
-#include "AQ_RaytracingCommon.ush"
+#include "/Engine/Private/DeferredLightingCommon.ush"
+#include "/Engine/Private/RayTracing/RayTracingCommon.ush"
+#include "/Engine/Private/RayTracing/RayTracingDeferredShadingCommon.ush"
+#include "/Engine/Private/RayTracing/RayTracingLightingCommon.ush"
+#include "/Engine/Private/RayTracing/AquaRay/AQ_Structs.ush"
+#include "/Engine/Private/RayTracing/AquaRay/AQ_Functions.ush"
+#include "/Engine/Private/RayTracing/AquaRay/AQ_RaytracingCommon.ush"
 
-// SHADERS INPUTS/OUTPUTS - Manage in RayTracingPrimaryRays.cpp
+// SHADERS INPUTS/OUTPUTS
 float4 ColorInput1; //Ambient/Indirect Light Color
 float4 ColorInput2; //Fog Color
 float4 ColorInput3; //R=Fog Bottom Height, G=Fog Top Height, B=Fog Amount Top, A=Fog Amount Bottom
@@ -48,7 +48,7 @@ RWTexture2D<float> RayHitDistanceOutput;
 
 /////////////////////////////////////////////////// RAYGEN SHADER
 
-RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
+RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 {
 	#include "AQ_InitBasic.ush"
 
@@ -61,7 +61,7 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		
 		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
 		
-		if (i == 0) {Debug = Payload.WorldNormal;}
+		//if (i == 0) {Debug = Payload.WorldNormal;}
 			
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
@@ -182,24 +182,17 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 		}
 		else if (Raysample[i].ShadingModel == 4) //Volumetric/Thin Glass
 		{	
-			CompositeColor = CompositeMaterial(
-				float3(1,1,1),
-				float3(0.04, 0.04, 0.04),
-				0.0,
-				1.0,
-				Raysample[i].WorldNormal,
-				Raysample[i].IncidentVector,
-				Raysample[i].CustomColor,
-				float3(0,0,0),
-				CompositeColor * Raysample[i].Color
-			) + Raysample[i].Radiance + Raysample[i].Glare;
+			float refravalue = dot(refract(Raysample[i].IncidentVector, Raysample[i].WorldNormal, 1 / Raysample[i].CustomColor.a), SunDirection);
+			if (refravalue > 0.9998f){Raysample[i].Glare += SkyGlare * Raysample[i].Color * float3(300.0f,300.0f,300.0f);} //todo parametrize
+		
+			CompositeColor = (CompositeColor * Raysample[i].Color) + Raysample[i].CustomColor + Raysample[i].Radiance + Raysample[i].Glare;
 		}
 		else if (Raysample[i].ShadingModel == 7) //Foliage
 		{
 			CompositeColor = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
 		}
 		else if (Raysample[i].ShadingModel == 8) //Water
-		{
+		{	
 			if (!Raysample[i].BackFace)
 			{
 				CompositeColor = CompositeMaterial(
@@ -249,7 +242,6 @@ RAY_TRACING_ENTRY_RAYGEN(RayTracingPrimaryRaysRGS)
 			{
 				//Transparent
 				float3 idk = Raysample[i].Color * Raysample[i].LightColor + Raysample[i].Radiance;
-				
 				CompositeColor = lerp(CompositeColor, idk, Raysample[i].Opacity);
 			}
 		}

@@ -4,6 +4,8 @@ Raysample[SampleIndex].ShadingModel = 1;
 Raysample[SampleIndex].Color = Payload.BaseColor;
 Raysample[SampleIndex].Radiance = Payload.Radiance;
 
+SkyGlare = float3(0,0,0);
+
 #include "AQ_AmbientOcclusion.ush"
 
 Lighting = (StructLighting)0;

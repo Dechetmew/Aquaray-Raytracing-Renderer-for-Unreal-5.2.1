@@ -3,7 +3,7 @@
 struct StructRaySample
 {
 	float3	Color;                         //Albedo
-	float3	CustomColor;                   //Used as Reflection Color in Glass/Refraction Color in Water
+	float4	CustomColor;                   //Used as Reflection Color in Glass/Refraction Color in Water
 	float3  Radiance;                      //Light Emmited by the surface
 	float	Roughness;                     //Used for some Color Mixing
 	float	Opacity;					   //Opacity

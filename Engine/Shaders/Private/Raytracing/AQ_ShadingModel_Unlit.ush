@@ -8,6 +8,8 @@ if ((Payload.Opacity > TOP_THRESHOLD) || (Payload.BlendingMode == 0))
 	Raysample[SampleIndex].Color = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = 1;
 	
+	SkyGlare = float3(0,0,0);
+	
 	break;
 }
 else
@@ -16,6 +18,8 @@ else
 	//Loop Again
 	Raysample[SampleIndex].Color = Payload.Radiance;
 	Raysample[SampleIndex].Opacity = Payload.Opacity;
+	
+	SkyGlare = lerp(SkyGlare, float3(0,0,0), Payload.Opacity);
 	
 	//Advance Ray
 	Ray.Direction = SurfaceHit.IncidentVector;

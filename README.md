@@ -2,14 +2,12 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Update 12
-- Many Lighting Fixes and Improvements<br/>
-- Some bugs fixed and Structural Changes<br/>
-- Translucent Materials now can cast Colored Shadows<br/>
-- Removed Global Water Fog Effect<br/>
-- Now an Exclusion zone can be set around Point Lights using the "Source Radius" Value<br/>
-- World Light tracing now turns off when set to 0,0,0<br/>
-- Precision setting Removed<br/>
+## Update 12.1
+- Simplified Translucent Light Sampling<br>
+- Improved Fake Translucency Caustics<br>
+- Improved Translucency Lighting<br>
+- Added Refractive Glare for Translucency<br>
+- Removed Normal Map Support for refraction (Cannot be implemented in this setup)<br>
 
 Check changelog.txt for previous versions<br/>
 

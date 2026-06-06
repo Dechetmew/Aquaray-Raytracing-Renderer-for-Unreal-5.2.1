@@ -183,5 +183,5 @@ v12.1
 - Simplified Translucent Light Sampling
 - Improved Fake Translucency Caustics
 - Improved Translucency Lighting
-- Added Refractive Glare for Translucency
+- Added Refractive Sun Glare for Translucency
 - Removed Normal Map Support for Refraction in Thin Translucent (Cannot be implemented in this setup)

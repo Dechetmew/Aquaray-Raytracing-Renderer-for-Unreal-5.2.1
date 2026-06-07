@@ -2,12 +2,9 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Update 12.1
-- Simplified Translucent Light Sampling<br>
-- Improved Fake Translucency Caustics<br>
-- Improved Translucency Lighting<br>
-- Added Refractive Sun Glare for Translucency<br>
-- Removed Normal Map Support for Refraction in Thin Translucent (Cannot be implemented in this setup)<br>
+## Update 13
+- The Renderer is now a Separate Raytracing Pass<br>
+- C++ Cleanups and Improvements<br>
 
 Check changelog.txt for previous versions<br/>
 

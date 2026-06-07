@@ -1,0 +1,4 @@
+//Shading Model: Invalid
+
+Raysample[SampleIndex].ShadingModel = 0;
+break;

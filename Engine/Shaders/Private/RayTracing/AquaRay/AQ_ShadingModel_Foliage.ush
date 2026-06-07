@@ -1,0 +1,27 @@
+//Shading Model: Foliage
+
+Raysample[SampleIndex].ShadingModel = 7;
+Raysample[SampleIndex].Color = Payload.BaseColor;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
+Raysample[SampleIndex].Opacity = 1;
+
+SkyGlare = float3(0,0,0);
+
+Lighting = (StructLighting)0;
+Lighting.GlareSize = 1;
+Lighting.GlarePower = float3(0,0,0);
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
+Lighting.WorldLightVector = WorldLightVector;
+Lighting.WorldLightColor = WorldLightColor;
+Lighting.AmbientLight = IndirectLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+Lighting.SpecularAmount = 0;
+Lighting.isFoliage = true;
+
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].LightColor = Lighting.Light;
+
+break;

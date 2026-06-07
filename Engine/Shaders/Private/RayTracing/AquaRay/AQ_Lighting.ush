@@ -1,0 +1,281 @@
+
+float3 Transmittance = float3(1,1,1);
+float3 Direct = float3(0,0,0);
+float3 Glare = float3(0,0,0);
+float3 Spec = float3(0,0,0);
+
+float3 reflection = reflect(Ray.Direction, Payload.WorldNormal);
+
+//1: World Light
+
+if (CanBeLit(Lighting.WorldNormal, Lighting.WorldLightVector) && !all(Lighting.WorldLightColor < BOTTOM_THRESHOLD))
+{
+	LightingRay.Origin = Lighting.SamplingPos;
+	LightingRay.TMax = Lighting.TraceDistance;
+	LightingRay.Direction = Lighting.WorldLightVector;
+
+	for (int i = 0; i < 10; ++i)
+	{
+		if (i == 9) {Transmittance = float3(0,0,0); break;}
+	
+		LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
+		Stats.RaysPerPixel += 1;
+
+		if (LightingPayload.IsHit())
+		{
+			if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 0)
+			{
+				//Opaque
+				Transmittance = float3(0,0,0);
+				break;
+			}
+			else if (LightingPayload.ShadingModelID == 6)
+			{
+				//Foliage
+				if (!Lighting.isFoliage)
+				{
+					Transmittance = float3(0,0,0);
+					break;
+				}
+				
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+			}
+			else if (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 2)
+			{	
+				//Volumetric Translucent
+				float3 dir = LightingRay.Direction;
+				float3 norm = LightingPayload.WorldNormal;
+				float3 color = LightingPayload.BaseColor;
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.01f;
+				
+				LightingPayload = TraceMatRay(TLAS, LightingRay, TraceTranslucent);
+				Stats.RaysPerPixel += 1;
+				
+				if (LightingPayload.IsHit() && !LightingPayload.IsFrontFace())
+				{
+					float idk = 5;
+					float entry = saturate(pow(dot(norm, -dir), idk));
+					float exit  = saturate(pow(dot(-LightingPayload.WorldNormal, LightingRay.Direction), idk));
+					
+					float3 a = 1.0f - color;
+					float3 thatheavyisaspy = exp(-a * LightingPayload.HitT);
+					
+					Transmittance *= entry * exit * thatheavyisaspy;
+					
+					LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.001f; //Like HitPosTranslucency
+				}
+			}
+			else if (LightingPayload.ShadingModelID == 11 && LightingPayload.BlendingMode == 2)
+			{
+				//Thin Translucent
+				float idk = 5;
+				float entry = saturate(pow(dot(LightingPayload.WorldNormal, -LightingRay.Direction), idk)) * 0.5 + 0.5;
+				Transmittance *= saturate(LightingPayload.BaseColor * LightingPayload.BaseColor) * entry;
+				
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+			}
+			else if ((LightingPayload.ShadingModelID == 0 && LightingPayload.BlendingMode == 2) || (LightingPayload.ShadingModelID == 1 && LightingPayload.BlendingMode == 3))
+			{
+				//Unlit Transparent or Lit Transparent
+				if (LightingPayload.Opacity > TOP_THRESHOLD) {Transmittance = float3(0,0,0); break;}
+				Transmittance *= -LightingPayload.Opacity + 1;
+				
+				LightingRay.Origin = LightingRay.Origin + LightingRay.Direction * LightingPayload.HitT + LightingRay.Direction * 0.005f;
+			}
+			else
+			{
+				//Unspecified (Force Shadow)
+				Transmittance = float3(0,0,0);
+				break;
+			}
+			
+			if (all(Transmittance < BOTTOM_THRESHOLD)) {Transmittance = float3(0,0,0); break;}
+		}
+		else
+		{
+			break;
+		}
+	}
+	
+	Spec = Specular(Lighting.WorldLightVector, Lighting.WorldLightColor, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount) * Transmittance;
+	Transmittance *= Lighting.WorldLightColor * Lambert(Lighting.WorldLightVector, Lighting.WorldNormal);
+}
+else
+{
+	Transmittance = float3(0,0,0);
+}
+
+//Sun Glare
+float dotvalue = dot(reflection, Lighting.WorldLightVector);
+if (dotvalue > Lighting.GlareSize)
+{
+	Glare += Lighting.WorldLightColor * Lighting.GlarePower * Transmittance;
+}
+
+//2: Point Lights
+
+uint LightCount;
+float3 AccumulatedPointLightColor = float3(0,0,0);
+float3 PointTransmittance = float3(1,1,1);
+float3 ReflectedDirectLight = float3(0,0,0); // Dependency for ReflectedDirectLighting.ush
+float3 ReflectedDirectPointLight = float3(0,0,0); // Dependency for ReflectedDirectPointLighting.ush
+
+FCulledLightList LightsCulled = FCulledLightList::Create(Lighting.SamplingPos);
+LightCount = LightsCulled.NumLights();
+LightCount = clamp(LightCount, 0, 5 + 2); //5, Excluding Primary and Sky Light
+
+for (uint a = 0; a < LightCount; ++a)
+{
+	uint Lit = 0;
+	uint LightIndex = LightsCulled.GetLightIndex(a, Lit);
+	if (Lit == 0)
+	{
+		continue;
+	}
+
+	FRTLightingData Light = GetRayTracingLightData(LightIndex);
+	
+	if (Light.Type == LIGHT_TYPE_SPOT)
+	{
+		//Spot Light (Cone)
+		float3 L = Light.TranslatedLightPosition - Lighting.SamplingPos; //direction and distance
+		float dist = length(L); //only distance
+		float3 LightDir = normalize(L); //only direction, from surf to lightsource
+		float radius = 1.0 / Light.InvRadius;
+		
+		///////////////// Validation
+		if (!CanBeLit(Lighting.WorldNormal, LightDir))
+		{
+			//Not even Facing the Light
+			continue;
+		}
+		
+		if (Light.InvRadius <= 0.0)
+		{
+			//Invalid Radius
+			continue;
+		}
+		
+		if (RDPL) 
+		{
+			#include "AQ_ReflectedDirectPointLighting.ush"
+		}
+
+		if (dist > radius) 
+		{
+			//Too far
+			continue;
+		}
+
+		float cosAngle = dot(normalize(Light.Direction), LightDir);
+		float innerCos = max(Light.SpotAngles.x, Light.SpotAngles.y);
+		float outerCos = min(Light.SpotAngles.x, Light.SpotAngles.y) - 0.9 * (saturate((1.0 - min(Light.SpotAngles.x, Light.SpotAngles.y))));
+		if (cosAngle < outerCos)
+		{
+			//Not Inside the Cone
+			continue;
+		}
+
+		float spotAtten = 1;
+		if (spotAtten <= 0.0)
+		{
+			//Invalid spotAtten
+			continue;
+		}
+		//////////////////////////
+		
+		bool Valid = true;
+		PointTransmittance = float3(1,1,1);
+		
+		LightingRay.Origin = Lighting.SamplingPos;
+		LightingRay.TMax = clamp(dist - Light.SourceRadius, 0, dist); //exclusion radius
+		LightingRay.Direction = LightDir;
+		
+		#include "AQ_LightingPointLights.ush"
+		
+		if (!Valid) {continue;}
+		
+		float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.000017);
+		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
+		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
+		
+		//Point Light Glare
+		float dotvalue = dot(reflection, LightDir);
+		if (dotvalue > Lighting.GlareSize)
+		{
+			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
+			Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
+		}
+	}
+	else if (Light.Type == LIGHT_TYPE_POINT)
+	{
+		//Point Light (Sphere)
+		float3 L = Light.TranslatedLightPosition - Lighting.SamplingPos; //direction with distance
+		float dist = length(L); //only distance
+		float3 LightDir = normalize(L); //only direction, from surf to lightsource
+		float radius = 1.0 / Light.InvRadius;
+		
+		///////////////// Validation
+		if (radius <= 0.0)
+		{
+			//Invalid Radius
+			continue;
+		}
+		
+		if (RDPL) 
+		{
+			#include "AQ_ReflectedDirectPointLighting.ush"
+		}
+		
+		if (dist > radius)
+		{
+			// Too far away
+			continue;
+		}
+		
+		if (!CanBeLit(Lighting.WorldNormal, LightDir))
+		{
+			//Not even Facing the Light
+			continue;
+		}
+		//////////////////////////
+		
+		bool Valid = true;
+		PointTransmittance = float3(1,1,1);
+		
+		LightingRay.Origin = Lighting.SamplingPos;
+		LightingRay.TMax = clamp(dist - Light.SourceRadius, 0, dist); //exclusion radius
+		LightingRay.Direction = LightDir;
+		
+		#include "AQ_LightingPointLights.ush"
+		
+		if (!Valid) {continue;}
+
+		float3 lightAmount = pow(saturate(1.0 - dist * Light.InvRadius), 2.0) * saturate(Light.LightColor * 0.000017);
+		AccumulatedPointLightColor += lightAmount * Lambert(LightDir, Lighting.WorldNormal) * PointTransmittance;
+		Spec += Specular(LightDir, (lightAmount * 5.0) * PointTransmittance, Lighting.WorldNormal, Lighting.IncidentVector, Lighting.SpecularAmount);
+		
+		//Point Light Glare
+		float dotvalue = dot(reflection, LightDir);
+		if (dotvalue > Lighting.GlareSize)
+		{
+			float Dist = saturate(SurfaceHit.Distance * 0.00075) * -1 + 1;
+			Glare += Light.LightColor * Lighting.GlarePower * Payload.BaseColor * Dist * PointTransmittance * lightAmount;
+		}
+	}
+	else
+	{
+		//10 Refined Metal for anybody who figures out those stupid rect lights. I give up
+		continue;
+	}
+}
+
+//Reflected Direct Light
+if (RDL) 
+{
+	#include "AQ_ReflectedDirectLighting.ush"
+}
+
+// Output the accumulated color
+Lighting.Light = Transmittance + AccumulatedPointLightColor + Lighting.AmbientLight + Spec + Glare + ReflectedDirectLight + ReflectedDirectPointLight;
+Lighting.Glare = Glare;

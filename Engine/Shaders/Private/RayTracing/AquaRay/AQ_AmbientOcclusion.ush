@@ -1,0 +1,93 @@
+float AmbientOcclusion = 1;
+
+if (DetailLightingMode)
+{
+	// SHORT RANGE AO
+	//It Traces Rays in a 5-way Pattern on Every Valid Surface Pixel
+	//for Detail lighting like Ambient Occlusion
+	//PS: I really think this sucks, I hope I will end up replacing this mess with proper Indirect Lighting in the future
+
+	StructDiffuseKernel Diffusekernel[10];
+
+	//Init
+	for (int i = 0; i < 5; ++i)
+	{
+		Diffusekernel[i] = (StructDiffuseKernel)0;
+	}
+
+	//https://academo.org/demos/3d-vector-plotter/ (this is handy)
+	//assume x=1.0,y=1.0 is in top right corner, and z=1.0 is up
+	//this is in TANGENT SPACE
+	Diffusekernel[0].Offset = normalize(float3(0.0f, 1.0f, 1.0f)); //forward
+	Diffusekernel[1].Offset = normalize(float3(1.0f, 0.0f, 1.0f)); //right
+	Diffusekernel[2].Offset = normalize(float3(0.0f, -1.0f, 1.0f)); //backward
+	Diffusekernel[3].Offset = normalize(float3(-1.0f, 0.0f, 1.0f)); //left
+	Diffusekernel[4].Offset = normalize(float3(0.0f, 0.0f, 1.0f)); //up
+
+	float3 IndirectEmissive = float3(0,0,0);
+
+	//Jitter Up Vectors a little
+	for (int i = 0; i < 5; ++i)
+	{
+		float3 randVec = normalize(GeometryRandVec3(SurfaceHit.HitPos, Payload.HitT) * 2.0f - 1.0f);
+		Diffusekernel[i].Offset = normalize(lerp(Diffusekernel[i].Offset, randVec, 0.1f));
+	}
+
+	float RandomAngle = GeometryRand(SurfaceHit.HitPos, Payload.HitT) * 2.0f * 3.14159f;
+	float cosA = cos(RandomAngle);
+	float sinA = sin(RandomAngle);
+
+	// Spin in local tangent space (XY plane)
+	float3x3 spinMatrix = float3x3(float3(cosA, -sinA, 0.0f), float3(sinA,  cosA, 0.0f), float3(0.0f,   0.0f, 1.0f));
+
+	// Build the tangent basis from surface normal
+	float3x3 tangentBasis = BuildTangentBasis(Payload.WorldNormal);
+
+	// Rotate and project each local vector onto the world-space surface
+	for (int i = 0; i < 5; ++i)
+	{
+		float3 spun = mul(Diffusekernel[i].Offset, spinMatrix);  // Spin in tangent space
+		Diffusekernel[i].Offset = mul(spun, tangentBasis);       // Project to world space
+	}
+
+	DetailRay.TMin = 0;
+	DetailRay.TMax = MetersToCenti(4.0f);
+	DetailRay.Origin = SurfaceHit.HitPos;
+
+	//Detail Sampling TraceRay Loop
+	for (int i = 0; i < 5; i++)
+	{			
+		DetailRay.Direction = normalize(Payload.WorldNormal + Diffusekernel[i].Offset);
+
+		DetailPayload = TraceMatRay(TLAS, DetailRay, TraceTranslucent);
+		
+		Stats.RaysPerPixel += 1;
+		
+		if(DetailPayload.IsHit() && DetailPayload.ShadingModelID != 6)
+		{
+			//We hit A Surface
+			Diffusekernel[i].Position = DetailRay.Origin + DetailRay.Direction * DetailPayload.HitT + Payload.WorldNormal * 0.001f;
+			Diffusekernel[i].Normal = DetailPayload.WorldNormal;
+			Diffusekernel[i].Distance = lerp(1.0f, saturate(DetailPayload.HitT / 100), DetailPayload.Opacity);
+		}
+		else
+		{
+			//We hit nothing
+			Diffusekernel[i].Distance = 1.0f;
+		}
+
+	}
+
+	//End Detail loop
+
+	//used for averaging
+	float3 accumulatedColor = float3(0.0f, 0.0f, 0.0f);
+	float accumulatedFloat = 0.0f;
+
+	for (int i = 0; i < 5; ++i)
+	{
+		accumulatedFloat += Diffusekernel[i].Distance;
+	}
+	AmbientOcclusion = accumulatedFloat / 5.0f;
+	AmbientOcclusion = saturate(AmbientOcclusion * 0.8f + 0.2f);
+}

@@ -1,0 +1,55 @@
+// Shading Model: Water
+
+Raysample[SampleIndex].ShadingModel = 8;
+Raysample[SampleIndex].Radiance = Payload.Radiance;
+Raysample[SampleIndex].IncidentVector = SurfaceHit.IncidentVector;
+Raysample[SampleIndex].WorldNormal = Payload.WorldNormal;
+
+Lighting = (StructLighting)0;
+Lighting.GlareSize = 0.999f; //TODO Parametrize
+Lighting.GlarePower = float3(300.0f,300.0f,300.0f); //TODO Parametrize
+Lighting.TraceDistance = MetersToCenti(ShadowTraceDist);
+Lighting.WorldLightVector = WorldLightVector;
+Lighting.WorldLightColor = WorldLightColor;
+Lighting.AmbientLight = IndirectLightColor;
+Lighting.WorldNormal = Payload.WorldNormal;
+Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.IncidentVector = SurfaceHit.IncidentVector;
+
+#include "AQ_Lighting.ush"
+
+Raysample[SampleIndex].Glare = Lighting.Glare;
+
+if (Payload.IsFrontFace())
+{
+	////////////////// Just like the Reflection thing in Tranlucency, but Inverse. It Retrieves the color via Refraction path
+	VisibilityRay.Origin = SurfaceHit.HitPosTranslucency;
+	VisibilityRay.Direction = SurfaceHit.RefractionVector;
+	VisibilityRay.TMin = 0.0;
+	VisibilityRay.TMax = MetersToCenti(500.0f);
+
+	DetailPayload = TraceMatRay(TLAS, VisibilityRay, TraceTranslucent);
+	Stats.RaysPerPixel += 1;
+
+	if (DetailPayload.IsHit())
+	{
+		float3 Absorption = 1.0f - Payload.BaseColor;
+		Raysample[SampleIndex].Color = DetailPayload.BaseColor * exp(-Absorption * DetailPayload.HitT) * GlassReflectanceInv(SurfaceHit.IncidentVector, Payload.WorldNormal, Payload.Ior);	
+	}
+	else
+	{
+		// You get... Nothing!
+		Raysample[SampleIndex].Color = float3(0,0,0);
+	}
+	//////////////
+
+	// Advance Ray
+	Ray.Direction = SurfaceHit.ReflectionVector;
+	Ray.Origin = SurfaceHit.HitPos;
+}
+else
+{
+	// Hit from under
+	Raysample[SampleIndex].BackFace = true;
+	Ray.Origin = SurfaceHit.HitPosTranslucency;
+}

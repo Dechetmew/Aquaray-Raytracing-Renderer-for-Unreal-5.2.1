@@ -185,3 +185,7 @@ v12.1
 - Improved Translucency Lighting
 - Added Refractive Sun Glare for Translucency
 - Removed Normal Map Support for Refraction in Thin Translucent (Cannot be implemented in this setup)
+
+v13
+- The Renderer is now a Separate Raytracing Pass
+- C++ Cleanups and Improvements

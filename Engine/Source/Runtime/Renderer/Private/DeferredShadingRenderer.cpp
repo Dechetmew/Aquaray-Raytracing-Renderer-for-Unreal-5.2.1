@@ -1,7 +1,7 @@
 //Refer to the wiki for Installation
 
 //Modify If-Else block at line 1807
-auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
+static const auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
 if (Var->GetValueOnRenderThread())
 {
 	if (!IsForwardShadingEnabled(ShaderPlatform))
@@ -16,8 +16,8 @@ else if (bIsPathTracing)
 {...
 
 //Modify If-Else block inside if (IsRayTracingEnabled())
-auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
-if (Var->GetValueOnRenderThread()) //ADM8 AquaRay Call
+static const auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
+if (Var->GetValueOnRenderThread())
 {
 	for (const FViewInfo& View : Views)
 	{
@@ -37,7 +37,7 @@ bool AnyRayTracingPassEnabled(const FScene* Scene, const FViewInfo& View)
 		return false;
 	}
 
-	auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
+	static const auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
 
 	return ShouldRenderRayTracingAmbientOcclusion(View)
 		|| ShouldRenderRayTracingReflections(View)
@@ -58,7 +58,8 @@ bool HasRayTracedOverlay(const FSceneViewFamily& ViewFamily)
 {
 	// Return true if a full screen ray tracing pass will be displayed on top of the raster pass
 	// This can be used to skip certain calculations
-	auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
+
+	static const auto* Var = IConsoleManager::Get().FindTConsoleVariableDataInt(TEXT("r.RayTracing.AquaRay"));
 
 	return
 		ViewFamily.EngineShowFlags.PathTracing ||

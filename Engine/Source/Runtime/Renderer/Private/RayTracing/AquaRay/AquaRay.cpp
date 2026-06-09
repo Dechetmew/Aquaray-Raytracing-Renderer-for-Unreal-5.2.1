@@ -117,7 +117,9 @@ void FDeferredShadingSceneRenderer::AquaRayRender(
 		};
 
 	// Hardcoded Directory - Your MPC MUST be at that Location with said name
-	UMaterialParameterCollection* Collection = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/AquaRay/AquarayMPC"));
+	static UMaterialParameterCollection* CachedCollection = nullptr;
+	if (!CachedCollection && !GIsGarbageCollecting && !IsGarbageCollecting()) {CachedCollection = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/AquaRay/AquarayMPC"));}
+	UMaterialParameterCollection* Collection = CachedCollection;
 	UWorld* WorldContextObject = (View.Family && View.Family->Scene) ? View.Family->Scene->GetWorld() : nullptr;
 
 	bool IsSafe = true;

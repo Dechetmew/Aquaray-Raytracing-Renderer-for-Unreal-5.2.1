@@ -6,9 +6,9 @@
 #include "/Engine/Private/RayTracing/RayTracingCommon.ush"
 #include "/Engine/Private/RayTracing/RayTracingDeferredShadingCommon.ush"
 #include "/Engine/Private/RayTracing/RayTracingLightingCommon.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_Structs.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_Functions.ush"
-#include "/Engine/Private/RayTracing/AquaRay/AQ_RaytracingCommon.ush"
+#include "AQ_Structs.ush"
+#include "AQ_Functions.ush"
+#include "AQ_RaytracingCommon.ush"
 
 // SHADERS INPUTS/OUTPUTS
 float4 ColorInput1; //Ambient/Indirect Light Color
@@ -61,7 +61,7 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 		
 		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
 		
-		//if (i == 0) {Debug = Payload.WorldNormal;}
+		
 			
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
@@ -78,7 +78,10 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
 			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
+			SurfaceHit.HitPosLighting = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.5f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
+			
+			if (i == 0) {Debug = Lambert(WorldLightVector, Payload.WorldNormal) * CanBeLit(Payload.WorldNormal, WorldLightVector);}
 			
 			if (Fog.Density > BOTTOM_THRESHOLD) {Fog.Transmittance += GetFog(Fog.AmountTop, Fog.AmountBottom, Fog.TopHeight, Fog.BottomHeight, Fog.Density, SurfaceHit.StartPos + CameraPositionWS, SurfaceHit.HitPos + CameraPositionWS);}
 		
@@ -140,7 +143,7 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 	//Color Mixer
 	float3 CompositeColor = GetSkyRadiance(float3(0,0,1), 1.0f) * SkyVisualBrightness; //begin with sky, edge case
 	
-	//The Mixing is done Back to Front
+	//Composition is done Back to Front
     for (int i = SampleIndex; i >= 0; i--)
 	{
 		if (Raysample[i].ShadingModel == 100) //Sky
@@ -180,7 +183,7 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 				float3(0,0,0)
 			) + Raysample[i].Radiance + Raysample[i].Glare;
 		}
-		else if (Raysample[i].ShadingModel == 4) //Volumetric/Thin Glass
+		else if (Raysample[i].ShadingModel == 4) //Volumetric/Thin Translucent
 		{	
 			float refravalue = dot(refract(Raysample[i].IncidentVector, Raysample[i].WorldNormal, 1 / Raysample[i].CustomColor.a), WorldLightVector);
 			if (refravalue > 0.9998f){Raysample[i].Glare += SkyGlare * Raysample[i].Color * float3(300.0f,300.0f,300.0f);} //todo parametrize
@@ -250,8 +253,6 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 			CompositeColor = Invalid(UV);
 		}
 	}
-	
-	float3 sky = GetSkyRadiance(SurfaceHit.IncidentVector, 0.0f) * SkyVisualBrightness;
 	
 	if (Fog.Density > BOTTOM_THRESHOLD)
 	{

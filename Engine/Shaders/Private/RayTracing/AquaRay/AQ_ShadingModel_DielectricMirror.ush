@@ -16,7 +16,7 @@ Lighting.WorldLightVector = WorldLightVector;
 Lighting.WorldLightColor = WorldLightColor;
 Lighting.AmbientLight = IndirectLightColor;
 Lighting.WorldNormal = Payload.WorldNormal;
-Lighting.SamplingPos = SurfaceHit.HitPos;
+Lighting.SamplingPos = SurfaceHit.HitPosLighting;
 Lighting.IncidentVector = SurfaceHit.IncidentVector;
 Lighting.SpecularAmount = 0.0f;
 

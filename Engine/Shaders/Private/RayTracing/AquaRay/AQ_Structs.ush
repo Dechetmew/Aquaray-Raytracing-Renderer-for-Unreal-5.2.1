@@ -57,6 +57,7 @@ struct StructSurfaceHit
 {
 	float3 StartPos;
 	float3 HitPos;
+	float3 HitPosLighting;
 	float3 HitPosTranslucency; //Pushes the HitPos Through the Surface
 	float  Distance;
 	float3 IncidentVector;

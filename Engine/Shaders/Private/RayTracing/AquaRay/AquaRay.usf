@@ -78,7 +78,7 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 			SurfaceHit.ReflectionVector = reflect(Ray.Direction, Payload.WorldNormal);
 			SurfaceHit.RefractionVector = refract(Ray.Direction, Payload.WorldNormal, 1 / Payload.Ior);
 			SurfaceHit.HitPos = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.001f);
-			SurfaceHit.HitPosLighting = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.5f);
+			SurfaceHit.HitPosLighting = Ray.Origin + Ray.Direction * Payload.HitT + (Payload.WorldNormal * 0.45f);
 			SurfaceHit.HitPosTranslucency = Ray.Origin + Ray.Direction * Payload.HitT + Ray.Direction * 0.005f;
 			
 			if (i == 0) {Debug = Lambert(WorldLightVector, Payload.WorldNormal) * CanBeLit(Payload.WorldNormal, WorldLightVector);}

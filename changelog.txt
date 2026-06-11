@@ -189,3 +189,8 @@ v12.1
 v13
 - The Renderer is now a Separate Raytracing Pass
 - C++ Cleanups and Improvements
+
+v13.1
+- (C++) Fixed Console Command Spam
+- (C++) Fixed StaticFindObjectFast() crashes (I hope)
+- Reduced Shadow Artifact Issues

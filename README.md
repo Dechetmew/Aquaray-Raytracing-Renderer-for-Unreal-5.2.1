@@ -39,7 +39,7 @@ __Phase 2:__<br/>
 - The following phase will be a full push towards a production ready Raytracing Renderer<br/>
 - New Unreal Engine fork repo with Renderer already embeded<br/>
 - Low Resolution Indirect Lighting pass<br/>
-- Translucency Reflection & TIR Juniction<br/>
+- Translucency Reflection/TIR Juniction<br/>
 - Roughness Support<br/>
 - DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
 - Optional Checkerboard Rendering mode for GPUs below target spec<br/>

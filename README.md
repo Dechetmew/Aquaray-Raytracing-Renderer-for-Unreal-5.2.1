@@ -27,7 +27,7 @@ __Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Nat
 __Current Performance Result:__ 75-80fps in Medium Complexity scenes. Shaders are currently compiled without optimization so the Final result may run faster. Framerate Heavily depends on whats on the screen<br/>
 
 __GPU Requirements:<br/>__
-- DirectX 16 Support<br/>
+- DirectX 12 Support<br/>
 - Hardware Raytracing Support<br/>
 
 ## Going Forward

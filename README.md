@@ -2,12 +2,12 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
-## Current state of the Project
+# Current state of the Project
 - I am currently workingon the next Phase of the Project
 - When the next phase reaches a working state, a new repository will be created
 - Therefore this repository will be abandoned
 
-# Update 13.1
+## Update 13.1
 - (C++) Fixed Console Command Spam<br>
 - (C++) Fixed StaticFindObjectFast() crashes (I hope)<br>
 - Reduced Shadow Artifact Issues<br>

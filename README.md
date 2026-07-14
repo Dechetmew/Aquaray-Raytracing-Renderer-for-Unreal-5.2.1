@@ -41,7 +41,7 @@ __Phase 2:__<br/>
 - Low Resolution Indirect Lighting pass<br/>
 - Translucency Reflection/TIR Juniction<br/>
 - Roughness Support<br/>
-- DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
+- Custom Post Process Passes for DoF, Tonemapping and Antialiasing<br/>
 - Optional Checkerboard Rendering mode for GPUs below target spec<br/>
 - Vulkan Support (if possible)
 

@@ -2,6 +2,11 @@
 A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
+## Current state of the Project
+- I am currently workingon the next Phase of the Project
+- When the next phase reaches a working state, a new repository will be created
+- Therefore this repository will be abandoned
+
 ## Update 13.1
 - (C++) Fixed Console Command Spam<br>
 - (C++) Fixed StaticFindObjectFast() crashes (I hope)<br>
@@ -34,10 +39,11 @@ __Phase 2:__<br/>
 - The following phase will be a full push towards a production ready Raytracing Renderer<br/>
 - New Unreal Engine fork repo with Renderer already embeded<br/>
 - Low Resolution Indirect Lighting pass<br/>
-- Translucency Reflection Juniction<br/>
+- Translucency Reflection & TIR Juniction<br/>
 - Roughness Support<br/>
 - DoF and Custom Post Processing pass with Tonemapping and Antialiasing<br/>
 - Optional Checkerboard Rendering mode for GPUs below target spec<br/>
+- Vulkan Support (if possible)
 
 QA:<br/>
 __Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible using a Plugin. Any Renderer of this scale must be done via Modifying Unreal Source<br/>

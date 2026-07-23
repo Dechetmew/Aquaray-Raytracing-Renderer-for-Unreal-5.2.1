@@ -51,7 +51,7 @@ __Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible
 __Can you Update the Renderer to a Higher Unreal Version?:__ I dont have a reason yet, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
 
 ## __How to Install__
-EDIT: If your Github account is linked to Epic Games Organization, You can download Full 5.2.1 Source with AquaRay Injected here (login required): https://github.com/Dechetmew/MGFX_UnrealEngine/tree/5.2.1-legacy-aquaray-v13.1<br>
+EDIT: If your Github account is linked to Epic Games Organization, You can download Full 5.2.1 Source with AquaRay here (login required): https://github.com/Dechetmew/MGFX_UnrealEngine/tree/5.2.1-legacy-aquaray-v13.1<br>
 Otherwise Follow the wiki for Installation:<br/>
 [Install: Unreal Engine Source](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/1:-Install:-Unreal-Engine-Source)<br>
 [Install: Fixing Existing Engine Issues](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/2:-Install:-Fixing-Existing-Engine-Issues)<br>

@@ -4,7 +4,7 @@ A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcom
 
 # Current state of the Project
 - I am currently working on the next Phase of the Project
-- When the next phase reaches a working state, a new repository will be created
+- When the next phase reaches a working state, a new repository will be created. EDIT: New repo is up (Account must be linked to Epic Games Organization, Login Required): https://github.com/Dechetmew/MGFX_UnrealEngine/tree/mgfx_ue5.2.1
 - Therefore this repository will be abandoned/left here for public viewing and as access point to the new repo
 
 ## Update 13.1

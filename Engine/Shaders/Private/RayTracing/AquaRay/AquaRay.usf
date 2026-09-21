@@ -60,8 +60,6 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 		SampleIndex += 1;
 		
 		Payload = TraceMatRay(TLAS, Ray, TraceTranslucent);
-		
-		
 			
 		Stats.Steps += 1;
 		Stats.RaysPerPixel += 1;
@@ -258,7 +256,6 @@ RAY_TRACING_ENTRY_RAYGEN(AquaRayRGS)
 	{
 		CompositeColor = lerp(CompositeColor, Fog.Color, saturate(Fog.Transmittance)); //Apply Fog
 	}
-
 	
 	//Debug Viewmodes
 	switch(DebugMode)

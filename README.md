@@ -4,7 +4,7 @@ A Custom set of shaders for Custom Realtime Raytracing, Built for my Upcoming Pr
 
 # Current state of the Project
 - I am currently working on the full scale version of the project.
-- ~~When the next phase reaches a working state, a new repository will be created.~~ There is an outbreak of people using AI to clone creative projects and claim them as "their" products. I dont want the AquaRay Project to end up in somebody´s AI generated game engine so I decided the full scale version of AquaRay will be Closed Source. Im sorry :(
+- ~~When the next phase reaches a working state, a new repository will be created.~~ There is an outbreak of people using AI to clone creative projects and claim them as "their" products. I dont want the AquaRay Project to end up in somebody´s AI generated game engine, so I decided the full scale version of AquaRay will be Closed Source. Im sorry :(
 - Therefore this repository will be abandoned/left here for public viewing.
 
 ## Update 13.1

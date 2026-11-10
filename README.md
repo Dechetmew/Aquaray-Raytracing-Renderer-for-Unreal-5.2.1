@@ -3,9 +3,9 @@ A Custom set of shaders for Custom Realtime Raytracing, Built for my Upcoming Pr
 ![alt text](yay/logo.png)
 
 # Current state of the Project
-- I am currently working on the next Phase of the Project
-- When the next phase reaches a working state, a new repository will be created. EDIT: New repo is up (Account must be linked to Epic Games Organization, Login Required): https://github.com/Dechetmew/MGFX_UnrealEngine/tree/mgfx_ue5.2.1
-- Therefore this repository will be abandoned/left here for public viewing and as access point to the new repo
+- I am currently working on the full scale version of the project.
+- ~~When the next phase reaches a working state, a new repository will be created.~~ There is an outbreak of people using AI to clone creative projects and claim them as "their" products. I dont want the AquaRay Project to end up in somebody´s AI generated game engine so I decided the full scale version of AquaRay will be Closed Source. Im sorry :(
+- Therefore this repository will be abandoned/left here for public viewing.
 
 ## Update 13.1
 - (C++) Fixed Console Command Spam<br>
@@ -23,36 +23,19 @@ Check changelog.txt for previous versions<br/>
 - Simple Fog<br/>
 - Water<br/>
 
-__Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution with No Temporal Accumulation, Upscaling or FrameGen)<br/>
+__Performance Target:__ 60fps at 1440x1080 Resolution on Nvidia RTX 3050 (at Native Resolution/Framerate with No Temporal Accumulation, Upscaling or FrameGen)<br/>
 __Current Performance Result:__ 75-80fps in Medium Complexity scenes. Shaders are currently compiled without optimization so the Final result may run faster. Framerate Heavily depends on whats on the screen<br/>
 
 __GPU Requirements:<br/>__
 - DirectX 12 Support<br/>
 - Hardware Raytracing Support<br/>
 
-## Going Forward
-__Phase 1:__<br/>
-- This is phase one of this project, here Im experimenting with Raytracing, Rendering tricks and Identifying the needs for a full pipeline<br/>
-- One-Shader Implementation without Indirect Lighting<br/>
-
-__Phase 2:__<br/>
-- The following phase will be a full push towards a production ready Raytracing Renderer<br/>
-- New Unreal Engine fork repo with Renderer already embeded<br/>
-- Low Resolution Indirect Lighting pass<br/>
-- Translucency Reflection/TIR Juniction<br/>
-- Roughness Support<br/>
-- Ray Magnets for Indirect Lighting
-- Custom Post Process Passes for DoF, Tonemapping and Antialiasing<br/>
-- Optional Checkerboard Rendering mode for GPUs below target spec<br/>
-- Vulkan Support (if possible)
-
 QA:<br/>
 __Why is this not a Plugin?:__ Overriding Vannila Unreal Rendering is Impossible using a Plugin. Any Renderer of this scale must be done via Modifying Unreal Source<br/>
-__Can you Update the Renderer to a Higher Unreal Version?:__ I dont have a reason yet, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
+__Can you Update the Renderer to a Higher Unreal Version?:__ No guarantees, but I think this code can be ported easily with (maybe) minimal changes up to (as of writing) 5.8.0.<br/>
 
 ## __How to Install__
-EDIT: If your Github account is linked to Epic Games Organization, You can download Full 5.2.1 Source with AquaRay here (login required): https://github.com/Dechetmew/MGFX_UnrealEngine/tree/5.2.1-legacy-aquaray-v13.1<br>
-Otherwise Follow the wiki for Installation:<br/>
+Follow the wiki for Installation:<br/>
 [Install: Unreal Engine Source](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/1:-Install:-Unreal-Engine-Source)<br>
 [Install: Fixing Existing Engine Issues](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/2:-Install:-Fixing-Existing-Engine-Issues)<br>
 [Install: Installing AquaRay](https://github.com/Dechetmew/Aquaray-Raytracing-Renderer-for-Unreal-5.2.1/wiki/4:-Install:-Installing-Old-Versions)<br>

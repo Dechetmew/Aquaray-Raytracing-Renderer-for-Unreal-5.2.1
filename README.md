@@ -1,5 +1,5 @@
-# __AquaRay Raytracing Renderer for Unreal Engine 5.2.1 (WIP)__
-A Custom Realtime Raytracing Renderer for Unreal Engine 5.2.1 Built for my Upcoming Project(s)<br/>
+# __AquaRay - Custom Raytracing Shader pipeline for Unreal Engine 5.2.1 (WIP)__
+A Custom set of shaders for Custom Realtime Raytracing, Built for my Upcoming Project(s)<br/>
 ![alt text](yay/logo.png)
 
 # Current state of the Project

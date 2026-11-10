@@ -1,4 +1,4 @@
-# __AquaRay - Custom Raytracing Shader pipeline for Unreal Engine 5.2.1 (Example)__
+# __AquaRay - Custom Raytracing Shader pipeline for Unreal Engine 5.2.1__
 A Custom set of shaders for Custom Realtime Raytracing.<br/>
 ![alt text](yay/logo.png)
 
